@@ -2,7 +2,7 @@
 
 import { Heart } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 
 function EmptyFavorites() {
   return (
@@ -16,9 +16,9 @@ function EmptyFavorites() {
       <p className="mt-1.5 max-w-xs text-center text-sm text-[var(--color-text-secondary)]">
         Добавляйте понравившиеся товары в избранное, чтобы быстро их находить
       </p>
-      <Button asChild className="mt-6" size="sm">
-        <Link href="/catalog">Перейти в каталог</Link>
-      </Button>
+      <Link href="/catalog" className={buttonVariants({ size: 'sm', className: 'mt-6' })}>
+        Перейти в каталог
+      </Link>
     </div>
   );
 }
