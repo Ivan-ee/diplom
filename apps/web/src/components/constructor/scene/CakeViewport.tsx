@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 import { cn } from '@/lib/utils';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Dynamically import the actual Canvas wrapper to avoid SSR issues with WebGL
 const CakeCanvasInner = dynamic(() => import('./CakeCanvasInner'), {
@@ -40,11 +41,23 @@ export function CakeViewport({ className }: CakeViewportProps) {
         className
       )}
     >
-      <Suspense fallback={<ViewportSkeleton />}>
-        <CakeCanvasInner />
-      </Suspense>
+      <ErrorBoundary
+        fallback={
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
+            <div className="flex flex-col items-center gap-3 text-center px-4">
+              <ViewportSkeleton />
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                3D-просмотр недоступен
+              </p>
+            </div>
+          </div>
+        }
+      >
+        <Suspense fallback={<ViewportSkeleton />}>
+          <CakeCanvasInner />
+        </Suspense>
+      </ErrorBoundary>
 
-      {/* Corner hint */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none">
         <p className="text-xs text-[var(--color-text-secondary)] bg-white/70 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
           Вращайте мышью · Прокрутите для зума

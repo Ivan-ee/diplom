@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { eq, inArray } from 'drizzle-orm';
@@ -14,18 +15,21 @@ import {
   CreateOrderItemDto,
   OrderItemType,
 } from './dto/create-order.dto';
+import { SafeUser } from '../common/types/user.type';
 
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     @Inject(DRIZZLE)
     private readonly db: NodePgDatabase<typeof schema>,
     private readonly constructorService: ConstructorService,
   ) {}
 
-  async create(dto: CreateOrderDto, user: any) {
-    // ---- server-side price recalculation for each item ----
+  /** Creates order with server-side price recalculation. Client-supplied prices are overridden. */
+  async create(dto: CreateOrderDto, user: SafeUser) {
     const pricedItems = await Promise.all(
       dto.items.map((item) => this.recalculateItemPrice(item)),
     );
@@ -35,7 +39,6 @@ export class OrdersService {
       0,
     );
 
-    // ---- insert order + items in a single transaction ----
     const result = await this.db.transaction(async (tx) => {
       const [order] = await tx
         .insert(schema.orders)
@@ -69,6 +72,11 @@ export class OrdersService {
       return { order, items: itemRows };
     });
 
+    this.logger.log('Order created', {
+      orderId: result.order.id,
+      userId: user.id,
+      totalPrice: result.order.totalPrice,
+    });
     return result;
   }
 
@@ -85,11 +93,7 @@ export class OrdersService {
     const allItems = await this.db
       .select()
       .from(schema.orderItems)
-      .where(
-        orderIds.length === 1
-          ? eq(schema.orderItems.orderId, orderIds[0])
-          : inArray(schema.orderItems.orderId, orderIds),
-      );
+      .where(inArray(schema.orderItems.orderId, orderIds));
 
     const itemsByOrder = new Map<string, typeof allItems>();
     for (const item of allItems) {
@@ -102,8 +106,6 @@ export class OrdersService {
       items: itemsByOrder.get(order.id) ?? [],
     }));
   }
-
-  // ---- private helpers ----
 
   private async recalculateItemPrice(item: CreateOrderItemDto): Promise<
     CreateOrderItemDto & { price: number }

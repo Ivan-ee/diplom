@@ -3,9 +3,10 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '@bakery/db/schema';
 import { DRIZZLE } from '../database/drizzle.token';
@@ -27,12 +28,12 @@ const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     @Inject(DRIZZLE)
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
-
-  // ---- Orders ----
 
   async getAllOrders(query: PaginationDto & { status?: string }) {
     const { page, limit, order } = query;
@@ -55,7 +56,7 @@ export class AdminService {
         ? asc(schema.orders.createdAt)
         : desc(schema.orders.createdAt);
 
-    const [allRows, countRows] = await Promise.all([
+    const [paginatedOrders, [{ count: total }]] = await Promise.all([
       this.db
         .select({
           id: schema.orders.id,
@@ -80,14 +81,12 @@ export class AdminService {
         .offset(offset),
 
       this.db
-        .select({ id: schema.orders.id })
+        .select({ count: sql<number>`cast(count(*) as int)` })
         .from(schema.orders)
         .where(where),
     ]);
 
-    const total = countRows.length;
-
-    const data = allRows.map((row) => ({
+    const data = paginatedOrders.map((row) => ({
       id: row.id,
       orderNumber: row.orderNumber,
       status: row.status,
@@ -190,20 +189,22 @@ export class AdminService {
       .where(eq(schema.orders.id, id))
       .returning();
 
+    this.logger.log('Order status changed', {
+      orderId: id,
+      from: currentStatus,
+      to: nextStatus,
+    });
     return updated;
   }
 
-  // ---- Products ----
-
   async createProduct(dto: CreateProductDto) {
-    // Check slug uniqueness
-    const [existing] = await this.db
+    const [existingProduct] = await this.db
       .select({ id: schema.products.id })
       .from(schema.products)
       .where(eq(schema.products.slug, dto.slug))
       .limit(1);
 
-    if (existing) {
+    if (existingProduct) {
       throw new ConflictException(`Product with slug "${dto.slug}" already exists`);
     }
 
@@ -229,17 +230,16 @@ export class AdminService {
   }
 
   async updateProduct(id: string, dto: UpdateProductDto) {
-    const [existing] = await this.db
+    const [existingProduct] = await this.db
       .select({ id: schema.products.id })
       .from(schema.products)
       .where(eq(schema.products.id, id))
       .limit(1);
 
-    if (!existing) {
+    if (!existingProduct) {
       throw new NotFoundException(`Product "${id}" not found`);
     }
 
-    // Check slug uniqueness if slug is being changed
     if (dto.slug) {
       const [slugConflict] = await this.db
         .select({ id: schema.products.id })
@@ -281,13 +281,13 @@ export class AdminService {
   }
 
   async deleteProduct(id: string) {
-    const [existing] = await this.db
+    const [existingProduct] = await this.db
       .select({ id: schema.products.id })
       .from(schema.products)
       .where(eq(schema.products.id, id))
       .limit(1);
 
-    if (!existing) {
+    if (!existingProduct) {
       throw new NotFoundException(`Product "${id}" not found`);
     }
 
@@ -297,8 +297,6 @@ export class AdminService {
 
     return { deleted: true, id };
   }
-
-  // ---- Constructor Ingredients ----
 
   async updateIngredient(id: string, dto: UpdateIngredientDto) {
     switch (dto.type) {
@@ -316,89 +314,78 @@ export class AdminService {
   }
 
   private async updateBase(id: string, dto: UpdateIngredientDto) {
-    const [existing] = await this.db
-      .select({ id: schema.constructorBases.id })
-      .from(schema.constructorBases)
-      .where(eq(schema.constructorBases.id, id))
-      .limit(1);
-
-    if (!existing) throw new NotFoundException(`Base ingredient "${id}" not found`);
-
-    const values: Partial<typeof schema.constructorBases.$inferInsert> = {};
-    if (dto.pricePerKg !== undefined) values.pricePerKg = dto.pricePerKg;
-    if (dto.isAvailable !== undefined) values.isAvailable = dto.isAvailable;
-
-    const [updated] = await this.db
-      .update(schema.constructorBases)
-      .set(values)
-      .where(eq(schema.constructorBases.id, id))
-      .returning();
-
-    return updated;
+    const values: Record<string, unknown> = {};
+    if (dto.pricePerKg !== undefined) values['pricePerKg'] = dto.pricePerKg;
+    if (dto.isAvailable !== undefined) values['isAvailable'] = dto.isAvailable;
+    return this.updateIngredientTable(
+      schema.constructorBases,
+      schema.constructorBases.id,
+      id,
+      values,
+      'Base',
+    );
   }
 
   private async updateFilling(id: string, dto: UpdateIngredientDto) {
-    const [existing] = await this.db
-      .select({ id: schema.constructorFillings.id })
-      .from(schema.constructorFillings)
-      .where(eq(schema.constructorFillings.id, id))
-      .limit(1);
-
-    if (!existing) throw new NotFoundException(`Filling ingredient "${id}" not found`);
-
-    const values: Partial<typeof schema.constructorFillings.$inferInsert> = {};
-    if (dto.pricePerKg !== undefined) values.pricePerKg = dto.pricePerKg;
-    if (dto.isAvailable !== undefined) values.isAvailable = dto.isAvailable;
-
-    const [updated] = await this.db
-      .update(schema.constructorFillings)
-      .set(values)
-      .where(eq(schema.constructorFillings.id, id))
-      .returning();
-
-    return updated;
+    const values: Record<string, unknown> = {};
+    if (dto.pricePerKg !== undefined) values['pricePerKg'] = dto.pricePerKg;
+    if (dto.isAvailable !== undefined) values['isAvailable'] = dto.isAvailable;
+    return this.updateIngredientTable(
+      schema.constructorFillings,
+      schema.constructorFillings.id,
+      id,
+      values,
+      'Filling',
+    );
   }
 
   private async updateCoating(id: string, dto: UpdateIngredientDto) {
-    const [existing] = await this.db
-      .select({ id: schema.constructorCoatings.id })
-      .from(schema.constructorCoatings)
-      .where(eq(schema.constructorCoatings.id, id))
-      .limit(1);
-
-    if (!existing) throw new NotFoundException(`Coating ingredient "${id}" not found`);
-
-    const values: Partial<typeof schema.constructorCoatings.$inferInsert> = {};
-    if (dto.pricePerKg !== undefined) values.pricePerKg = dto.pricePerKg;
-    if (dto.isAvailable !== undefined) values.isAvailable = dto.isAvailable;
-
-    const [updated] = await this.db
-      .update(schema.constructorCoatings)
-      .set(values)
-      .where(eq(schema.constructorCoatings.id, id))
-      .returning();
-
-    return updated;
+    const values: Record<string, unknown> = {};
+    if (dto.pricePerKg !== undefined) values['pricePerKg'] = dto.pricePerKg;
+    if (dto.isAvailable !== undefined) values['isAvailable'] = dto.isAvailable;
+    return this.updateIngredientTable(
+      schema.constructorCoatings,
+      schema.constructorCoatings.id,
+      id,
+      values,
+      'Coating',
+    );
   }
 
   private async updateDecoration(id: string, dto: UpdateIngredientDto) {
+    const values: Record<string, unknown> = {};
+    if (dto.pricePerUnit !== undefined) values['pricePerUnit'] = dto.pricePerUnit;
+    if (dto.isAvailable !== undefined) values['isAvailable'] = dto.isAvailable;
+    return this.updateIngredientTable(
+      schema.constructorDecorations,
+      schema.constructorDecorations.id,
+      id,
+      values,
+      'Decoration',
+    );
+  }
+
+  private async updateIngredientTable(
+    table: any,
+    idCol: any,
+    id: string,
+    values: Record<string, unknown>,
+    label: string,
+  ) {
     const [existing] = await this.db
-      .select({ id: schema.constructorDecorations.id })
-      .from(schema.constructorDecorations)
-      .where(eq(schema.constructorDecorations.id, id))
+      .select({ id: idCol })
+      .from(table)
+      .where(eq(idCol, id))
       .limit(1);
 
-    if (!existing)
-      throw new NotFoundException(`Decoration ingredient "${id}" not found`);
-
-    const values: Partial<typeof schema.constructorDecorations.$inferInsert> = {};
-    if (dto.pricePerUnit !== undefined) values.pricePerUnit = dto.pricePerUnit;
-    if (dto.isAvailable !== undefined) values.isAvailable = dto.isAvailable;
+    if (!existing) {
+      throw new NotFoundException(`${label} ingredient "${id}" not found`);
+    }
 
     const [updated] = await this.db
-      .update(schema.constructorDecorations)
+      .update(table)
       .set(values)
-      .where(eq(schema.constructorDecorations.id, id))
+      .where(eq(idCol, id))
       .returning();
 
     return updated;

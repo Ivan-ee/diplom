@@ -2,6 +2,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -15,6 +16,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { SafeUser } from '../common/types/user.type';
 
+/** Authentication result with safe user data. Token is set via httpOnly cookie. */
 export interface AuthResult {
   user: SafeUser;
   token: string;
@@ -22,6 +24,8 @@ export interface AuthResult {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @Inject(DRIZZLE)
     private readonly db: NodePgDatabase<typeof schema>,
@@ -29,7 +33,6 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthResult> {
-    // Check email uniqueness
     const existing = await this.db
       .select({ id: schema.users.id })
       .from(schema.users)
@@ -42,19 +45,30 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    const [user] = await this.db
-      .insert(schema.users)
-      .values({
-        name: dto.name,
-        email: dto.email,
-        phone: dto.phone ?? null,
-        passwordHash,
-        role: 'user',
-      })
-      .returning();
+    let user: typeof schema.users.$inferSelect;
+    try {
+      const [inserted] = await this.db
+        .insert(schema.users)
+        .values({
+          name: dto.name,
+          email: dto.email,
+          phone: dto.phone ?? null,
+          passwordHash,
+          role: 'user',
+        })
+        .returning();
+      user = inserted;
+    } catch (error: unknown) {
+      const pgError = error as { code?: string };
+      if (pgError?.code === '23505') {
+        throw new ConflictException('Email already registered');
+      }
+      throw error;
+    }
 
     const token = this.signToken(user);
-    return { user: this.sanitize(user), token };
+    this.logger.log('User registered', { email: dto.email });
+    return { user: this.toSafeUser(user), token };
   }
 
   async login(dto: LoginDto): Promise<AuthResult> {
@@ -70,11 +84,13 @@ export class AuthService {
 
     const passwordMatch = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordMatch) {
+      this.logger.warn('Login failed: invalid password', { email: dto.email });
       throw new UnauthorizedException('Invalid email or password');
     }
 
     const token = this.signToken(user);
-    return { user: this.sanitize(user), token };
+    this.logger.log('User logged in', { email: dto.email });
+    return { user: this.toSafeUser(user), token };
   }
 
   async getProfile(userId: string): Promise<SafeUser> {
@@ -82,7 +98,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    return this.sanitize(user);
+    return this.toSafeUser(user);
   }
 
   async getUserById(id: string): Promise<typeof schema.users.$inferSelect | null> {
@@ -103,14 +119,14 @@ export class AuthService {
     });
   }
 
-  private sanitize(user: Record<string, unknown>): SafeUser {
+  private toSafeUser(user: typeof schema.users.$inferSelect): SafeUser {
     return {
-      id: user['id'] as string,
-      name: user['name'] as string,
-      email: user['email'] as string,
-      phone: (user['phone'] as string | null) ?? null,
-      role: user['role'] as string,
-      createdAt: user['createdAt'] as Date,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone ?? null,
+      role: user.role,
+      createdAt: user.createdAt,
     };
   }
 }

@@ -5,7 +5,6 @@ import { Environment } from '@react-three/drei';
 export function LightingRig() {
   return (
     <>
-      {/* Ambient fill */}
       <ambientLight intensity={0.3} />
 
       {/* Key light — upper right front */}
@@ -28,7 +27,6 @@ export function LightingRig() {
       {/* Accent light — left upper */}
       <directionalLight position={[-3, 5, 3]} intensity={0.6} color="#ffd9c8" />
 
-      {/* Studio HDRI */}
       <Environment preset="studio" />
     </>
   );

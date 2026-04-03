@@ -40,7 +40,6 @@ export function DecorationInstance({ decoration }: Props) {
       onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
       onPointerOut={() => setHovered(false)}
     >
-      {/* Main decoration sphere */}
       <mesh castShadow>
         <sphereGeometry args={[0.09, 16, 16]} />
         <meshStandardMaterial
@@ -52,13 +51,11 @@ export function DecorationInstance({ decoration }: Props) {
         />
       </mesh>
 
-      {/* Specular highlight dot */}
       <mesh position={[0.02, 0.05, 0.06]}>
         <sphereGeometry args={[0.02, 8, 8]} />
         <meshStandardMaterial color="#ffffff" roughness={0.05} metalness={0.0} />
       </mesh>
 
-      {/* Delete overlay on hover */}
       {hovered && (
         <Html
           position={[0, 0.2, 0]}

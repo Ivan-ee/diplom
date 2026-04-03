@@ -34,6 +34,7 @@ async function CatalogContent({ searchParams }: { searchParams: CatalogSearchPar
 
   let products: Product[] = [];
   let total = 0;
+  let fetchError = false;
 
   try {
     const res = await fetchServer<ProductsApiResponse>('/products', {
@@ -52,15 +53,22 @@ async function CatalogContent({ searchParams }: { searchParams: CatalogSearchPar
 
     products = res.data?.items ?? (Array.isArray(res.data) ? (res.data as Product[]) : []);
     total = res.meta?.total ?? products.length;
-  } catch {
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
     products = [];
     total = 0;
+    fetchError = true;
   }
 
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
   return (
     <>
+      {fetchError && products.length === 0 && (
+        <p className="text-center py-12 text-red-500">
+          Не удалось загрузить товары. Попробуйте обновить страницу.
+        </p>
+      )}
       <ProductGrid products={products} />
       <Pagination currentPage={page} totalPages={totalPages} totalItems={total} />
     </>

@@ -1,21 +1,20 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
+
+export const ALLOWED_BUCKETS = ['screenshots'] as const;
 
 export class PresignDto {
   @ApiProperty({ example: 'cake-screenshot.png' })
   @IsString()
   filename!: string;
 
-  @ApiProperty({ example: 'image/png' })
-  @IsString()
-  contentType!: string;
-
   @ApiPropertyOptional({
     example: 'screenshots',
     default: 'screenshots',
     description: 'MinIO bucket name',
+    enum: ALLOWED_BUCKETS,
   })
   @IsOptional()
-  @IsString()
+  @IsIn(ALLOWED_BUCKETS)
   bucket?: string;
 }

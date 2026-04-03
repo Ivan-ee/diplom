@@ -7,7 +7,7 @@ import { fetchClient } from '@/lib/api';
 export function useAuth() {
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const storeLogout = useAuthStore((s) => s.logout);
+  const clearAuthState = useAuthStore((s) => s.logout);
   const { openAuth, closeAuth } = useAuthContext();
 
   const logout = async () => {
@@ -16,7 +16,7 @@ export function useAuth() {
     } catch {
       // Ignore network errors — clear local state regardless
     } finally {
-      storeLogout();
+      clearAuthState();
     }
   };
 

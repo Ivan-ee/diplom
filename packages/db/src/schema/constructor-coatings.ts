@@ -7,6 +7,7 @@ export const constructorCoatings = pgTable('constructor_coatings', {
   name: varchar('name', { length: 100 }).notNull(),
   type: coatingTypeEnum('type').notNull(),
   pricePerKg: integer('price_per_kg').notNull(),
+  /** PBR material roughness for Three.js rendering (0.0 = mirror, 1.0 = matte). Default: 0.40 */
   roughness: numeric('roughness', { precision: 3, scale: 2 }).notNull().default('0.40'),
   sortOrder: integer('sort_order').notNull().default(0),
   isAvailable: boolean('is_available').notNull().default(true),

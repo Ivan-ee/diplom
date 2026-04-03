@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
@@ -15,6 +16,11 @@ export const DatabaseProvider = {
       max: 20,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 5_000,
+    });
+
+    const logger = new Logger('DatabasePool');
+    pool.on('error', (err) => {
+      logger.error('Unexpected database pool error', err.stack);
     });
 
     return drizzle(pool, { schema });

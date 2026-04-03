@@ -25,7 +25,7 @@ export class PaginationDto {
   @Max(100)
   limit: number = 20;
 
-  @ApiPropertyOptional({ example: 'createdAt' })
+  @ApiPropertyOptional({ example: 'createdAt', description: 'Sort field. Valid values: createdAt, pricePerKg, name' })
   @IsOptional()
   @IsString()
   sort?: string;

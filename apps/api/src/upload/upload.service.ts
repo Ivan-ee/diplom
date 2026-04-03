@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 import { randomUUID } from 'crypto';
@@ -9,6 +9,7 @@ const PRESIGN_EXPIRY_SECONDS = 15 * 60; // 15 minutes
 
 @Injectable()
 export class UploadService implements OnModuleInit {
+  private readonly logger = new Logger(UploadService.name);
   private client!: Minio.Client;
   private publicUrl!: string;
 
@@ -42,11 +43,18 @@ export class UploadService implements OnModuleInit {
 
     await this.ensureBucketExists(bucket);
 
-    const uploadUrl = await this.client.presignedPutObject(
-      bucket,
-      objectName,
-      PRESIGN_EXPIRY_SECONDS,
-    );
+    let uploadUrl: string;
+    try {
+      uploadUrl = await this.client.presignedPutObject(
+        bucket,
+        objectName,
+        PRESIGN_EXPIRY_SECONDS,
+      );
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('MinIO presign failed', { bucket, objectName, error: error.message });
+      throw new InternalServerErrorException('Failed to generate upload URL');
+    }
 
     const fileUrl = `${this.publicUrl}/${bucket}/${objectName}`;
 
@@ -62,6 +70,7 @@ export class UploadService implements OnModuleInit {
   private async ensureBucketExists(bucket: string): Promise<void> {
     const exists = await this.client.bucketExists(bucket);
     if (!exists) {
+      this.logger.warn('Bucket does not exist, creating', { bucket });
       await this.client.makeBucket(bucket, 'us-east-1');
     }
   }

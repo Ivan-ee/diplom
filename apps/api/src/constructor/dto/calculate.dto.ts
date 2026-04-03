@@ -45,7 +45,7 @@ export class DecorationItemDto {
 
 export class CalculatePriceDto {
   @ApiProperty({
-    description: 'Cake shape',
+    description: 'Cake shape. circle: 0% surcharge, square: 10%, heart: 15%',
     enum: ['circle', 'square', 'heart'],
   })
   @IsIn(['circle', 'square', 'heart'])

@@ -31,6 +31,11 @@ function buildUrl(path: string, params?: Record<string, string | number | undefi
   return url.toString();
 }
 
+async function parseErrorResponse(res: Response): Promise<never> {
+  const error = await res.json().catch(() => ({ error: { message: res.statusText } }));
+  throw new Error(error.error?.message || `API error: ${res.status}`, { cause: error });
+}
+
 /**
  * Fetch for Server Components — direct to API
  */
@@ -50,8 +55,7 @@ export async function fetchServer<T>(
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: { message: res.statusText } }));
-    throw new Error(error.error?.message || `API error: ${res.status}`);
+    await parseErrorResponse(res);
   }
 
   return res.json();
@@ -74,8 +78,9 @@ export async function fetchClient<T>(
       }
     });
   }
+  const clientUrl = url.toString();
 
-  const res = await fetch(url.toString(), {
+  const res = await fetch(clientUrl, {
     ...fetchOptions,
     credentials: 'include',
     headers: {
@@ -85,8 +90,7 @@ export async function fetchClient<T>(
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: { message: res.statusText } }));
-    throw new Error(error.error?.message || `API error: ${res.status}`);
+    await parseErrorResponse(res);
   }
 
   return res.json();

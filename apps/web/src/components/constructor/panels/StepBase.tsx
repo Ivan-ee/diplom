@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Minus, Plus } from 'lucide-react';
 import { useConstructorStore } from '@/stores/constructor-store';
+import { TierTabs } from './TierTabs';
 import { formatPrice } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
@@ -41,34 +42,13 @@ export function StepBase() {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Tier tabs */}
-      {tierCount > 1 && (
-        <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
-          {Array.from({ length: tierCount }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveTier(i)}
-              className={cn(
-                'relative flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)]',
-                activeTier === i
-                  ? 'bg-white text-[var(--color-dusty-rose)] shadow-sm'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-dark)]'
-              )}
-            >
-              {activeTier === i && (
-                <motion.div
-                  layoutId="tier-tab-base"
-                  className="absolute inset-0 bg-white rounded-lg shadow-sm"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">Ярус {i + 1}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      <TierTabs
+        tierCount={tierCount}
+        activeTier={activeTier}
+        onSelect={setActiveTier}
+        layoutId="tier-tab-base"
+      />
 
-      {/* Base selection */}
       <div>
         <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
           Вид бисквита
@@ -95,13 +75,11 @@ export function StepBase() {
                 )}
                 whileTap={{ scale: 0.985 }}
               >
-                {/* Color swatch */}
                 <div
                   className="w-10 h-10 rounded-lg flex-shrink-0 border border-black/10 shadow-sm"
                   style={{ backgroundColor: base.color ?? '#FFF8E7' }}
                 />
 
-                {/* Text */}
                 <div className="flex-1 min-w-0">
                   <p className={cn(
                     'text-sm font-semibold leading-tight',
@@ -116,7 +94,6 @@ export function StepBase() {
                   )}
                 </div>
 
-                {/* Price */}
                 <div className="flex-shrink-0 text-right">
                   <p className="text-sm font-semibold text-[var(--color-dark)]">
                     {formatPrice(base.pricePerKg)}
@@ -124,7 +101,6 @@ export function StepBase() {
                   <p className="text-[10px] text-[var(--color-text-secondary)]">за кг</p>
                 </div>
 
-                {/* Check */}
                 {isSelected && (
                   <div className="absolute right-3 top-3 w-5 h-5 rounded-full bg-[var(--color-dusty-rose)] flex items-center justify-center shadow-sm">
                     <Check size={11} className="text-white" strokeWidth={3} />
@@ -136,7 +112,6 @@ export function StepBase() {
         </motion.div>
       </div>
 
-      {/* Weight selector */}
       <div>
         <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
           Вес {tierCount > 1 ? `яруса ${activeTier + 1}` : 'торта'}

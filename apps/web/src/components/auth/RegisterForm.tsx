@@ -8,6 +8,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchClient } from '@/lib/api';
 import { useAuthStore, type User } from '@/stores/auth-store';
+import { FieldWrapper, inputClass } from './shared';
 
 const registerSchema = z
   .object({
@@ -36,28 +37,6 @@ type RegisterFields = z.infer<typeof registerSchema>;
 interface RegisterFormProps {
   onSuccess: () => void;
 }
-
-interface FieldWrapperProps {
-  id: string;
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}
-
-function FieldWrapper({ id, label, error, children }: FieldWrapperProps) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-[var(--color-dark)]">
-        {label}
-      </label>
-      {children}
-      {error && <p className="text-sm text-[var(--color-error)]">{error}</p>}
-    </div>
-  );
-}
-
-const inputClass =
-  'h-11 w-full rounded-lg border border-gray-300 bg-white px-3.5 text-sm text-[var(--color-dark)] placeholder:text-gray-400 transition-colors duration-150 focus:border-[var(--color-dusty-rose)] focus:outline-none focus:ring-1 focus:ring-[var(--color-dusty-rose)]/50 disabled:opacity-50';
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);

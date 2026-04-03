@@ -1,5 +1,5 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { AnyColumn, and, asc, desc, eq, gte, inArray, lte, SQL } from 'drizzle-orm';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { AnyColumn, and, asc, desc, eq, gte, inArray, lte, sql, SQL } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '@bakery/db/schema';
 import { DRIZZLE } from '../database/drizzle.token';
@@ -7,51 +7,34 @@ import { QueryProductsDto } from './dto/query-products.dto';
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
+
   constructor(
     @Inject(DRIZZLE)
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
   async findAll(query: QueryProductsDto) {
-    const { page, limit, sort, order, type, occasion, priceMin, priceMax } =
+    const { page, limit, sort, order, categorySlug, occasion, priceMin, priceMax } =
       query;
     const offset = (page - 1) * limit;
 
-    // ---- resolve category id from slug ----
-    let categoryId: string | undefined;
-    if (type) {
-      const [cat] = await this.db
-        .select({ id: schema.categories.id })
-        .from(schema.categories)
-        .where(eq(schema.categories.slug, type))
-        .limit(1);
-      if (!cat) {
-        return {
-          data: [],
-          meta: { page, limit, total: 0 },
-        };
-      }
-      categoryId = cat.id;
+    const categoryId = categorySlug
+      ? await this.resolveSlugToId(schema.categories, schema.categories.slug, categorySlug, schema.categories.id)
+      : undefined;
+
+    if (categorySlug && categoryId === null) {
+      return { data: [], meta: { page, limit, total: 0 } };
     }
 
-    // ---- resolve occasion id from slug ----
-    let occasionId: string | undefined;
-    if (occasion) {
-      const [occ] = await this.db
-        .select({ id: schema.occasions.id })
-        .from(schema.occasions)
-        .where(eq(schema.occasions.slug, occasion))
-        .limit(1);
-      if (!occ) {
-        return {
-          data: [],
-          meta: { page, limit, total: 0 },
-        };
-      }
-      occasionId = occ.id;
+    const occasionId = occasion
+      ? await this.resolveSlugToId(schema.occasions, schema.occasions.slug, occasion, schema.occasions.id)
+      : undefined;
+
+    if (occasion && occasionId === null) {
+      return { data: [], meta: { page, limit, total: 0 } };
     }
 
-    // ---- collect product ids that match the occasion filter ----
     let occasionProductIds: string[] | undefined;
     if (occasionId) {
       const rows = await this.db
@@ -60,32 +43,17 @@ export class ProductsService {
         .where(eq(schema.productOccasions.occasionId, occasionId));
       occasionProductIds = rows.map((r) => r.productId);
       if (occasionProductIds.length === 0) {
-        return {
-          data: [],
-          meta: { page, limit, total: 0 },
-        };
+        return { data: [], meta: { page, limit, total: 0 } };
       }
     }
 
-    // ---- build WHERE conditions ----
-    const conditions: SQL[] = [eq(schema.products.isAvailable, true)];
+    const where = this.buildWhereConditions({
+      categoryId: categoryId ?? undefined,
+      occasionProductIds,
+      priceMin,
+      priceMax,
+    });
 
-    if (categoryId) {
-      conditions.push(eq(schema.products.categoryId, categoryId));
-    }
-    if (occasionProductIds) {
-      conditions.push(inArray(schema.products.id, occasionProductIds));
-    }
-    if (priceMin !== undefined) {
-      conditions.push(gte(schema.products.pricePerKg, priceMin));
-    }
-    if (priceMax !== undefined) {
-      conditions.push(lte(schema.products.pricePerKg, priceMax));
-    }
-
-    const where = and(...conditions);
-
-    // ---- resolve sort column ----
     const sortableColumns: Record<string, AnyColumn> = {
       createdAt: schema.products.createdAt,
       pricePerKg: schema.products.pricePerKg,
@@ -95,14 +63,11 @@ export class ProductsService {
       sortableColumns[sort ?? 'createdAt'] ?? schema.products.createdAt;
     const orderExpr = order === 'asc' ? asc(sortCol) : desc(sortCol);
 
-    // ---- fetch total count ----
-    const countResult = await this.db
-      .select({ id: schema.products.id })
+    const [{ count: total }] = await this.db
+      .select({ count: sql<number>`cast(count(*) as int)` })
       .from(schema.products)
       .where(where);
-    const total = countResult.length;
 
-    // ---- fetch paginated products with category ----
     const rows = await this.db
       .select({
         id: schema.products.id,
@@ -131,7 +96,6 @@ export class ProductsService {
       .limit(limit)
       .offset(offset);
 
-    // ---- attach occasions to each product ----
     const productIds = rows.map((r) => r.id);
     const occasionsMap = await this.fetchOccasionsMap(productIds);
 
@@ -155,6 +119,44 @@ export class ProductsService {
     }));
 
     return { data, meta: { page, limit, total } };
+  }
+
+  private async resolveSlugToId(
+    table: Parameters<typeof this.db.select>[0] extends never ? never : any,
+    slugCol: AnyColumn,
+    slugValue: string,
+    idCol: AnyColumn,
+  ): Promise<string | null> {
+    const [row] = await this.db
+      .select({ id: idCol as any })
+      .from(table as any)
+      .where(eq(slugCol, slugValue))
+      .limit(1);
+    return row ? (row.id as string) : null;
+  }
+
+  private buildWhereConditions(filters: {
+    categoryId?: string;
+    occasionProductIds?: string[];
+    priceMin?: number;
+    priceMax?: number;
+  }): SQL {
+    const conditions: SQL[] = [eq(schema.products.isAvailable, true)];
+
+    if (filters.categoryId) {
+      conditions.push(eq(schema.products.categoryId, filters.categoryId));
+    }
+    if (filters.occasionProductIds) {
+      conditions.push(inArray(schema.products.id, filters.occasionProductIds));
+    }
+    if (filters.priceMin !== undefined) {
+      conditions.push(gte(schema.products.pricePerKg, filters.priceMin));
+    }
+    if (filters.priceMax !== undefined) {
+      conditions.push(lte(schema.products.pricePerKg, filters.priceMax));
+    }
+
+    return and(...conditions) as SQL;
   }
 
   async findBySlug(slug: string) {

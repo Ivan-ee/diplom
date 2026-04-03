@@ -38,7 +38,8 @@ function AvailabilityToggle({ productId, available, onToggle }: AvailabilityTogg
       });
       onToggle(productId, !available);
     } catch {
-      // revert handled by parent — no-op here
+      alert('Не удалось изменить доступность');
+      onToggle(productId, available);
     } finally {
       setLoading(false);
     }
@@ -105,6 +106,7 @@ function PriceEditor({ productId, price, onSaved }: PriceEditorProps) {
       onSaved(productId, newPriceKopecks);
       setEditing(false);
     } catch {
+      alert('Не удалось сохранить цену');
       cancel();
     } finally {
       setSaving(false);
@@ -191,6 +193,7 @@ export default function AdminProductsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
+    setError(null);
     setLoading(true);
     fetchClient<Product[]>('/admin/products')
       .then((res) => setProducts(res.data))
@@ -283,7 +286,8 @@ export default function AdminProductsPage() {
               ) : (
                 products.map((product, idx) => {
                   const imageUrl = product.imageUrl ?? product.images?.[0];
-                  const category = product.type ?? product.category ?? '';
+                  const categoryRaw = product.type ?? product.category;
+                  const category = typeof categoryRaw === 'string' ? categoryRaw : categoryRaw?.slug ?? '';
                   const categoryLabel = CATEGORY_LABELS[category] ?? category;
 
                   return (
@@ -329,7 +333,7 @@ export default function AdminProductsPage() {
                       <td className="px-4 py-3">
                         <PriceEditor
                           productId={product.id}
-                          price={product.priceMin}
+                          price={product.priceMin ?? 0}
                           onSaved={handlePriceSaved}
                         />
                       </td>

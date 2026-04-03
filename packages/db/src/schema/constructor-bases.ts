@@ -5,7 +5,9 @@ export const constructorBases = pgTable('constructor_bases', {
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
   pricePerKg: integer('price_per_kg').notNull(),
+  /** MinIO path to texture image. When set, overrides the color field for 3D rendering */
   textureUrl: text('texture_url'),
+  /** Hex color code (#RRGGBB format, e.g. "#8B4513"). Used as fallback when textureUrl is null */
   color: varchar('color', { length: 7 }),
   sortOrder: integer('sort_order').notNull().default(0),
   isAvailable: boolean('is_available').notNull().default(true),

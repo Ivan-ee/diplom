@@ -48,10 +48,8 @@ export function SettingsPanel() {
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-cream)]">
-      {/* Progress bar — fixed at top */}
       <StepProgressBar />
 
-      {/* Step content — scrollable */}
       <div className="flex-1 overflow-y-auto overscroll-contain">
         <div className="p-4">
           {isLoading ? (
@@ -77,7 +75,6 @@ export function SettingsPanel() {
         </div>
       </div>
 
-      {/* Price + navigation — sticky at bottom */}
       <div className="flex-shrink-0">
         <PriceCalculator />
         <StepNavigation />

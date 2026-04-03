@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { asc, eq, inArray } from 'drizzle-orm';
@@ -10,20 +11,21 @@ import * as schema from '@bakery/db/schema';
 import { DRIZZLE } from '../database/drizzle.token';
 import { CalculatePriceDto } from './dto/calculate.dto';
 
-// Shape surcharges as percentage on top of the base price
+/** Shape configurations with price surcharge percentages. Surcharges applied to subtotal. */
 const SHAPE_CONFIG = [
   { id: 'circle', name: 'Круг', surchargePercent: 0 },
   { id: 'square', name: 'Квадрат', surchargePercent: 10 },
   { id: 'heart', name: 'Сердце', surchargePercent: 15 },
 ];
 
-// Tier surcharges as fixed amounts in kopecks
+/** Fixed price surcharges (in kopecks) per tier count. */
 const TIER_SURCHARGES = [
-  { tiers: 1, surcharge: 0 },
-  { tiers: 2, surcharge: 3000_00 }, // 3000 rub = 300000 kopecks
-  { tiers: 3, surcharge: 6000_00 }, // 6000 rub = 600000 kopecks
+  { tierCount: 1, surcharge: 0 },
+  { tierCount: 2, surcharge: 3000_00 },
+  { tierCount: 3, surcharge: 6000_00 },
 ];
 
+/** Global limits for constructor validation. */
 const CONSTRUCTOR_CONFIG = {
   minWeight: 1,
   maxWeight: 10,
@@ -33,6 +35,8 @@ const CONSTRUCTOR_CONFIG = {
 
 @Injectable()
 export class ConstructorService {
+  private readonly logger = new Logger(ConstructorService.name);
+
   constructor(
     @Inject(DRIZZLE)
     private readonly db: NodePgDatabase<typeof schema>,
@@ -77,128 +81,17 @@ export class ConstructorService {
   }
 
   async calculatePrice(dto: CalculatePriceDto) {
+    this.logger.log('calculatePrice request', { shape: dto.shape, tiers: dto.tiers.length });
     const { shape, tiers, coatingId, decorations = [] } = dto;
 
-    // ---- validate shape ----
-    const shapeConfig = SHAPE_CONFIG.find((s) => s.id === shape);
-    if (!shapeConfig) {
-      throw new BadRequestException(
-        `Unknown shape "${shape}". Valid values: circle, square, heart`,
-      );
-    }
+    const shapeConfig = this.validateShape(shape);
+    this.validateLimits(tiers, decorations, dto.inscription);
 
-    // ---- validate limits ----
-    const totalDecorationCount = decorations.reduce(
-      (sum, d) => sum + d.quantity,
-      0,
-    );
-    if (totalDecorationCount > CONSTRUCTOR_CONFIG.maxDecorations) {
-      throw new BadRequestException(
-        `Total decorations count cannot exceed ${CONSTRUCTOR_CONFIG.maxDecorations}`,
-      );
-    }
+    const { basesMap, fillingsMap, coating, decorationsMap } =
+      await this.fetchIngredients(tiers, coatingId, decorations);
 
-    const totalWeightTenthsCheck = tiers.reduce((sum, t) => sum + t.weight, 0);
-    if (totalWeightTenthsCheck > CONSTRUCTOR_CONFIG.maxWeight * 10) {
-      throw new BadRequestException(
-        `Total cake weight cannot exceed ${CONSTRUCTOR_CONFIG.maxWeight} kg`,
-      );
-    }
-
-    if (
-      dto.inscription !== undefined &&
-      dto.inscription.length > CONSTRUCTOR_CONFIG.maxInscription
-    ) {
-      throw new BadRequestException(
-        `Inscription cannot exceed ${CONSTRUCTOR_CONFIG.maxInscription} characters`,
-      );
-    }
-
-    // ---- fetch all referenced ingredients in parallel ----
-    const baseIds = [...new Set(tiers.map((t) => t.baseId))];
-    const fillingIds = [...new Set(tiers.map((t) => t.fillingId))];
-    const decorationIds = [
-      ...new Set(decorations.map((d) => d.decorationId)),
-    ];
-
-    const [basesRows, fillingsRows, coatingsRows, decorationsRows] =
-      await Promise.all([
-        this.db
-          .select()
-          .from(schema.constructorBases)
-          .where(inArray(schema.constructorBases.id, baseIds)),
-
-        this.db
-          .select()
-          .from(schema.constructorFillings)
-          .where(inArray(schema.constructorFillings.id, fillingIds)),
-
-        this.db
-          .select()
-          .from(schema.constructorCoatings)
-          .where(eq(schema.constructorCoatings.id, coatingId)),
-
-        decorationIds.length > 0
-          ? this.db
-              .select()
-              .from(schema.constructorDecorations)
-              .where(
-                inArray(schema.constructorDecorations.id, decorationIds),
-              )
-          : Promise.resolve([]),
-      ]);
-
-    // ---- validate existence and availability ----
-    const basesMap = new Map(basesRows.map((b) => [b.id, b]));
-    const fillingsMap = new Map(fillingsRows.map((f) => [f.id, f]));
-    const decorationsMap = new Map(decorationsRows.map((d) => [d.id, d]));
-
-    if (coatingsRows.length === 0) {
-      throw new NotFoundException(`Coating "${coatingId}" not found`);
-    }
-    const coating = coatingsRows[0];
-    if (!coating.isAvailable) {
-      throw new BadRequestException(`Coating "${coating.name}" is not available`);
-    }
-
-    for (const tier of tiers) {
-      if (!basesMap.has(tier.baseId)) {
-        throw new NotFoundException(`Base "${tier.baseId}" not found`);
-      }
-      if (!fillingsMap.has(tier.fillingId)) {
-        throw new NotFoundException(`Filling "${tier.fillingId}" not found`);
-      }
-      const base = basesMap.get(tier.baseId)!;
-      const filling = fillingsMap.get(tier.fillingId)!;
-      if (!base.isAvailable) {
-        throw new BadRequestException(`Base "${base.name}" is not available`);
-      }
-      if (!filling.isAvailable) {
-        throw new BadRequestException(
-          `Filling "${filling.name}" is not available`,
-        );
-      }
-    }
-
-    for (const decorItem of decorations) {
-      if (!decorationsMap.has(decorItem.decorationId)) {
-        throw new NotFoundException(
-          `Decoration "${decorItem.decorationId}" not found`,
-        );
-      }
-      const decor = decorationsMap.get(decorItem.decorationId)!;
-      if (!decor.isAvailable) {
-        throw new BadRequestException(
-          `Decoration "${decor.name}" is not available`,
-        );
-      }
-    }
-
-    // ---- price calculation (all amounts in kopecks) ----
-    // Weight is stored as integer tenths of kg (e.g. 15 = 1.5 kg)
-    // pricePerKg is in kopecks per kg
-
-    let baseIngredientCost = 0;
+    // All prices in kopecks. Weight stored as integer tenths of kg (e.g. 15 = 1.5 kg).
+    let tierIngredientCost = 0;
     let totalWeightTenths = 0;
 
     for (const tier of tiers) {
@@ -206,40 +99,34 @@ export class ConstructorService {
       const filling = fillingsMap.get(tier.fillingId)!;
       const weightKg = tier.weight / 10;
 
-      // base sponge + filling per kg * weight
-      baseIngredientCost += Math.round(base.pricePerKg * weightKg);
-      baseIngredientCost += Math.round(filling.pricePerKg * weightKg);
+      tierIngredientCost += Math.round(base.pricePerKg * weightKg);
+      tierIngredientCost += Math.round(filling.pricePerKg * weightKg);
       totalWeightTenths += tier.weight;
     }
 
     const totalWeightKg = totalWeightTenths / 10;
 
-    // coating per kg * total weight
     const coatingCost = Math.round(coating.pricePerKg * totalWeightKg);
 
-    // decoration cost = sum(pricePerUnit * quantity)
     let decorationCost = 0;
     for (const decorItem of decorations) {
       const decor = decorationsMap.get(decorItem.decorationId)!;
       decorationCost += decor.pricePerUnit * decorItem.quantity;
     }
 
-    // sub-total before surcharges
-    const subtotal = baseIngredientCost + coatingCost + decorationCost;
+    const subtotal = tierIngredientCost + coatingCost + decorationCost;
 
-    // shape surcharge (percentage on subtotal)
     const shapeSurcharge = Math.round(
       (subtotal * shapeConfig.surchargePercent) / 100,
     );
 
-    // tier surcharge (fixed amount)
-    const tierEntry = TIER_SURCHARGES.find((t) => t.tiers === tiers.length) ??
+    const tierEntry =
+      TIER_SURCHARGES.find((t) => t.tierCount === tiers.length) ??
       TIER_SURCHARGES[0];
     const tierSurcharge = tierEntry.surcharge;
 
     const totalPrice = subtotal + shapeSurcharge + tierSurcharge;
 
-    // ---- build breakdown for transparency ----
     const breakdown = {
       tiers: tiers.map((tier) => {
         const base = basesMap.get(tier.baseId)!;
@@ -280,9 +167,121 @@ export class ConstructorService {
       totalWeightKg,
     };
 
-    return {
-      totalPrice,
-      breakdown,
-    };
+    return { totalPrice, breakdown };
+  }
+
+  private validateShape(shape: string): (typeof SHAPE_CONFIG)[number] {
+    const shapeConfig = SHAPE_CONFIG.find((s) => s.id === shape);
+    if (!shapeConfig) {
+      throw new BadRequestException(
+        `Unknown shape "${shape}". Valid values: circle, square, heart`,
+      );
+    }
+    return shapeConfig;
+  }
+
+  private validateLimits(
+    tiers: CalculatePriceDto['tiers'],
+    decorations: CalculatePriceDto['decorations'],
+    inscription: string | undefined,
+  ): void {
+    const totalDecorationCount = (decorations ?? []).reduce(
+      (sum, d) => sum + d.quantity,
+      0,
+    );
+    if (totalDecorationCount > CONSTRUCTOR_CONFIG.maxDecorations) {
+      throw new BadRequestException(
+        `Total decorations count cannot exceed ${CONSTRUCTOR_CONFIG.maxDecorations}`,
+      );
+    }
+
+    const totalWeightTenths = tiers.reduce((sum, t) => sum + t.weight, 0);
+    if (totalWeightTenths > CONSTRUCTOR_CONFIG.maxWeight * 10) {
+      throw new BadRequestException(
+        `Total cake weight cannot exceed ${CONSTRUCTOR_CONFIG.maxWeight} kg`,
+      );
+    }
+
+    if (inscription !== undefined && inscription.length > CONSTRUCTOR_CONFIG.maxInscription) {
+      throw new BadRequestException(
+        `Inscription cannot exceed ${CONSTRUCTOR_CONFIG.maxInscription} characters`,
+      );
+    }
+  }
+
+  private async fetchIngredients(
+    tiers: CalculatePriceDto['tiers'],
+    coatingId: string,
+    decorations: CalculatePriceDto['decorations'],
+  ) {
+    const baseIds = [...new Set(tiers.map((t) => t.baseId))];
+    const fillingIds = [...new Set(tiers.map((t) => t.fillingId))];
+    const decorationIds = [...new Set((decorations ?? []).map((d) => d.decorationId))];
+
+    const [basesRows, fillingsRows, coatingsRows, decorationsRows] =
+      await Promise.all([
+        this.db
+          .select()
+          .from(schema.constructorBases)
+          .where(inArray(schema.constructorBases.id, baseIds)),
+
+        this.db
+          .select()
+          .from(schema.constructorFillings)
+          .where(inArray(schema.constructorFillings.id, fillingIds)),
+
+        this.db
+          .select()
+          .from(schema.constructorCoatings)
+          .where(eq(schema.constructorCoatings.id, coatingId)),
+
+        decorationIds.length > 0
+          ? this.db
+              .select()
+              .from(schema.constructorDecorations)
+              .where(inArray(schema.constructorDecorations.id, decorationIds))
+          : Promise.resolve([]),
+      ]);
+
+    const basesMap = new Map(basesRows.map((b) => [b.id, b]));
+    const fillingsMap = new Map(fillingsRows.map((f) => [f.id, f]));
+    const decorationsMap = new Map(decorationsRows.map((d) => [d.id, d]));
+
+    if (coatingsRows.length === 0) {
+      throw new NotFoundException(`Coating "${coatingId}" not found`);
+    }
+    const coating = coatingsRows[0];
+    if (!coating.isAvailable) {
+      throw new BadRequestException(`Coating "${coating.name}" is not available`);
+    }
+
+    for (const tier of tiers) {
+      if (!basesMap.has(tier.baseId)) {
+        throw new NotFoundException(`Base "${tier.baseId}" not found`);
+      }
+      if (!fillingsMap.has(tier.fillingId)) {
+        throw new NotFoundException(`Filling "${tier.fillingId}" not found`);
+      }
+      const base = basesMap.get(tier.baseId)!;
+      const filling = fillingsMap.get(tier.fillingId)!;
+      if (!base.isAvailable) {
+        throw new BadRequestException(`Base "${base.name}" is not available`);
+      }
+      if (!filling.isAvailable) {
+        throw new BadRequestException(`Filling "${filling.name}" is not available`);
+      }
+    }
+
+    for (const decorItem of (decorations ?? [])) {
+      if (!decorationsMap.has(decorItem.decorationId)) {
+        throw new NotFoundException(`Decoration "${decorItem.decorationId}" not found`);
+      }
+      const decor = decorationsMap.get(decorItem.decorationId)!;
+      if (!decor.isAvailable) {
+        throw new BadRequestException(`Decoration "${decor.name}" is not available`);
+      }
+    }
+
+    return { basesMap, fillingsMap, coating, decorationsMap };
   }
 }

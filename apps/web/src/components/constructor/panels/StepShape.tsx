@@ -35,7 +35,6 @@ export function StepShape() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Section: Shape */}
       <div>
         <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
           Форма торта
@@ -86,7 +85,6 @@ export function StepShape() {
         </motion.div>
       </div>
 
-      {/* Section: Tiers */}
       <div>
         <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
           Количество ярусов
@@ -118,7 +116,6 @@ export function StepShape() {
           })}
         </div>
 
-        {/* Tier surcharge info */}
         {tierCount > 1 && (
           <motion.p
             initial={{ opacity: 0, y: -6 }}
@@ -130,7 +127,6 @@ export function StepShape() {
         )}
       </div>
 
-      {/* Hint */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

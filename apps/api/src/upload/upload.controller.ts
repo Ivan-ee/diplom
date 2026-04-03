@@ -3,6 +3,7 @@ import {
   ApiBearerAuth,
   ApiCookieAuth,
   ApiOperation,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { UploadService } from './upload.service';
@@ -21,6 +22,9 @@ export class UploadController {
   @ApiOperation({
     summary: 'Get a presigned PUT URL for uploading a file to MinIO',
   })
+  @ApiResponse({ status: 200, description: 'Presigned PUT URL and object key' })
+  @ApiResponse({ status: 400, description: 'Invalid bucket or file parameters' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   presign(@Body() dto: PresignDto) {
     return this.uploadService.presignUrl(dto);
   }

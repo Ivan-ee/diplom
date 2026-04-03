@@ -41,8 +41,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       .then((res) => {
         setUser(res.data);
       })
-      .catch(() => {
-        // Not authenticated — silently ignore
+      .catch((err) => {
+        if (err instanceof Error && !err.message.includes('401') && !err.message.includes('Unauthorized')) {
+          console.error('Failed to restore session:', err);
+        }
       });
   }, [setUser]);
 

@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/stores/cart-store';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
+import type { CartItem } from '@/stores/cart-store';
 
 // ── Validation schema ────────────────────────────────────────────────────────
 
@@ -64,13 +65,123 @@ const TIME_SLOTS: { id: CheckoutFormData['timeSlot']; label: string; sub: string
   { id: 'evening', label: 'Вечер', sub: '16:00 — 19:00' },
 ];
 
+// ── OrderSummary component ───────────────────────────────────────────────────
+
+interface OrderSummaryProps {
+  items: CartItem[];
+  totalPrice: number;
+  isSubmitting: boolean;
+  submitError: string | null;
+  onSubmit?: () => void;
+}
+
+function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSummaryProps) {
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemWord =
+    totalItems === 1
+      ? 'товар'
+      : totalItems >= 2 && totalItems <= 4
+        ? 'товара'
+        : 'товаров';
+
+  return (
+    <div className="bg-[var(--color-cream)] rounded-2xl border border-[var(--color-soft-peach)] p-6">
+      <h2 className="font-heading font-semibold text-[var(--color-dark)] text-base mb-4 flex items-center gap-2">
+        <ShoppingBag size={17} className="text-[var(--color-dusty-rose)]" />
+        Ваш заказ ({totalItems}&nbsp;{itemWord})
+      </h2>
+
+      <div className="flex flex-col gap-3 mb-5">
+        {items.map((item) => (
+          <div key={item.id} className="flex items-center gap-3">
+            <div className="relative shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-white border border-[var(--color-soft-peach)]">
+              {item.imageUrl ? (
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  fill
+                  className="object-cover"
+                  sizes="44px"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <span className="text-lg select-none" aria-hidden="true">🎂</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-[var(--color-dark)] line-clamp-1 leading-tight">
+                {item.name}
+              </p>
+              <p className="text-[11px] text-[var(--color-text-secondary)]">
+                × {item.quantity}
+              </p>
+            </div>
+
+            <span className="shrink-0 text-xs font-semibold text-[var(--color-dark)] tabular-nums">
+              {formatPrice(item.price * item.quantity)}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="h-px bg-[var(--color-soft-peach)] mb-4" />
+
+      <div className="flex items-baseline justify-between mb-6">
+        <span className="font-heading font-semibold text-[var(--color-dark)] text-sm">
+          Итого
+        </span>
+        <span className="font-heading font-bold text-2xl text-[var(--color-dusty-rose)] tabular-nums">
+          {formatPrice(totalPrice)}
+        </span>
+      </div>
+
+      <AnimatePresence>
+        {submitError && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2 }}
+            className="mb-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600"
+          >
+            <AlertCircle size={13} className="shrink-0 mt-0.5" />
+            <span>{submitError}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Button
+        type="submit"
+        size="lg"
+        variant="default"
+        disabled={isSubmitting}
+        className="w-full"
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Оформляем...
+          </>
+        ) : (
+          'Оформить заказ'
+        )}
+      </Button>
+
+      <p className="mt-3 text-center text-xs text-[var(--color-text-secondary)]">
+        Оплата при получении
+      </p>
+    </div>
+  );
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function CheckoutForm() {
   const router = useRouter();
   const items = useCartStore((s) => s.items);
   const totalPrice = useCartStore((s) => s.getTotalPrice());
-  const totalItems = useCartStore((s) => s.getTotalItems());
   const clearCart = useCartStore((s) => s.clearCart);
 
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -128,29 +239,17 @@ export function CheckoutForm() {
 
       router.push(`/checkout/success?${params.toString()}`);
     } catch (err) {
-      setSubmitError(
-        err instanceof Error
-          ? err.message
-          : 'Не удалось оформить заказ. Попробуйте ещё раз.'
-      );
+      console.error('Order creation failed:', err);
+      setSubmitError('Не удалось оформить заказ. Попробуйте ещё раз.');
     }
   }
-
-  const itemWord =
-    totalItems === 1
-      ? 'товар'
-      : totalItems >= 2 && totalItems <= 4
-        ? 'товара'
-        : 'товаров';
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
 
-        {/* ── Left column: form fields ── */}
         <div className="flex flex-col gap-6">
 
-          {/* Section: Pickup address */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="font-heading font-semibold text-[var(--color-dark)] text-base mb-4 flex items-center gap-2">
               <MapPin size={17} className="text-[var(--color-dusty-rose)]" />
@@ -169,14 +268,12 @@ export function CheckoutForm() {
             </div>
           </section>
 
-          {/* Section: Date & time */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="font-heading font-semibold text-[var(--color-dark)] text-base mb-5 flex items-center gap-2">
               <Clock size={17} className="text-[var(--color-dusty-rose)]" />
               Дата и время получения
             </h2>
 
-            {/* Date picker */}
             <div className="mb-5">
               <label
                 htmlFor="pickupDate"
@@ -213,7 +310,6 @@ export function CheckoutForm() {
               </AnimatePresence>
             </div>
 
-            {/* Time slot pills */}
             <div>
               <p className="text-sm font-medium text-[var(--color-dark)] mb-2.5">
                 Время <span className="text-red-400">*</span>
@@ -281,7 +377,6 @@ export function CheckoutForm() {
             </div>
           </section>
 
-          {/* Section: Comment */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="font-heading font-semibold text-[var(--color-dark)] text-base mb-4 flex items-center gap-2">
               <MessageSquare size={17} className="text-[var(--color-dusty-rose)]" />
@@ -331,104 +426,13 @@ export function CheckoutForm() {
           </section>
         </div>
 
-        {/* ── Right column: order summary ── */}
         <div className="lg:sticky lg:top-24 flex flex-col gap-4">
-          <div className="bg-[var(--color-cream)] rounded-2xl border border-[var(--color-soft-peach)] p-6">
-            <h2 className="font-heading font-semibold text-[var(--color-dark)] text-base mb-4 flex items-center gap-2">
-              <ShoppingBag size={17} className="text-[var(--color-dusty-rose)]" />
-              Ваш заказ ({totalItems}&nbsp;{itemWord})
-            </h2>
-
-            {/* Item list */}
-            <div className="flex flex-col gap-3 mb-5">
-              {items.map((item) => (
-                <div key={item.id} className="flex items-center gap-3">
-                  {/* Thumbnail */}
-                  <div className="relative shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-white border border-[var(--color-soft-peach)]">
-                    {item.imageUrl ? (
-                      <Image
-                        src={item.imageUrl}
-                        alt={item.name}
-                        fill
-                        className="object-cover"
-                        sizes="44px"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <span className="text-lg select-none" aria-hidden="true">🎂</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Name + qty */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-[var(--color-dark)] line-clamp-1 leading-tight">
-                      {item.name}
-                    </p>
-                    <p className="text-[11px] text-[var(--color-text-secondary)]">
-                      × {item.quantity}
-                    </p>
-                  </div>
-
-                  {/* Item total */}
-                  <span className="shrink-0 text-xs font-semibold text-[var(--color-dark)] tabular-nums">
-                    {formatPrice(item.price * item.quantity)}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Divider */}
-            <div className="h-px bg-[var(--color-soft-peach)] mb-4" />
-
-            {/* Total */}
-            <div className="flex items-baseline justify-between mb-6">
-              <span className="font-heading font-semibold text-[var(--color-dark)] text-sm">
-                Итого
-              </span>
-              <span className="font-heading font-bold text-2xl text-[var(--color-dusty-rose)] tabular-nums">
-                {formatPrice(totalPrice)}
-              </span>
-            </div>
-
-            {/* Submit error */}
-            <AnimatePresence>
-              {submitError && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.2 }}
-                  className="mb-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600"
-                >
-                  <AlertCircle size={13} className="shrink-0 mt-0.5" />
-                  <span>{submitError}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Submit button */}
-            <Button
-              type="submit"
-              size="lg"
-              variant="default"
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Оформляем...
-                </>
-              ) : (
-                'Оформить заказ'
-              )}
-            </Button>
-
-            <p className="mt-3 text-center text-xs text-[var(--color-text-secondary)]">
-              Оплата при получении
-            </p>
-          </div>
+          <OrderSummary
+            items={items}
+            totalPrice={totalPrice}
+            isSubmitting={isSubmitting}
+            submitError={submitError}
+          />
         </div>
       </div>
     </form>

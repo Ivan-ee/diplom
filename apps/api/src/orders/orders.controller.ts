@@ -11,6 +11,7 @@ import {
   ApiBearerAuth,
   ApiCookieAuth,
   ApiOperation,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
@@ -31,12 +32,17 @@ export class OrdersController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new order (authenticated)' })
+  @ApiResponse({ status: 201, description: 'Order created' })
+  @ApiResponse({ status: 400, description: 'Invalid order data or unavailable product' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Body() dto: CreateOrderDto, @CurrentUser() user: SafeUser) {
     return this.ordersService.create(dto, user);
   }
 
   @Get()
   @ApiOperation({ summary: "List current user's orders" })
+  @ApiResponse({ status: 200, description: "Current user's order history" })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(@CurrentUser() user: SafeUser) {
     return this.ordersService.findByUser(user.id);
   }

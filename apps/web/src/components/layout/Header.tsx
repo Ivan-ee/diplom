@@ -24,7 +24,6 @@ export function Header() {
       <header className="sticky top-0 z-50 h-16 w-full bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
-          {/* Logo */}
           <Link
             href="/"
             className="font-heading font-semibold text-xl text-[var(--color-dark)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200 shrink-0"
@@ -32,7 +31,6 @@ export function Header() {
             Кондитерская
           </Link>
 
-          {/* Desktop nav — hidden on constructor route */}
           {!isConstructor && (
             <nav className="hidden lg:flex items-center gap-1" aria-label="Основная навигация">
               {navLinks.map((link) => (
@@ -51,9 +49,7 @@ export function Header() {
             </nav>
           )}
 
-          {/* Desktop right side */}
           <div className="flex items-center gap-2">
-            {/* Phone — desktop only, not on constructor */}
             {!isConstructor && (
               <a
                 href="tel:+78312000000"
@@ -63,14 +59,12 @@ export function Header() {
               </a>
             )}
 
-            {/* User menu / login button — desktop only, not on constructor */}
             {!isConstructor && (
               <div className="hidden lg:block">
                 <UserMenu />
               </div>
             )}
 
-            {/* Cart icon with badge */}
             <Link
               href="/cart"
               className="relative flex h-10 w-10 items-center justify-center rounded-lg hover:bg-[var(--color-cream)] transition-colors duration-200"
@@ -80,7 +74,6 @@ export function Header() {
               <CartBadge />
             </Link>
 
-            {/* Hamburger — mobile only, not on constructor */}
             {!isConstructor && (
               <button
                 className="flex lg:hidden h-10 w-10 items-center justify-center rounded-lg hover:bg-[var(--color-cream)] transition-colors duration-200"

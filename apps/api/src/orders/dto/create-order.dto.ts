@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   MaxLength,
   Min,
   ValidateIf,
@@ -65,11 +66,12 @@ export class CreateOrderItemDto {
   @ApiPropertyOptional({ description: 'MinIO screenshot URL for constructor cakes' })
   @IsOptional()
   @IsString()
+  @Matches(/^https?:\/\//, { message: 'screenshotUrl must be a valid HTTP(S) URL' })
   screenshotUrl?: string;
 }
 
 export class CreateOrderDto {
-  @ApiProperty({ example: '2026-04-20', description: 'Pickup date ISO string' })
+  @ApiProperty({ example: '2026-04-20', description: 'Pickup date as ISO string. Must be a future date.' })
   @IsDateString()
   pickupDate!: string;
 

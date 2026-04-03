@@ -60,7 +60,6 @@ export function StepNavigation() {
   const handleAddToCart = () => {
     const totalWeight = layers.reduce((sum, l) => sum + l.weight, 0);
 
-    // Build a human-readable name
     const baseName = ingredients?.bases.find((b) => b.id === layers[0]?.baseId)?.name ?? 'Торт';
     const tierLabel = tierCount > 1 ? `, ${tierCount} яруса` : '';
     const name = `${baseName}${tierLabel}`;

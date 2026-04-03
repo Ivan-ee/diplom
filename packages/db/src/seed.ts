@@ -10,7 +10,6 @@ async function seed() {
 
   console.log('🌱 Seeding database...');
 
-  // Categories
   const [cakes, cupcakes, macarons] = await db
     .insert(schema.categories)
     .values([
@@ -21,7 +20,6 @@ async function seed() {
     .returning();
   console.log('✅ Categories');
 
-  // Occasions
   const [birthday, wedding, kids, corporate, anniversary] = await db
     .insert(schema.occasions)
     .values([
@@ -34,8 +32,7 @@ async function seed() {
     .returning();
   console.log('✅ Occasions');
 
-  // Products
-  const productsData = await db
+  const seededProducts = await db
     .insert(schema.products)
     .values([
       {
@@ -104,23 +101,21 @@ async function seed() {
     .returning();
   console.log('✅ Products');
 
-  // Product-Occasions
   await db.insert(schema.productOccasions).values([
-    { productId: productsData[0].id, occasionId: birthday.id },
-    { productId: productsData[0].id, occasionId: anniversary.id },
-    { productId: productsData[1].id, occasionId: birthday.id },
-    { productId: productsData[1].id, occasionId: kids.id },
-    { productId: productsData[2].id, occasionId: wedding.id },
-    { productId: productsData[2].id, occasionId: anniversary.id },
-    { productId: productsData[3].id, occasionId: birthday.id },
-    { productId: productsData[3].id, occasionId: corporate.id },
-    { productId: productsData[4].id, occasionId: kids.id },
-    { productId: productsData[4].id, occasionId: birthday.id },
-    { productId: productsData[5].id, occasionId: corporate.id },
+    { productId: seededProducts[0].id, occasionId: birthday.id },
+    { productId: seededProducts[0].id, occasionId: anniversary.id },
+    { productId: seededProducts[1].id, occasionId: birthday.id },
+    { productId: seededProducts[1].id, occasionId: kids.id },
+    { productId: seededProducts[2].id, occasionId: wedding.id },
+    { productId: seededProducts[2].id, occasionId: anniversary.id },
+    { productId: seededProducts[3].id, occasionId: birthday.id },
+    { productId: seededProducts[3].id, occasionId: corporate.id },
+    { productId: seededProducts[4].id, occasionId: kids.id },
+    { productId: seededProducts[4].id, occasionId: birthday.id },
+    { productId: seededProducts[5].id, occasionId: corporate.id },
   ]);
   console.log('✅ Product-Occasions');
 
-  // Constructor Bases
   await db.insert(schema.constructorBases).values([
     { name: 'Ванильный', pricePerKg: 80000, color: '#F5E6C8', sortOrder: 1 },
     { name: 'Шоколадный', pricePerKg: 90000, color: '#5C3A21', sortOrder: 2 },
@@ -128,7 +123,6 @@ async function seed() {
   ]);
   console.log('✅ Constructor Bases');
 
-  // Constructor Fillings
   await db.insert(schema.constructorFillings).values([
     { name: 'Клубника-крем', description: 'Нежный клубничный мусс со сливками', pricePerKg: 40000, sortOrder: 1 },
     { name: 'Карамель-орех', description: 'Солёная карамель с грецким орехом', pricePerKg: 45000, sortOrder: 2 },
@@ -136,14 +130,12 @@ async function seed() {
   ]);
   console.log('✅ Constructor Fillings');
 
-  // Constructor Coatings
   await db.insert(schema.constructorCoatings).values([
     { name: 'Крем', type: 'cream', pricePerKg: 20000, roughness: '0.40', sortOrder: 1 },
     { name: 'Мастика', type: 'fondant', pricePerKg: 35000, roughness: '0.80', sortOrder: 2 },
   ]);
   console.log('✅ Constructor Coatings');
 
-  // Constructor Decorations
   await db.insert(schema.constructorDecorations).values([
     { name: 'Клубника', category: 'berries', pricePerUnit: 5000, sortOrder: 1 },
     { name: 'Голубика', category: 'berries', pricePerUnit: 6000, sortOrder: 2 },
@@ -158,8 +150,11 @@ async function seed() {
   ]);
   console.log('✅ Constructor Decorations');
 
-  // Admin user
-  const passwordHash = await hash('admin123', 10);
+  const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin123';
+  if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_PASSWORD) {
+    throw new Error('ADMIN_PASSWORD env var must be set in production');
+  }
+  const passwordHash = await hash(adminPassword, 10);
   await db.insert(schema.users).values({
     name: 'Администратор',
     email: 'admin@bakery.ru',
@@ -167,9 +162,8 @@ async function seed() {
     passwordHash,
     role: 'admin',
   });
-  console.log('✅ Admin user (admin@bakery.ru / admin123)');
+  console.log('✅ Admin user (admin@bakery.ru)');
 
-  // Reviews
   await db.insert(schema.reviews).values([
     {
       authorName: 'Мария И.',

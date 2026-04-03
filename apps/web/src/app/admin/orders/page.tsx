@@ -164,6 +164,7 @@ function StatusCell({ order, onUpdated }: StatusCellProps) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch {
+      alert('Не удалось обновить статус');
       setSelected(order.status);
     } finally {
       setSaving(false);
@@ -235,6 +236,7 @@ export default function AdminOrdersPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const load = useCallback(() => {
+    setError(null);
     setLoading(true);
     fetchClient<Order[]>('/admin/orders')
       .then((res) => setOrders(res.data))

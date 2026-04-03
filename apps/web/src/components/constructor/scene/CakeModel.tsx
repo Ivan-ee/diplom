@@ -6,10 +6,6 @@ import { useSpring, animated } from '@react-spring/three';
 import { useConstructorStore } from '@/stores/constructor-store';
 import { DecorationInstance } from './DecorationInstance';
 
-// ---------------------------------------------------------------------------
-// Geometry helpers
-// ---------------------------------------------------------------------------
-
 function buildHeartShape(): THREE.Shape {
   const shape = new THREE.Shape();
   const x = 0;
@@ -77,7 +73,6 @@ function TierMesh({ shape: cakeShape, radius, height, color, roughness, metalnes
           metalness={metalness}
         />
       </mesh>
-      {/* Slightly lighter top frosting layer */}
       {topGeometry && (
         <mesh geometry={topGeometry} position={[0, height / 2, 0]}>
           <meshStandardMaterial
@@ -87,7 +82,6 @@ function TierMesh({ shape: cakeShape, radius, height, color, roughness, metalnes
           />
         </mesh>
       )}
-      {/* Side edge highlight ring */}
       {cakeShape === 'circle' && (
         <mesh position={[0, -height / 2 + 0.03, 0]}>
           <torusGeometry args={[radius, 0.025, 12, 64]} />
@@ -115,18 +109,12 @@ function lightenColor(hex: string, amount: number): string {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Tier radii per tier count
-// ---------------------------------------------------------------------------
 const TIER_RADII: Record<number, number[]> = {
   1: [1.3],
   2: [1.3, 0.95],
   3: [1.3, 0.95, 0.65],
 };
 
-// ---------------------------------------------------------------------------
-// Main CakeModel
-// ---------------------------------------------------------------------------
 export function CakeModel() {
   const shape = useConstructorStore((s) => s.shape);
   const tierCount = useConstructorStore((s) => s.tierCount);

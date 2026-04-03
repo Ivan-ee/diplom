@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { ConstructorService } from './constructor.service';
 import { CalculatePriceDto } from './dto/calculate.dto';
 
@@ -13,14 +14,18 @@ export class ConstructorController {
     summary:
       'Get all available ingredients, shapes, tier surcharges and config',
   })
+  @ApiResponse({ status: 200, description: 'Ingredients, shapes and config' })
   getIngredients() {
     return this.constructorService.getIngredients();
   }
 
   @Post('calculate')
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({
     summary: 'Calculate total price for a given cake configuration',
   })
+  @ApiResponse({ status: 200, description: 'Calculated price and breakdown' })
+  @ApiResponse({ status: 400, description: 'Invalid configuration or unavailable ingredient' })
   calculatePrice(@Body() dto: CalculatePriceDto) {
     return this.constructorService.calculatePrice(dto);
   }

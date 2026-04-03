@@ -65,11 +65,9 @@ export function PriceCalculator() {
 
   const animatedTotal = useAnimatedPrice(totalPrice);
 
-  // Build breakdown
   const breakdown: PriceBreakdownRow[] = [];
 
   if (ingredients) {
-    // Base cost
     let baseCost = 0;
     for (const layer of layers) {
       const base = ingredients.bases.find((b) => b.id === layer.baseId);
@@ -77,7 +75,6 @@ export function PriceCalculator() {
     }
     if (baseCost > 0) breakdown.push({ label: 'Бисквит', value: Math.round(baseCost) });
 
-    // Filling cost
     let fillingCost = 0;
     for (const layer of layers) {
       const filling = ingredients.fillings.find((f) => f.id === layer.fillingId);
@@ -85,7 +82,6 @@ export function PriceCalculator() {
     }
     if (fillingCost > 0) breakdown.push({ label: 'Начинка', value: Math.round(fillingCost) });
 
-    // Coating cost
     const totalWeight = layers.reduce((sum, l) => sum + l.weight, 0);
     const coatingIngredient = ingredients.coatings.find((c) => c.id === coating.coatingId);
     if (coatingIngredient) {
@@ -93,7 +89,6 @@ export function PriceCalculator() {
       if (coatingCost > 0) breakdown.push({ label: 'Покрытие', value: Math.round(coatingCost) });
     }
 
-    // Decoration cost
     const countMap: Record<string, number> = {};
     for (const d of decorations) {
       countMap[d.decorationId] = (countMap[d.decorationId] ?? 0) + 1;
@@ -105,7 +100,6 @@ export function PriceCalculator() {
     }
     if (decorCost > 0) breakdown.push({ label: 'Декорации', value: Math.round(decorCost) });
 
-    // Shape surcharge
     const shapeInfo = ingredients.shapes.find((s) => s.id === shape);
     if (shapeInfo && shapeInfo.surchargePercent > 0) {
       const subTotal = baseCost + fillingCost + (coatingIngredient ? (totalWeight * coatingIngredient.pricePerKg) / 1000 : 0) + decorCost;
@@ -113,7 +107,6 @@ export function PriceCalculator() {
       if (surcharge > 0) breakdown.push({ label: `Форма (+${shapeInfo.surchargePercent}%)`, value: surcharge });
     }
 
-    // Tier surcharge
     const tierSurcharge = ingredients.tierSurcharges.find((t) => t.tierCount === tierCount);
     if (tierSurcharge && tierSurcharge.surcharge > 0) {
       breakdown.push({ label: 'Многоярусность', value: tierSurcharge.surcharge });

@@ -61,7 +61,6 @@ export function CatalogFilters() {
 
   const filtersContent = (
     <div className="flex flex-wrap items-center gap-3">
-      {/* Category pills */}
       <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Категория">
         {categories.map((cat) => (
           <button
@@ -79,10 +78,8 @@ export function CatalogFilters() {
         ))}
       </div>
 
-      {/* Divider */}
       <span className="h-6 w-px bg-gray-200 hidden sm:block" aria-hidden="true" />
 
-      {/* Sort dropdown */}
       <div className="flex items-center gap-2">
         <label htmlFor="sort-select" className="text-sm text-[var(--color-text-secondary)] whitespace-nowrap">
           Сортировка:
@@ -101,7 +98,6 @@ export function CatalogFilters() {
         </select>
       </div>
 
-      {/* Reset button */}
       {hasActiveFilters && (
         <button
           onClick={handleReset}
@@ -117,10 +113,8 @@ export function CatalogFilters() {
 
   return (
     <div className="w-full">
-      {/* Desktop — always visible */}
       <div className="hidden sm:block">{filtersContent}</div>
 
-      {/* Mobile — collapsible */}
       <div className="sm:hidden flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <Button

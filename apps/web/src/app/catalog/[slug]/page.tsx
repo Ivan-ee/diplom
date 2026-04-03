@@ -22,7 +22,8 @@ export async function generateStaticParams() {
     const items: Product[] =
       res.data?.items ?? (Array.isArray(res.data) ? (res.data as Product[]) : []);
     return items.map((p) => ({ slug: p.slug }));
-  } catch {
+  } catch (error) {
+    console.error('generateStaticParams: failed to fetch product list:', error);
     return [];
   }
 }
@@ -36,7 +37,8 @@ export async function generateMetadata({ params }: ProductDetailPageProps) {
       title: `${product.name} — Кондитерская`,
       description: product.description ?? `Купить ${product.name} в кондитерской Арзамаса`,
     };
-  } catch {
+  } catch (error) {
+    console.error(`generateMetadata: failed to fetch product "${slug}":`, error);
     return { title: 'Продукт — Кондитерская' };
   }
 }

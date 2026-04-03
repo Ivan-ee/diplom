@@ -8,6 +8,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchClient } from '@/lib/api';
 import { useAuthStore, type User } from '@/stores/auth-store';
+import { FieldWrapper, inputClass } from './shared';
 
 const loginSchema = z.object({
   email: z.string().email('Введите корректный email'),
@@ -42,36 +43,28 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       });
       setUser(res.data);
       onSuccess();
-    } catch {
-      setServerError('Неверный email или пароль');
+    } catch (err) {
+      const message = err instanceof Error && (err.message.includes('fetch') || err.message.includes('Failed') || err.message.includes('network'))
+        ? 'Ошибка сети. Проверьте подключение к интернету.'
+        : 'Неверный email или пароль';
+      setServerError(message);
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-      {/* Email */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="login-email" className="text-sm font-medium text-[var(--color-dark)]">
-          Email
-        </label>
+      <FieldWrapper id="login-email" label="Email" error={errors.email?.message}>
         <input
           id="login-email"
           type="email"
           placeholder="Email"
           autoComplete="email"
           {...register('email')}
-          className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3.5 text-sm text-[var(--color-dark)] placeholder:text-gray-400 transition-colors duration-150 focus:border-[var(--color-dusty-rose)] focus:outline-none focus:ring-1 focus:ring-[var(--color-dusty-rose)]/50 disabled:opacity-50"
+          className={inputClass}
         />
-        {errors.email && (
-          <p className="text-sm text-[var(--color-error)]">{errors.email.message}</p>
-        )}
-      </div>
+      </FieldWrapper>
 
-      {/* Password */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="login-password" className="text-sm font-medium text-[var(--color-dark)]">
-          Пароль
-        </label>
+      <FieldWrapper id="login-password" label="Пароль" error={errors.password?.message}>
         <div className="relative">
           <input
             id="login-password"
@@ -79,7 +72,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             placeholder="Пароль"
             autoComplete="current-password"
             {...register('password')}
-            className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-11 text-sm text-[var(--color-dark)] placeholder:text-gray-400 transition-colors duration-150 focus:border-[var(--color-dusty-rose)] focus:outline-none focus:ring-1 focus:ring-[var(--color-dusty-rose)]/50 disabled:opacity-50"
+            className={`${inputClass} pr-11`}
           />
           <button
             type="button"
@@ -90,12 +83,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
-        {errors.password && (
-          <p className="text-sm text-[var(--color-error)]">{errors.password.message}</p>
-        )}
-      </div>
+      </FieldWrapper>
 
-      {/* Server error */}
       {serverError && (
         <p className="text-sm text-[var(--color-error)]">{serverError}</p>
       )}

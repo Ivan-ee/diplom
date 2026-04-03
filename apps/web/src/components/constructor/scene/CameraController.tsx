@@ -12,7 +12,6 @@ export function CameraController() {
     const controls = controlsRef.current;
     if (!controls) return;
 
-    // Capture starting camera position in spherical coords
     const camera = controls.object;
     const startPos = camera.position.clone();
     const spherical = new THREE.Spherical().setFromVector3(startPos);
@@ -30,7 +29,6 @@ export function CameraController() {
       const eased = 1 - Math.pow(1 - t, 3);
       const theta = startTheta + (targetTheta - startTheta) * eased;
 
-      // Rebuild camera position from updated spherical
       spherical.theta = theta;
       camera.position.setFromSpherical(spherical);
       camera.lookAt(controls.target);

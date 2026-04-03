@@ -20,6 +20,7 @@ export const orders = pgTable('orders', {
     .notNull()
     .references(() => users.id),
   status: orderStatusEnum('status').notNull().default('created'),
+  /** Total order price in kopecks (1 ruble = 100 kopecks) */
   totalPrice: integer('total_price').notNull(),
   pickupDate: date('pickup_date').notNull(),
   pickupTimeSlot: pickupTimeSlotEnum('pickup_time_slot').notNull(),

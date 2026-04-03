@@ -1,6 +1,6 @@
-import type { Ingredients } from '@/stores/constructor-store';
+import type { ConstructorCatalog } from '@/stores/constructor-store';
 
-export function getMockIngredients(): Ingredients {
+export function getMockIngredients(): ConstructorCatalog {
   return {
     bases: [
       {

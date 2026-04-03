@@ -49,10 +49,27 @@ describe('constructor-store', () => {
     expect(useConstructorStore.getState().shape).toBe('heart');
   });
 
-  it('setShape triggers price recalculation (stays 0 without ingredients)', () => {
-    const { setShape } = useConstructorStore.getState();
-    setShape('square');
-    expect(useConstructorStore.getState().totalPrice).toBe(0);
+  it('setShape triggers price recalculation (price updates when ingredients are loaded)', () => {
+    // Load real ingredients so the price engine has data to work with
+    const ingredients = getMockIngredients();
+    useConstructorStore.setState({
+      ingredients,
+      shape: 'circle',
+      tierCount: 1,
+      layers: [{ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1000 }],
+      coating: { type: 'cream', coatingId: 'coating-cream', color: '#FFFFFF', gradient: null, drips: null },
+      decorations: [],
+    });
+    useConstructorStore.getState().recalculatePrice();
+    const priceForCircle = useConstructorStore.getState().totalPrice;
+
+    // square has a 10% surcharge — price must differ from circle
+    useConstructorStore.getState().setShape('square');
+    const priceForSquare = useConstructorStore.getState().totalPrice;
+
+    expect(priceForSquare).toBeGreaterThan(priceForCircle);
+    // base + filling + coating = 140000, +10% = 154000
+    expect(priceForSquare).toBe(154000);
   });
 
   // ── setTierCount ───────────────────────────────────────────────────────────

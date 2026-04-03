@@ -1,5 +1,5 @@
 'use client';
-import { Component, type ReactNode } from 'react';
+import { Component, type ReactNode, type ErrorInfo } from 'react';
 
 interface Props { children: ReactNode; fallback?: ReactNode }
 interface State { hasError: boolean; error?: Error }
@@ -11,6 +11,10 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('ErrorBoundary caught:', error, info);
+  }
+
   render() {
     if (this.state.hasError) {
       return this.props.fallback ?? (
@@ -19,7 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
             Что-то пошло не так
           </h2>
           <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-            {this.state.error?.message ?? 'Попробуйте перезагрузить страницу'}
+            {'Произошла непредвиденная ошибка'}
           </p>
           <button
             onClick={() => this.setState({ hasError: false, error: undefined })}

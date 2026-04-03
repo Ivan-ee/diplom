@@ -12,8 +12,10 @@ export const orderItems = pgTable('order_items', {
   type: orderItemTypeEnum('type').notNull(),
   productId: uuid('product_id').references(() => products.id),
   cakeConfig: jsonb('cake_config'),
+  /** Weight in kilograms (decimal, e.g. 1.5 for 1.5 kg) */
   weight: numeric('weight', { precision: 4, scale: 1 }).notNull(),
   quantity: integer('quantity').notNull().default(1),
+  /** Item price in kopecks */
   price: integer('price').notNull(),
   inscription: varchar('inscription', { length: 50 }),
   screenshotUrl: text('screenshot_url'),

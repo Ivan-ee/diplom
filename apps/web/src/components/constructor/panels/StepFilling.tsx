@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { useConstructorStore } from '@/stores/constructor-store';
+import { TierTabs } from './TierTabs';
 import { formatPrice, cn } from '@/lib/utils';
 
 const containerVariants = {
@@ -32,32 +33,12 @@ export function StepFilling() {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Tier tabs */}
-      {tierCount > 1 && (
-        <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
-          {Array.from({ length: tierCount }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveTier(i)}
-              className={cn(
-                'relative flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)]',
-                activeTier === i
-                  ? 'bg-white text-[var(--color-dusty-rose)] shadow-sm'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-dark)]'
-              )}
-            >
-              {activeTier === i && (
-                <motion.div
-                  layoutId="tier-tab-filling"
-                  className="absolute inset-0 bg-white rounded-lg shadow-sm"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">Ярус {i + 1}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      <TierTabs
+        tierCount={tierCount}
+        activeTier={activeTier}
+        onSelect={setActiveTier}
+        layoutId="tier-tab-filling"
+      />
 
       {/* Filling cards */}
       <div>

@@ -16,6 +16,7 @@ const resetStore = () => useCartStore.setState({ items: [] });
 
 describe('cart-store', () => {
   beforeEach(() => {
+    localStorage.clear();
     resetStore();
   });
 

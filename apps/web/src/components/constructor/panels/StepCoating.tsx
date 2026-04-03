@@ -72,7 +72,7 @@ export function StepCoating() {
 
   const handleGradientToggle = (enabled: boolean) => {
     if (enabled) {
-      setGradient({ enabled: true, color2: '#F4C2C2', direction: 'vertical' });
+      setGradient({ enabled: true, gradientEndColor: '#F4C2C2', direction: 'vertical' });
     } else {
       setGradient(null);
     }
@@ -88,7 +88,6 @@ export function StepCoating() {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Coating type toggle */}
       <div>
         <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
           Вид покрытия
@@ -121,7 +120,6 @@ export function StepCoating() {
         </div>
       </div>
 
-      {/* Color palette */}
       <div>
         <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
           Цвет покрытия
@@ -156,7 +154,6 @@ export function StepCoating() {
         </div>
       </div>
 
-      {/* Gradient option */}
       <div className="p-3 bg-white rounded-xl border border-gray-200 flex flex-col gap-3">
         <Toggle
           checked={!!coating.gradient?.enabled}
@@ -174,20 +171,19 @@ export function StepCoating() {
               className="overflow-hidden"
             >
               <div className="pt-2 flex flex-col gap-3">
-                {/* Second color */}
                 <div>
                   <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-2">
                     Второй цвет
                   </p>
                   <div className="flex gap-2 flex-wrap">
                     {PRESET_COLORS.map(({ hex, label }) => {
-                      const isSelected = coating.gradient?.color2 === hex;
+                      const isSelected = coating.gradient?.gradientEndColor === hex;
                       return (
                         <button
                           key={hex}
                           title={label}
                           onClick={() =>
-                            setGradient({ ...coating.gradient!, color2: hex })
+                            setGradient({ ...coating.gradient!, gradientEndColor: hex })
                           }
                           className={cn(
                             'w-8 h-8 rounded-lg border-2 transition-all duration-150 cursor-pointer hover:scale-110',
@@ -200,7 +196,6 @@ export function StepCoating() {
                   </div>
                 </div>
 
-                {/* Direction */}
                 <div>
                   <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-2">
                     Направление
@@ -233,7 +228,6 @@ export function StepCoating() {
         </AnimatePresence>
       </div>
 
-      {/* Drips option */}
       <div className="p-3 bg-white rounded-xl border border-gray-200 flex flex-col gap-3">
         <Toggle
           checked={!!coating.drips?.enabled}
@@ -251,7 +245,6 @@ export function StepCoating() {
               className="overflow-hidden"
             >
               <div className="pt-2 flex flex-col gap-3">
-                {/* Drip color */}
                 <div>
                   <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-2">
                     Цвет подтёков
@@ -277,7 +270,6 @@ export function StepCoating() {
                   </div>
                 </div>
 
-                {/* Intensity */}
                 <Slider
                   label="Интенсивность"
                   value={coating.drips?.intensity ?? 50}

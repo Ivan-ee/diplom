@@ -10,7 +10,7 @@ import type {
   IngredientFilling,
   IngredientCoating,
   IngredientDecoration,
-  Ingredients,
+  ConstructorCatalog,
 } from '@/stores/constructor-store';
 
 // ---------- Types ----------
@@ -319,14 +319,14 @@ function IngredientTable<T extends AnyIngredient>({
 
 export default function AdminConstructorPage() {
   const [activeTab, setActiveTab] = useState<Tab>('bases');
-  const [ingredients, setIngredients] = useState<Ingredients | null>(null);
+  const [ingredients, setConstructorCatalog] = useState<ConstructorCatalog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
-    fetchClient<Ingredients>('/admin/constructor/ingredients')
-      .then((res) => setIngredients(res.data))
+    fetchClient<ConstructorCatalog>('/admin/constructor/ingredients')
+      .then((res) => setConstructorCatalog(res.data))
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : 'Ошибка загрузки ингредиентов')
       )
@@ -335,10 +335,10 @@ export default function AdminConstructorPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  type IngredientSection = keyof Pick<Ingredients, 'bases' | 'fillings' | 'coatings' | 'decorations'>;
+  type IngredientSection = keyof Pick<ConstructorCatalog, 'bases' | 'fillings' | 'coatings' | 'decorations'>;
 
   const updateIngredient = (section: IngredientSection, id: string, patch: Partial<AnyIngredient>) => {
-    setIngredients((prev) => {
+    setConstructorCatalog((prev) => {
       if (!prev) return prev;
       return {
         ...prev,

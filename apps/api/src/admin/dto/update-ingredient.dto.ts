@@ -9,6 +9,7 @@ export enum IngredientType {
   DECORATION = 'decoration',
 }
 
+/** Note: pricePerKg applies to bases/fillings/coatings; pricePerUnit applies to decorations only. */
 export class UpdateIngredientDto {
   @ApiPropertyOptional({
     description: 'Price per kg in kopecks (for bases, fillings, coatings)',

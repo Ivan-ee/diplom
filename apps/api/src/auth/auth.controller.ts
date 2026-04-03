@@ -12,6 +12,7 @@ import {
   ApiBearerAuth,
   ApiCookieAuth,
   ApiOperation,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -41,26 +42,30 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Register a new user account' })
+  @ApiResponse({ status: 201, description: 'User created and cookie set' })
+  @ApiResponse({ status: 409, description: 'Email already registered' })
   async register(
     @Body() dto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.register(dto);
     res.cookie(COOKIE_NAME, result.token, COOKIE_OPTIONS);
-    return result;
+    return { user: result.user };
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Login with email and password' })
+  @ApiResponse({ status: 200, description: 'Authenticated, cookie set' })
+  @ApiResponse({ status: 401, description: 'Invalid email or password' })
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.login(dto);
     res.cookie(COOKIE_NAME, result.token, COOKIE_OPTIONS);
-    return result;
+    return { user: result.user };
   }
 
   @Post('logout')
@@ -73,9 +78,11 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiCookieAuth('bakery_token')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current authenticated user profile' })
+  @ApiResponse({ status: 200, description: 'Current user profile' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   getProfile(@CurrentUser() user: SafeUser) {
     return this.authService.getProfile(user.id);
   }

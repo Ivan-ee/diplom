@@ -10,7 +10,7 @@ export class QueryProductsDto extends PaginationDto {
   })
   @IsOptional()
   @IsString()
-  type?: string;
+  categorySlug?: string;
 
   @ApiPropertyOptional({
     description: 'Filter by occasion slug',

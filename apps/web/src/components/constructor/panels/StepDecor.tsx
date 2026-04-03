@@ -67,13 +67,12 @@ export function StepDecor() {
 
   const handleRemoveLast = (decorationId: string) => {
     // Remove the last placed decoration with this id
-    const last = [...decorations].reverse().find((d) => d.decorationId === decorationId);
+    const last = decorations.findLast((d) => d.decorationId === decorationId);
     if (last) removeDecoration(last.id);
   };
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Counter */}
       <div className="flex items-center justify-between">
         <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm uppercase tracking-wide">
           Декорации
@@ -88,7 +87,6 @@ export function StepDecor() {
         </span>
       </div>
 
-      {/* Category tabs */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
         {CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat;
@@ -112,7 +110,6 @@ export function StepDecor() {
         })}
       </div>
 
-      {/* Decoration grid */}
       <motion.div
         key={activeCategory}
         className="grid grid-cols-2 gap-2"
@@ -145,7 +142,6 @@ export function StepDecor() {
                   </p>
                 </div>
 
-                {/* +/- controls */}
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {count > 0 && (
                     <button
@@ -179,7 +175,6 @@ export function StepDecor() {
         })}
       </motion.div>
 
-      {/* Placed decorations list */}
       <AnimatePresence>
         {decorations.length > 0 && (
           <motion.div
@@ -232,7 +227,6 @@ export function StepDecor() {
         )}
       </AnimatePresence>
 
-      {/* Inscription */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm uppercase tracking-wide">

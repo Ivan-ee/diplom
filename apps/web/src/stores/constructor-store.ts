@@ -15,7 +15,7 @@ export interface CakeLayer {
 
 export interface CoatingGradient {
   enabled: boolean;
-  color2: string;
+  gradientEndColor: string;
   direction: 'vertical' | 'horizontal';
 }
 
@@ -92,7 +92,7 @@ export interface ConstructorConfig {
   weightStep: number;
 }
 
-export interface Ingredients {
+export interface ConstructorCatalog {
   bases: IngredientBase[];
   fillings: IngredientFilling[];
   coatings: IngredientCoating[];
@@ -110,7 +110,7 @@ export interface ConstructorState {
   coating: CakeCoating;
   decorations: PlacedDecoration[];
   inscription: string;
-  ingredients: Ingredients | null;
+  ingredients: ConstructorCatalog | null;
   totalPrice: number;
   isLoading: boolean;
 
@@ -155,6 +155,29 @@ const buildLayers = (count: TierCount, existing: CakeLayer[]): CakeLayer[] => {
   }
   return arr;
 };
+
+function applyDefaultSelections(
+  state: Pick<ConstructorState, 'coating' | 'layers'>,
+  ingredients: ConstructorCatalog,
+): Partial<ConstructorState> {
+  const updates: Partial<ConstructorState> = {};
+
+  if (!state.coating.coatingId && ingredients.coatings.length > 0) {
+    const defaultCoating = ingredients.coatings.find((c) => c.type === 'cream') ?? ingredients.coatings[0];
+    updates.coating = { ...state.coating, coatingId: defaultCoating.id };
+  }
+
+  if (state.layers[0] && !state.layers[0].baseId && ingredients.bases.length > 0) {
+    const layers = state.layers.map((l, i) => ({
+      ...l,
+      baseId: l.baseId || (ingredients.bases[i % ingredients.bases.length]?.id ?? ''),
+      fillingId: l.fillingId || (ingredients.fillings[0]?.id ?? ''),
+    }));
+    updates.layers = layers;
+  }
+
+  return updates;
+}
 
 export const useConstructorStore = create<ConstructorState>()(
   persist(
@@ -268,9 +291,10 @@ export const useConstructorStore = create<ConstructorState>()(
       try {
         const res = await fetch('/api/constructor/ingredients');
         if (!res.ok) throw new Error('API unavailable');
-        const data: Ingredients = await res.json();
+        const data: ConstructorCatalog = await res.json();
         set({ ingredients: data, isLoading: false });
-      } catch {
+      } catch (err) {
+        console.error('Failed to load constructor ingredients, using mock data:', err);
         const mock = getMockIngredients();
         set({ ingredients: mock, isLoading: false });
       }
@@ -280,22 +304,7 @@ export const useConstructorStore = create<ConstructorState>()(
       const { ingredients } = state;
       if (!ingredients) return;
 
-      const updates: Partial<ConstructorState> = {};
-
-      if (!state.coating.coatingId && ingredients.coatings.length > 0) {
-        const defaultCoating = ingredients.coatings.find((c) => c.type === 'cream') ?? ingredients.coatings[0];
-        updates.coating = { ...state.coating, coatingId: defaultCoating.id };
-      }
-
-      if (state.layers[0] && !state.layers[0].baseId && ingredients.bases.length > 0) {
-        const layers = state.layers.map((l, i) => ({
-          ...l,
-          baseId: l.baseId || (ingredients.bases[i % ingredients.bases.length]?.id ?? ''),
-          fillingId: l.fillingId || (ingredients.fillings[0]?.id ?? ''),
-        }));
-        updates.layers = layers;
-      }
-
+      const updates = applyDefaultSelections(state, ingredients);
       if (Object.keys(updates).length > 0) {
         set(updates as Partial<ConstructorState>);
       }
@@ -311,43 +320,38 @@ export const useConstructorStore = create<ConstructorState>()(
         return;
       }
 
-      let baseTotal = 0;
+      let runningTotal = 0;
 
-      // Layer costs
       for (const layer of layers) {
         const base = ingredients.bases.find((b) => b.id === layer.baseId);
         const filling = ingredients.fillings.find((f) => f.id === layer.fillingId);
-        if (base) baseTotal += (layer.weight * base.pricePerKg) / 1000;
-        if (filling) baseTotal += (layer.weight * filling.pricePerKg) / 1000;
+        if (base) runningTotal += (layer.weight * base.pricePerKg) / 1000;
+        if (filling) runningTotal += (layer.weight * filling.pricePerKg) / 1000;
       }
 
-      // Coating cost
       const totalWeight = layers.reduce((sum, l) => sum + l.weight, 0);
       const coatingIngredient = ingredients.coatings.find((c) => c.id === coating.coatingId);
       if (coatingIngredient) {
-        baseTotal += (totalWeight * coatingIngredient.pricePerKg) / 1000;
+        runningTotal += (totalWeight * coatingIngredient.pricePerKg) / 1000;
       }
 
-      // Decoration costs
       const decorationCounts: Record<string, number> = {};
       for (const d of decorations) {
         decorationCounts[d.decorationId] = (decorationCounts[d.decorationId] ?? 0) + 1;
       }
       for (const [decorId, count] of Object.entries(decorationCounts)) {
         const decor = ingredients.decorations.find((d) => d.id === decorId);
-        if (decor) baseTotal += decor.pricePerUnit * count;
+        if (decor) runningTotal += decor.pricePerUnit * count;
       }
 
-      // Shape surcharge
       const shapeInfo = ingredients.shapes.find((s) => s.id === shape);
       const shapeSurchargePercent = shapeInfo?.surchargePercent ?? 0;
-      baseTotal += (baseTotal * shapeSurchargePercent) / 100;
+      runningTotal += (runningTotal * shapeSurchargePercent) / 100;
 
-      // Tier surcharge
       const tierSurcharge = ingredients.tierSurcharges.find((t) => t.tierCount === tierCount);
-      baseTotal += tierSurcharge?.surcharge ?? 0;
+      runningTotal += tierSurcharge?.surcharge ?? 0;
 
-      set({ totalPrice: Math.round(baseTotal) });
+      set({ totalPrice: Math.round(runningTotal) });
     },
 
     reset: () => {
@@ -385,7 +389,7 @@ export const useConstructorStore = create<ConstructorState>()(
       coating: state.coating,
       decorations: state.decorations,
       inscription: state.inscription,
-    }),
+    }) as unknown as ConstructorState,
   }
 )
 );

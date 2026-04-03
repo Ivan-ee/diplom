@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 const COOKIE_NAME = 'bakery_token';
 
 /**
- * Decode a JWT payload without verifying the signature.
- * Signature verification is the backend's responsibility.
+ * DEFENSE-IN-DEPTH ONLY: Decodes JWT payload WITHOUT signature verification.
+ * Actual signature verification happens on the NestJS backend (JwtAuthGuard).
+ * This middleware provides client-side route protection for UX purposes only.
  */
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
@@ -33,7 +34,7 @@ export function middleware(request: NextRequest) {
   // Admin routes — additionally check role in JWT payload
   if (pathname.startsWith('/admin')) {
     const payload = decodeJwtPayload(token);
-    if (!payload || payload.role !== 'admin') {
+    if (!payload || (payload.role as string)?.toLowerCase() !== 'admin') {
       const homeUrl = new URL('/', request.url);
       homeUrl.searchParams.set('auth', 'login');
       return NextResponse.redirect(homeUrl);

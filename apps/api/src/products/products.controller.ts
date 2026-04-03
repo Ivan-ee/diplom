@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { QueryProductsDto } from './dto/query-products.dto';
 
@@ -10,6 +10,7 @@ export class ProductsController {
 
   @Get()
   @ApiOperation({ summary: 'List products with filters and pagination' })
+  @ApiResponse({ status: 200, description: 'Paginated product list' })
   findAll(@Query() query: QueryProductsDto) {
     return this.productsService.findAll(query);
   }
@@ -17,6 +18,8 @@ export class ProductsController {
   @Get(':slug')
   @ApiParam({ name: 'slug', description: 'Product URL slug' })
   @ApiOperation({ summary: 'Get a single product by slug' })
+  @ApiResponse({ status: 200, description: 'Product detail' })
+  @ApiResponse({ status: 404, description: 'Product not found' })
   findOne(@Param('slug') slug: string) {
     return this.productsService.findBySlug(slug);
   }
