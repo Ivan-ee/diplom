@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { AuthParamHandler } from '@/components/auth/AuthParamHandler';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -23,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AuthParamHandler />
           </Suspense>
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1"><ErrorBoundary>{children}</ErrorBoundary></main>
           <Footer />
         </AuthProvider>
       </body>

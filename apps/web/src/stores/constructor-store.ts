@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { subscribeWithSelector } from 'zustand/middleware';
+import { persist, subscribeWithSelector } from 'zustand/middleware';
 import { getMockIngredients } from '@/lib/constructor/mock-ingredients';
 
 export type CakeShape = 'circle' | 'square' | 'heart';
@@ -157,7 +157,8 @@ const buildLayers = (count: TierCount, existing: CakeLayer[]): CakeLayer[] => {
 };
 
 export const useConstructorStore = create<ConstructorState>()(
-  subscribeWithSelector((set, get) => ({
+  persist(
+    subscribeWithSelector((set, get) => ({
     currentStep: 1,
     shape: 'circle',
     tierCount: 1,
@@ -365,5 +366,26 @@ export const useConstructorStore = create<ConstructorState>()(
     getConfig: () => {
       return get().ingredients?.config ?? null;
     },
-  }))
+  })),
+  {
+    name: 'bakery-constructor',
+    storage: {
+      getItem: (key) => {
+        const value = sessionStorage.getItem(key);
+        return value ? JSON.parse(value) : null;
+      },
+      setItem: (key, value) => sessionStorage.setItem(key, JSON.stringify(value)),
+      removeItem: (key) => sessionStorage.removeItem(key),
+    },
+    partialize: (state) => ({
+      currentStep: state.currentStep,
+      shape: state.shape,
+      tierCount: state.tierCount,
+      layers: state.layers,
+      coating: state.coating,
+      decorations: state.decorations,
+      inscription: state.inscription,
+    }),
+  }
+)
 );
