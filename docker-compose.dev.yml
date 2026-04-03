@@ -2,13 +2,13 @@ services:
   postgres:
     image: postgres:18
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_DB: bakery
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - ./docker-volumes/pgdata:/var/lib/postgresql/data
+      - ./docker-volumes/pgdata:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

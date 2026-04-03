@@ -163,6 +163,9 @@ importers:
 
   packages/db:
     dependencies:
+      bcrypt:
+        specifier: ^5.1.0
+        version: 5.1.1
       dotenv:
         specifier: ^16.4.0
         version: 16.6.1

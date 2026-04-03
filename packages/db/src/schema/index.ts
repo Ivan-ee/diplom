@@ -1,2 +1,14 @@
-// Schema exports — will be populated in Stage 2
-export {};
+export { users, userRoleEnum } from './users.js';
+export { categories } from './categories.js';
+export { occasions } from './occasions.js';
+export { products } from './products.js';
+export { productOccasions } from './product-occasions.js';
+export { constructorBases } from './constructor-bases.js';
+export { constructorFillings } from './constructor-fillings.js';
+export { constructorCoatings, coatingTypeEnum } from './constructor-coatings.js';
+export { constructorDecorations, decorCategoryEnum } from './constructor-decorations.js';
+export { orders, orderStatusEnum, pickupTimeSlotEnum } from './orders.js';
+export { orderItems, orderItemTypeEnum } from './order-items.js';
+export { favorites } from './favorites.js';
+export { reviews } from './reviews.js';
+export * from './relations.js';
