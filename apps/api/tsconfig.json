@@ -11,7 +11,9 @@
     "declaration": false,
     "declarationMap": false,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@bakery/db": ["../../packages/db/src/index.ts"],
+      "@bakery/db/schema": ["../../packages/db/src/schema/index.ts"]
     }
   },
   "include": ["src/**/*"],

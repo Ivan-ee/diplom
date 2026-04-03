@@ -1,6 +1,6 @@
 import { pgTable, uuid, varchar, integer, numeric, text, jsonb, pgEnum } from 'drizzle-orm/pg-core';
-import { orders } from './orders.js';
-import { products } from './products.js';
+import { orders } from './orders';
+import { products } from './products';
 
 export const orderItemTypeEnum = pgEnum('order_item_type', ['product', 'constructor']);
 

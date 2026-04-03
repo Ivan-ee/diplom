@@ -1,12 +1,12 @@
 import { relations } from 'drizzle-orm';
-import { users } from './users.js';
-import { categories } from './categories.js';
-import { products } from './products.js';
-import { occasions } from './occasions.js';
-import { productOccasions } from './product-occasions.js';
-import { orders } from './orders.js';
-import { orderItems } from './order-items.js';
-import { favorites } from './favorites.js';
+import { users } from './users';
+import { categories } from './categories';
+import { products } from './products';
+import { occasions } from './occasions';
+import { productOccasions } from './product-occasions';
+import { orders } from './orders';
+import { orderItems } from './order-items';
+import { favorites } from './favorites';
 
 export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),

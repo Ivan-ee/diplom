@@ -11,7 +11,7 @@ import type {
   orderItems,
   favorites,
   reviews,
-} from './schema/index.js';
+} from './schema/index';
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

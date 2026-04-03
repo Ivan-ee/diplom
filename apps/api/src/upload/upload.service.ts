@@ -1,0 +1,68 @@
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as Minio from 'minio';
+import { randomUUID } from 'crypto';
+import { extname } from 'path';
+import { PresignDto } from './dto/presign.dto';
+
+const PRESIGN_EXPIRY_SECONDS = 15 * 60; // 15 minutes
+
+@Injectable()
+export class UploadService implements OnModuleInit {
+  private client!: Minio.Client;
+  private publicUrl!: string;
+
+  constructor(private readonly config: ConfigService) {}
+
+  onModuleInit() {
+    this.client = new Minio.Client({
+      endPoint: this.config.getOrThrow<string>('MINIO_ENDPOINT'),
+      port: this.config.get<number>('MINIO_PORT', 9000),
+      useSSL: this.config.get<string>('MINIO_USE_SSL', 'false') === 'true',
+      accessKey: this.config.getOrThrow<string>('MINIO_ACCESS_KEY'),
+      secretKey: this.config.getOrThrow<string>('MINIO_SECRET_KEY'),
+    });
+
+    this.publicUrl = this.config.get<string>(
+      'MINIO_PUBLIC_URL',
+      'http://localhost:9000',
+    );
+  }
+
+  async presignUrl(dto: PresignDto): Promise<{
+    uploadUrl: string;
+    fileUrl: string;
+    objectName: string;
+    bucket: string;
+    expiresIn: number;
+  }> {
+    const bucket = dto.bucket ?? 'screenshots';
+    const ext = extname(dto.filename) || '';
+    const objectName = `${randomUUID()}${ext}`;
+
+    await this.ensureBucketExists(bucket);
+
+    const uploadUrl = await this.client.presignedPutObject(
+      bucket,
+      objectName,
+      PRESIGN_EXPIRY_SECONDS,
+    );
+
+    const fileUrl = `${this.publicUrl}/${bucket}/${objectName}`;
+
+    return {
+      uploadUrl,
+      fileUrl,
+      objectName,
+      bucket,
+      expiresIn: PRESIGN_EXPIRY_SECONDS,
+    };
+  }
+
+  private async ensureBucketExists(bucket: string): Promise<void> {
+    const exists = await this.client.bucketExists(bucket);
+    if (!exists) {
+      await this.client.makeBucket(bucket, 'us-east-1');
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { pgTable, uuid, primaryKey } from 'drizzle-orm/pg-core';
-import { products } from './products.js';
-import { occasions } from './occasions.js';
+import { products } from './products';
+import { occasions } from './occasions';
 
 export const productOccasions = pgTable(
   'product_occasions',
