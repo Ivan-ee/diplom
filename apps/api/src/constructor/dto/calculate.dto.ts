@@ -4,6 +4,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -47,7 +48,7 @@ export class CalculatePriceDto {
     description: 'Cake shape',
     enum: ['circle', 'square', 'heart'],
   })
-  @IsString()
+  @IsIn(['circle', 'square', 'heart'])
   shape!: string;
 
   @ApiProperty({

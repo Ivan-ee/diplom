@@ -286,7 +286,7 @@ function IngredientTable<T extends AnyIngredient>({
                   <td className="px-4 py-3">
                     <PriceEditor
                       id={row.id}
-                      price={(row as Record<string, number>)[priceKey] ?? 0}
+                      price={priceKey === 'pricePerKg' ? (row as { pricePerKg: number }).pricePerKg : (row as { pricePerUnit: number }).pricePerUnit}
                       priceKey={priceKey}
                       onSaved={onPriceSaved}
                     />

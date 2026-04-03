@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { fetchServer } from '@/lib/api';
+
+export const metadata: Metadata = {
+  title: 'Каталог — Кондитерская',
+  description: 'Торты, капкейки и макаронс на заказ. Выберите из каталога или соберите свой торт в 3D-конструкторе.',
+};
 import { type Product } from '@/components/catalog/ProductCard';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
 import { CatalogFilters } from '@/components/catalog/CatalogFilters';

@@ -17,6 +17,7 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { SafeUser } from '../common/types/user.type';
 
 
 @ApiTags('Orders')
@@ -30,13 +31,13 @@ export class OrdersController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new order (authenticated)' })
-  create(@Body() dto: CreateOrderDto, @CurrentUser() user: any) {
+  create(@Body() dto: CreateOrderDto, @CurrentUser() user: SafeUser) {
     return this.ordersService.create(dto, user);
   }
 
   @Get()
   @ApiOperation({ summary: "List current user's orders" })
-  findAll(@CurrentUser() user: any) {
+  findAll(@CurrentUser() user: SafeUser) {
     return this.ordersService.findByUser(user.id);
   }
 }

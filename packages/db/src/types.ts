@@ -45,3 +45,4 @@ export type NewOrderItem = typeof orderItems.$inferInsert;
 
 export type Favorite = typeof favorites.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
+export type NewReview = typeof reviews.$inferInsert;

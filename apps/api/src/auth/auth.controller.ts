@@ -20,6 +20,8 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { SafeUser } from '../common/types/user.type';
+import { Throttle } from '@nestjs/throttler';
 
 
 const COOKIE_NAME = 'bakery_token';
@@ -37,6 +39,7 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Register a new user account' })
   async register(
     @Body() dto: RegisterDto,
@@ -49,6 +52,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Login with email and password' })
   async login(
     @Body() dto: LoginDto,
@@ -72,7 +76,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiCookieAuth('bakery_token')
   @ApiOperation({ summary: 'Get current authenticated user profile' })
-  getProfile(@CurrentUser() user: any) {
+  getProfile(@CurrentUser() user: SafeUser) {
     return this.authService.getProfile(user.id);
   }
 }

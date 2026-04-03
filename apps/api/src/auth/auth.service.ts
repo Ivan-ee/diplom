@@ -13,9 +13,10 @@ import * as schema from '@bakery/db/schema';
 import { DRIZZLE } from '../database/drizzle.token';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { SafeUser } from '../common/types/user.type';
 
 export interface AuthResult {
-  user: Omit<User, 'passwordHash'>;
+  user: SafeUser;
   token: string;
 }
 
@@ -76,7 +77,7 @@ export class AuthService {
     return { user: this.sanitize(user), token };
   }
 
-  async getProfile(userId: string): Promise<Omit<User, 'passwordHash'>> {
+  async getProfile(userId: string): Promise<SafeUser> {
     const user = await this.getUserById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -84,7 +85,7 @@ export class AuthService {
     return this.sanitize(user);
   }
 
-  async getUserById(id: string): Promise<User | null> {
+  async getUserById(id: string): Promise<typeof schema.users.$inferSelect | null> {
     const [user] = await this.db
       .select()
       .from(schema.users)
@@ -94,7 +95,7 @@ export class AuthService {
     return user ?? null;
   }
 
-  private signToken(user: any): string {
+  private signToken(user: SafeUser): string {
     return this.jwtService.sign({
       sub: user.id,
       email: user.email,
@@ -102,9 +103,14 @@ export class AuthService {
     });
   }
 
-  private sanitize(user: any): Omit<User, 'passwordHash'> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash: _ph, ...safe } = user;
-    return safe;
+  private sanitize(user: Record<string, unknown>): SafeUser {
+    return {
+      id: user['id'] as string,
+      name: user['name'] as string,
+      email: user['email'] as string,
+      phone: (user['phone'] as string | null) ?? null,
+      role: user['role'] as string,
+      createdAt: user['createdAt'] as Date,
+    };
   }
 }

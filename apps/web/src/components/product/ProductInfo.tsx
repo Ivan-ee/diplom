@@ -23,27 +23,23 @@ function buildWeightOptions(product: Product): number[] {
   if (product.weightOptions && product.weightOptions.length > 0) {
     return product.weightOptions;
   }
-  const min = product.weightMin ?? 1000;
-  const max = product.weightMax ?? min;
-  const step = product.weightStep ?? 500;
+  const min = product.minWeight ? parseFloat(product.minWeight) : (product.weightMin ?? 1);
+  const max = product.maxWeight ? parseFloat(product.maxWeight) : (product.weightMax ?? min);
+  const step = product.weightStep ? parseFloat(product.weightStep) : 0.5;
   const opts: number[] = [];
   for (let w = min; w <= max; w += step) {
     opts.push(w);
   }
+  if (opts.length === 0) opts.push(min);
   if (!opts.includes(max)) opts.push(max);
   return opts;
 }
 
-function calcPrice(product: Product, weight: number): number {
-  const min = product.weightMin ?? (product.weightOptions?.[0] ?? 1000);
-  const max = product.weightMax ?? min;
-  const priceMin = product.priceMin;
-  const priceMax = product.priceMax ?? priceMin;
-
-  if (max === min || priceMax === priceMin) return priceMin;
-
-  const ratio = (weight - min) / (max - min);
-  return Math.round(priceMin + ratio * (priceMax - priceMin));
+function calcPrice(product: Product, weightKg: number): number {
+  if (product.pricePerKg) {
+    return Math.round(product.pricePerKg * weightKg);
+  }
+  return product.priceMin ?? 0;
 }
 
 export function ProductInfo({ product }: ProductInfoProps) {
@@ -54,11 +50,13 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
   const addItem = useCartStore((s) => s.addItem);
   const price = calcPrice(product, selectedWeight);
-  const categoryLabel =
-    categoryLabels[product.type ?? product.category ?? ''] ??
-    product.type ??
-    product.category ??
-    '';
+  const categoryName = typeof product.category === 'object' && product.category !== null
+    ? product.category.name
+    : (product.category ?? '');
+  const categorySlug = typeof product.category === 'object' && product.category !== null
+    ? product.category.slug
+    : (product.type ?? '');
+  const categoryLabel = categoryLabels[categorySlug] ?? categoryName;
 
   const handleAddToCart = useCallback(() => {
     addItem({
@@ -95,7 +93,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         </span>
         {weightOptions.length > 1 && (
           <span className="text-sm text-[var(--color-text-secondary)]">
-            за {selectedWeight / 1000} кг
+            за {selectedWeight} кг
           </span>
         )}
       </div>

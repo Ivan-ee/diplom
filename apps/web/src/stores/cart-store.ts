@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export interface CakeConfigData {
+  shape: string;
+  tierCount: number;
+  layers: Array<{ baseId: string; fillingId: string; weight: number }>;
+  coating: { type: string; color: string };
+  decorations: Array<{ decorationId: string; position: number[] }>;
+  inscription?: string;
+}
+
 export interface CartItem {
   id: string;
   type: 'product' | 'constructor';
@@ -11,7 +20,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   inscription?: string;
-  cakeConfig?: unknown;
+  cakeConfig?: CakeConfigData;
 }
 
 interface CartState {

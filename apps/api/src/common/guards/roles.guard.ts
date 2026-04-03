@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+import { SafeUser } from '../types/user.type';
 
 
 @Injectable()
@@ -25,7 +26,7 @@ export class RolesGuard implements CanActivate {
 
     const request = context
       .switchToHttp()
-      .getRequest<Request & { user: any }>();
+      .getRequest<Request & { user: SafeUser }>();
     const user = request.user;
 
     if (!user) {

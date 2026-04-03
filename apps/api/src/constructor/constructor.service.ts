@@ -87,6 +87,33 @@ export class ConstructorService {
       );
     }
 
+    // ---- validate limits ----
+    const totalDecorationCount = decorations.reduce(
+      (sum, d) => sum + d.quantity,
+      0,
+    );
+    if (totalDecorationCount > CONSTRUCTOR_CONFIG.maxDecorations) {
+      throw new BadRequestException(
+        `Total decorations count cannot exceed ${CONSTRUCTOR_CONFIG.maxDecorations}`,
+      );
+    }
+
+    const totalWeightTenthsCheck = tiers.reduce((sum, t) => sum + t.weight, 0);
+    if (totalWeightTenthsCheck > CONSTRUCTOR_CONFIG.maxWeight * 10) {
+      throw new BadRequestException(
+        `Total cake weight cannot exceed ${CONSTRUCTOR_CONFIG.maxWeight} kg`,
+      );
+    }
+
+    if (
+      dto.inscription !== undefined &&
+      dto.inscription.length > CONSTRUCTOR_CONFIG.maxInscription
+    ) {
+      throw new BadRequestException(
+        `Inscription cannot exceed ${CONSTRUCTOR_CONFIG.maxInscription} characters`,
+      );
+    }
+
     // ---- fetch all referenced ingredients in parallel ----
     const baseIds = [...new Set(tiers.map((t) => t.baseId))];
     const fillingIds = [...new Set(tiers.map((t) => t.fillingId))];

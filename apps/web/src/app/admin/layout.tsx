@@ -14,7 +14,23 @@ const navLinks = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--color-cream)]">
+        <div className="text-center">
+          <h1 className="font-heading text-2xl font-bold text-[var(--color-dark)]">Нет доступа</h1>
+          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            Эта страница доступна только администраторам
+          </p>
+          <Link href="/" className="mt-4 inline-block text-sm text-[var(--color-dusty-rose)] hover:underline">
+            На главную
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[var(--color-cream)]">

@@ -10,23 +10,34 @@ import { Card } from '@/components/ui/card';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart-store';
 
+export interface ProductCategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
   name: string;
   description?: string;
-  category?: string;
+  composition?: string;
+  category?: ProductCategory | string;
   type?: string;
   imageUrl?: string;
   images?: string[];
-  priceMin: number;
+  pricePerKg?: number;
+  priceMin?: number;
   priceMax?: number;
+  minWeight?: string;
+  maxWeight?: string;
+  weightStep?: string;
   weightMin?: number;
   weightMax?: number;
-  weightStep?: number;
   weightOptions?: number[];
   isAvailable?: boolean;
   createdAt?: string;
+  occasions?: Array<{ id: string; name: string; slug: string }>;
 }
 
 interface ProductCardProps {
@@ -44,12 +55,14 @@ export function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
   const [added, setAdded] = useState(false);
 
-  const minWeight = product.weightMin ?? (product.weightOptions?.[0] ?? 1000);
-  const categoryLabel =
-    categoryLabels[product.type ?? product.category ?? ''] ??
-    product.type ??
-    product.category ??
-    '';
+  const minWeight = product.weightMin ?? (product.weightOptions?.[0] ?? (product.minWeight ? parseFloat(product.minWeight) * 1000 : 1000));
+  const categoryName = typeof product.category === 'object' && product.category !== null
+    ? product.category.name
+    : (product.category ?? '');
+  const categorySlug = typeof product.category === 'object' && product.category !== null
+    ? product.category.slug
+    : (product.type ?? product.category ?? '');
+  const categoryLabel = categoryLabels[categorySlug] ?? categoryName;
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
@@ -60,7 +73,7 @@ export function ProductCard({ product }: ProductCardProps) {
       name: product.name,
       imageUrl: product.imageUrl ?? product.images?.[0] ?? '',
       weight: minWeight,
-      price: product.priceMin,
+      price: product.pricePerKg ?? product.priceMin ?? 0,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -121,11 +134,11 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-center justify-between gap-2 mt-auto">
             <div>
               <span className="font-heading font-bold text-lg text-[var(--color-dusty-rose)]">
-                {formatPrice(product.priceMin)}
+                {formatPrice(product.pricePerKg ?? product.priceMin ?? 0)}
               </span>
-              {product.priceMax != null && product.priceMax !== product.priceMin && (
+              {product.pricePerKg && (
                 <span className="text-xs text-[var(--color-text-secondary)] ml-1">
-                  — {formatPrice(product.priceMax)}
+                  /кг
                 </span>
               )}
             </div>

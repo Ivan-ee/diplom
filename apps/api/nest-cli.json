@@ -5,6 +5,7 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "builder": "webpack",
+    "typeCheck": false,
     "options": {
       "webpackConfigPath": "webpack.config.js"
     }
