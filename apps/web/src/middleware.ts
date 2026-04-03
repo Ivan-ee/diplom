@@ -1,0 +1,48 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+const COOKIE_NAME = 'bakery_token';
+
+/**
+ * Decode a JWT payload without verifying the signature.
+ * Signature verification is the backend's responsibility.
+ */
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    // Base64url → Base64 → JSON
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const json = Buffer.from(base64, 'base64').toString('utf-8');
+    return JSON.parse(json) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get(COOKIE_NAME)?.value;
+
+  // No token — redirect to home with ?auth=login
+  if (!token) {
+    const loginUrl = new URL('/', request.url);
+    loginUrl.searchParams.set('auth', 'login');
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Admin routes — additionally check role in JWT payload
+  if (pathname.startsWith('/admin')) {
+    const payload = decodeJwtPayload(token);
+    if (!payload || payload.role !== 'admin') {
+      const homeUrl = new URL('/', request.url);
+      homeUrl.searchParams.set('auth', 'login');
+      return NextResponse.redirect(homeUrl);
+    }
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/account/:path*', '/admin/:path*'],
+};

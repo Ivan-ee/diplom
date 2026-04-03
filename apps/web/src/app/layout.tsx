@@ -1,5 +1,10 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { montserrat, openSans } from '@/lib/fonts';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { AuthProvider } from '@/components/auth/AuthProvider';
+import { AuthParamHandler } from '@/components/auth/AuthParamHandler';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -11,7 +16,17 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${montserrat.variable} ${openSans.variable}`}>
-      <body>{children}</body>
+      <body className="flex min-h-screen flex-col">
+        <AuthProvider>
+          {/* Suspense required because AuthParamHandler uses useSearchParams */}
+          <Suspense fallback={null}>
+            <AuthParamHandler />
+          </Suspense>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </AuthProvider>
+      </body>
     </html>
   );
 }
