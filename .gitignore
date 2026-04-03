@@ -1,0 +1,26 @@
+node_modules
+.next
+dist
+.turbo
+*.tsbuildinfo
+
+# env
+.env
+.env*.local
+
+# docker volumes
+docker-volumes/
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# debug
+npm-debug.log*
+pnpm-debug.log*
