@@ -307,8 +307,11 @@ export const useConstructorStore = create<ConstructorState>()(
       try {
         const res = await fetch('/api/constructor/ingredients');
         if (!res.ok) throw new Error('API unavailable');
-        const data: ConstructorCatalog = await res.json();
-        set({ ingredients: data, isLoading: false });
+        const envelope = (await res.json()) as { data?: ConstructorCatalog } | ConstructorCatalog;
+        const catalog: ConstructorCatalog = (
+          (envelope as { data?: ConstructorCatalog }).data ?? (envelope as ConstructorCatalog)
+        );
+        set({ ingredients: catalog, isLoading: false });
       } catch (err) {
         console.error('Failed to load constructor ingredients, using mock data:', err);
         const mock = getMockIngredients();
