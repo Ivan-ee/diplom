@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { Plus, RefreshCw, Pencil, Check, X } from 'lucide-react';
+import { Plus, RefreshCw, Pencil, Check, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
@@ -264,7 +264,7 @@ function PriceEditor({ productId, price, onSaved }: PriceEditorProps) {
     try {
       await fetchClient(`/admin/products/${productId}`, {
         method: 'PUT',
-        body: JSON.stringify({ priceMin: newPriceKopecks }),
+        body: JSON.stringify({ pricePerKg: newPriceKopecks }),
       });
       onSaved(productId, newPriceKopecks);
       setEditing(false);
@@ -325,6 +325,66 @@ function PriceEditor({ productId, price, onSaved }: PriceEditorProps) {
   );
 }
 
+// ---------- Delete button ----------
+
+interface DeleteButtonProps {
+  productId: string;
+  onDeleted: (id: string) => void;
+}
+
+function DeleteButton({ productId, onDeleted }: DeleteButtonProps) {
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await fetchClient(`/admin/products/${productId}`, { method: 'DELETE' });
+      onDeleted(productId);
+      toast.success('Товар удалён');
+    } catch {
+      toast.error('Не удалось удалить товар');
+      setConfirming(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (confirming) {
+    return (
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => void handleDelete()}
+          disabled={deleting}
+          title="Подтвердить удаление"
+          className="flex h-6 w-6 items-center justify-center rounded text-red-600 hover:bg-red-50 disabled:opacity-50"
+        >
+          {deleting ? <RefreshCw size={11} className="animate-spin" /> : <Check size={13} />}
+        </button>
+        <button
+          onClick={() => setConfirming(false)}
+          className="flex h-6 w-6 items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-cream)]"
+          title="Отмена"
+        >
+          <X size={13} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      onClick={() => setConfirming(true)}
+      title="Удалить товар"
+      className="text-red-400 hover:text-red-600 hover:bg-red-50"
+    >
+      <Trash2 size={13} />
+    </Button>
+  );
+}
+
 // ---------- Skeleton ----------
 
 function TableSkeleton() {
@@ -379,6 +439,10 @@ export default function AdminProductsPage() {
     setProducts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, priceMin: price } : p))
     );
+  };
+
+  const handleProductDeleted = (id: string) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
   return (
@@ -529,9 +593,7 @@ export default function AdminProductsPage() {
 
                       {/* Actions */}
                       <td className="px-4 py-3">
-                        <Button variant="ghost" size="icon-sm">
-                          <Pencil size={13} />
-                        </Button>
+                        <DeleteButton productId={product.id} onDeleted={handleProductDeleted} />
                       </td>
                     </tr>
                   );

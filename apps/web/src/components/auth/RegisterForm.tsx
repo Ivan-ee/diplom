@@ -17,7 +17,7 @@ const registerSchema = z
       .string()
       .optional()
       .refine(
-        (val) => !val || /^\+7\s?\(?\d{3}\)?\s?\d{3}[-\s]?\d{2}[-\s]?\d{2}$/.test(val),
+        (val) => !val || /^\+7[\s-]?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}$/.test(val),
         { message: 'Введите номер в формате +7 (___) ___-__-__' }
       ),
     email: z.string().email('Введите корректный email'),

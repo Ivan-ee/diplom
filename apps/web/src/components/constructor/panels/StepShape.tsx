@@ -32,6 +32,12 @@ export function StepShape() {
   const tierCount = useConstructorStore((s) => s.tierCount);
   const setShape = useConstructorStore((s) => s.setShape);
   const setTierCount = useConstructorStore((s) => s.setTierCount);
+  const ingredients = useConstructorStore((s) => s.ingredients);
+
+  const getTierSurcharge = (tiers: number): number => {
+    const found = ingredients?.tierSurcharges?.find((s) => s.tiers === tiers);
+    return found ? Math.round(found.surcharge / 100) : tiers === 2 ? 300 : 600;
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -122,7 +128,7 @@ export function StepShape() {
             animate={{ opacity: 1, y: 0 }}
             className="mt-2 text-xs text-[var(--color-text-secondary)] text-center"
           >
-            {tierCount === 2 ? '+ 300 ₽ за многоярусность' : '+ 600 ₽ за многоярусность'}
+            {`+ ${getTierSurcharge(tierCount)} ₽ за многоярусность`}
           </motion.p>
         )}
       </div>

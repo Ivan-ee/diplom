@@ -169,6 +169,16 @@ async function seed() {
   }
   console.log('✅ Constructor Decorations');
 
+  const testPasswordHash = await hash('test123', 10);
+  await db.insert(schema.users).values({
+    name: 'Тестовый покупатель',
+    email: 'test@bakery.ru',
+    phone: '+79009876543',
+    passwordHash: testPasswordHash,
+    role: 'user',
+  }).onConflictDoNothing();
+  console.log('✅ Test user (test@bakery.ru / test123)');
+
   const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin123';
   if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_PASSWORD) {
     throw new Error('ADMIN_PASSWORD env var must be set in production');

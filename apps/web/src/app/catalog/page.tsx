@@ -48,7 +48,6 @@ async function CatalogContent({ searchParams }: { searchParams: CatalogSearchPar
         page,
         limit: LIMIT,
       },
-      cache: 'no-store',
     });
 
     products = res.data?.items ?? (Array.isArray(res.data) ? (res.data as Product[]) : []);
