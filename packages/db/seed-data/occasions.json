@@ -1,0 +1,9 @@
+[
+  { "slug": "birthday",      "name": "День рождения" },
+  { "slug": "wedding",       "name": "Свадьба" },
+  { "slug": "anniversary",   "name": "Годовщина" },
+  { "slug": "march-8",       "name": "8 марта" },
+  { "slug": "valentines",    "name": "14 февраля" },
+  { "slug": "easter",        "name": "Пасха" },
+  { "slug": "army-farewell", "name": "Проводы в армию" }
+]

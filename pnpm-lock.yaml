@@ -238,6 +238,9 @@ importers:
       pg:
         specifier: ^8.13.0
         version: 8.20.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
     devDependencies:
       '@types/pg':
         specifier: ^8.11.0

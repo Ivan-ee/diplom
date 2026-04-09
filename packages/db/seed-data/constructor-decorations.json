@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Свежая клубника",
+    "category": "berries",
+    "pricePerUnit": 6000,
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 1,
+    "isAvailable": true
+  },
+  {
+    "name": "Свежая голубика",
+    "category": "berries",
+    "pricePerUnit": 5500,
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 2,
+    "isAvailable": true
+  },
+  {
+    "name": "Свежая малина",
+    "category": "berries",
+    "pricePerUnit": 5800,
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 3,
+    "isAvailable": true
+  },
+  {
+    "name": "Шоколадный шар",
+    "category": "chocolate",
+    "pricePerUnit": 7500,
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 4,
+    "isAvailable": true
+  },
+  {
+    "name": "Шоколадный трюфель",
+    "category": "chocolate",
+    "pricePerUnit": 8000,
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 5,
+    "isAvailable": true
+  },
+  {
+    "name": "Топпер «С Днём рождения»",
+    "category": "toppers",
+    "pricePerUnit": 25000,
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 6,
+    "isAvailable": true
+  },
+  {
+    "name": "Топпер «Love»",
+    "category": "toppers",
+    "pricePerUnit": 22000,
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 7,
+    "isAvailable": true
+  },
+  {
+    "name": "Сахарная роза",
+    "category": "flowers",
+    "pricePerUnit": 12000,
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 8,
+    "isAvailable": true
+  },
+  {
+    "name": "Фигурка «Сердце»",
+    "category": "figures",
+    "pricePerUnit": 11000,
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 9,
+    "isAvailable": true
+  },
+  {
+    "name": "Фигурка «Звезда»",
+    "category": "figures",
+    "pricePerUnit": 13000,
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 10,
+    "isAvailable": true
+  }
+]

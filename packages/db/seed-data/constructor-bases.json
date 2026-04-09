@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Белый классический бисквит",
+    "description": "Пышный белый бисквит на яйцах и сахаре — классика, подходит под любую начинку",
+    "pricePerKg": 85000,
+    "color": "#F5E6C8",
+    "textureUrl": null,
+    "sortOrder": 1,
+    "isAvailable": true
+  },
+  {
+    "name": "Белый ванильный бисквит",
+    "description": "Нежный ванильный бисквит с тонким ароматом натуральной ванили",
+    "pricePerKg": 90000,
+    "color": "#F8EDD8",
+    "textureUrl": null,
+    "sortOrder": 2,
+    "isAvailable": true
+  },
+  {
+    "name": "Шоколадный бисквит",
+    "description": "Классический шоколадный бисквит из натурального какао",
+    "pricePerKg": 95000,
+    "color": "#5C3A21",
+    "textureUrl": null,
+    "sortOrder": 3,
+    "isAvailable": true
+  },
+  {
+    "name": "Нежный шоколадный бисквит",
+    "description": "Влажный шоколадный бисквит на растительном масле — особенно мягкий",
+    "pricePerKg": 100000,
+    "color": "#4A2C17",
+    "textureUrl": null,
+    "sortOrder": 4,
+    "isAvailable": true
+  },
+  {
+    "name": "Красный бархат",
+    "description": "Красный масляный бисквит с лёгким какао-ароматом — украшение любого торта",
+    "pricePerKg": 110000,
+    "color": "#8B2252",
+    "textureUrl": null,
+    "sortOrder": 5,
+    "isAvailable": true
+  }
+]
