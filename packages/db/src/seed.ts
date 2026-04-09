@@ -1,7 +1,11 @@
-import 'dotenv/config';
+import { config } from 'dotenv';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
+config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../../.env') });
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { hash } from 'bcrypt';
+import { sql } from 'drizzle-orm';
 import * as schema from './schema/index';
 
 async function seed() {
@@ -17,6 +21,7 @@ async function seed() {
       { name: 'Капкейки', slug: 'kapkejki' },
       { name: 'Макаронс', slug: 'makarons' },
     ])
+    .onConflictDoUpdate({ target: schema.categories.slug, set: { name: sql`excluded.name` } })
     .returning();
   console.log('✅ Categories');
 
@@ -29,6 +34,7 @@ async function seed() {
       { name: 'Корпоратив', slug: 'korporativ' },
       { name: 'Юбилей', slug: 'yubilej' },
     ])
+    .onConflictDoUpdate({ target: schema.occasions.slug, set: { name: sql`excluded.name` } })
     .returning();
   console.log('✅ Occasions');
 
@@ -98,6 +104,7 @@ async function seed() {
         categoryId: macarons.id,
       },
     ])
+    .onConflictDoUpdate({ target: schema.products.slug, set: { name: sql`excluded.name` } })
     .returning();
   console.log('✅ Products');
 
@@ -113,41 +120,53 @@ async function seed() {
     { productId: seededProducts[4].id, occasionId: kids.id },
     { productId: seededProducts[4].id, occasionId: birthday.id },
     { productId: seededProducts[5].id, occasionId: corporate.id },
-  ]);
+  ]).onConflictDoNothing();
   console.log('✅ Product-Occasions');
 
-  await db.insert(schema.constructorBases).values([
-    { name: 'Ванильный', pricePerKg: 80000, color: '#F5E6C8', sortOrder: 1 },
-    { name: 'Шоколадный', pricePerKg: 90000, color: '#5C3A21', sortOrder: 2 },
-    { name: 'Красный бархат', pricePerKg: 100000, color: '#8B2252', sortOrder: 3 },
-  ]);
+  const basesCount = await db.select({ n: sql<number>`count(*)::int` }).from(schema.constructorBases);
+  if (basesCount[0].n === 0) {
+    await db.insert(schema.constructorBases).values([
+      { name: 'Ванильный', pricePerKg: 80000, color: '#F5E6C8', sortOrder: 1 },
+      { name: 'Шоколадный', pricePerKg: 90000, color: '#5C3A21', sortOrder: 2 },
+      { name: 'Красный бархат', pricePerKg: 100000, color: '#8B2252', sortOrder: 3 },
+    ]);
+  }
   console.log('✅ Constructor Bases');
 
-  await db.insert(schema.constructorFillings).values([
-    { name: 'Клубника-крем', description: 'Нежный клубничный мусс со сливками', pricePerKg: 40000, sortOrder: 1 },
-    { name: 'Карамель-орех', description: 'Солёная карамель с грецким орехом', pricePerKg: 45000, sortOrder: 2 },
-    { name: 'Шоколад-вишня', description: 'Шоколадный ганаш с вишнёвым конфитюром', pricePerKg: 50000, sortOrder: 3 },
-  ]);
+  const fillingsCount = await db.select({ n: sql<number>`count(*)::int` }).from(schema.constructorFillings);
+  if (fillingsCount[0].n === 0) {
+    await db.insert(schema.constructorFillings).values([
+      { name: 'Клубника-крем', description: 'Нежный клубничный мусс со сливками', pricePerKg: 40000, sortOrder: 1 },
+      { name: 'Карамель-орех', description: 'Солёная карамель с грецким орехом', pricePerKg: 45000, sortOrder: 2 },
+      { name: 'Шоколад-вишня', description: 'Шоколадный ганаш с вишнёвым конфитюром', pricePerKg: 50000, sortOrder: 3 },
+    ]);
+  }
   console.log('✅ Constructor Fillings');
 
-  await db.insert(schema.constructorCoatings).values([
-    { name: 'Крем', type: 'cream', pricePerKg: 20000, roughness: '0.40', sortOrder: 1 },
-    { name: 'Мастика', type: 'fondant', pricePerKg: 35000, roughness: '0.80', sortOrder: 2 },
-  ]);
+  const coatingsCount = await db.select({ n: sql<number>`count(*)::int` }).from(schema.constructorCoatings);
+  if (coatingsCount[0].n === 0) {
+    await db.insert(schema.constructorCoatings).values([
+      { name: 'Крем', type: 'cream', pricePerKg: 20000, roughness: '0.40', sortOrder: 1 },
+      { name: 'Мастика', type: 'fondant', pricePerKg: 35000, roughness: '0.80', sortOrder: 2 },
+    ]);
+  }
   console.log('✅ Constructor Coatings');
 
-  await db.insert(schema.constructorDecorations).values([
-    { name: 'Клубника', category: 'berries', pricePerUnit: 5000, sortOrder: 1 },
-    { name: 'Голубика', category: 'berries', pricePerUnit: 6000, sortOrder: 2 },
-    { name: 'Малина', category: 'berries', pricePerUnit: 5500, sortOrder: 3 },
-    { name: 'Шоколадный шар', category: 'chocolate', pricePerUnit: 8000, sortOrder: 4 },
-    { name: 'Трюфель', category: 'chocolate', pricePerUnit: 7000, sortOrder: 5 },
-    { name: 'Топпер "С днём рождения"', category: 'toppers', pricePerUnit: 20000, sortOrder: 6 },
-    { name: 'Топпер "Love"', category: 'toppers', pricePerUnit: 20000, sortOrder: 7 },
-    { name: 'Роза', category: 'flowers', pricePerUnit: 10000, sortOrder: 8 },
-    { name: 'Сердце', category: 'figures', pricePerUnit: 12000, sortOrder: 9 },
-    { name: 'Звезда', category: 'figures', pricePerUnit: 10000, sortOrder: 10 },
-  ]);
+  const decoCount = await db.select({ n: sql<number>`count(*)::int` }).from(schema.constructorDecorations);
+  if (decoCount[0].n === 0) {
+    await db.insert(schema.constructorDecorations).values([
+      { name: 'Клубника', category: 'berries', pricePerUnit: 5000, sortOrder: 1 },
+      { name: 'Голубика', category: 'berries', pricePerUnit: 6000, sortOrder: 2 },
+      { name: 'Малина', category: 'berries', pricePerUnit: 5500, sortOrder: 3 },
+      { name: 'Шоколадный шар', category: 'chocolate', pricePerUnit: 8000, sortOrder: 4 },
+      { name: 'Трюфель', category: 'chocolate', pricePerUnit: 7000, sortOrder: 5 },
+      { name: 'Топпер "С днём рождения"', category: 'toppers', pricePerUnit: 20000, sortOrder: 6 },
+      { name: 'Топпер "Love"', category: 'toppers', pricePerUnit: 20000, sortOrder: 7 },
+      { name: 'Роза', category: 'flowers', pricePerUnit: 10000, sortOrder: 8 },
+      { name: 'Сердце', category: 'figures', pricePerUnit: 12000, sortOrder: 9 },
+      { name: 'Звезда', category: 'figures', pricePerUnit: 10000, sortOrder: 10 },
+    ]);
+  }
   console.log('✅ Constructor Decorations');
 
   const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin123';
@@ -161,26 +180,29 @@ async function seed() {
     phone: '+79001234567',
     passwordHash,
     role: 'admin',
-  });
+  }).onConflictDoNothing();
   console.log('✅ Admin user (admin@bakery.ru)');
 
-  await db.insert(schema.reviews).values([
-    {
-      authorName: 'Мария И.',
-      text: 'Заказывала торт на день рождения дочки — восторг! Красивый, вкусный, свежий. Спасибо!',
-      rating: 5,
-    },
-    {
-      authorName: 'Алексей П.',
-      text: 'Отличный медовик, как у бабушки. Конструктор тортов — очень удобная штука.',
-      rating: 5,
-    },
-    {
-      authorName: 'Елена С.',
-      text: 'Красный бархат — просто бомба! Заказываю уже третий раз, всегда на высоте.',
-      rating: 4,
-    },
-  ]);
+  const reviewsCount = await db.select({ n: sql<number>`count(*)::int` }).from(schema.reviews);
+  if (reviewsCount[0].n === 0) {
+    await db.insert(schema.reviews).values([
+      {
+        authorName: 'Мария И.',
+        text: 'Заказывала торт на день рождения дочки — восторг! Красивый, вкусный, свежий. Спасибо!',
+        rating: 5,
+      },
+      {
+        authorName: 'Алексей П.',
+        text: 'Отличный медовик, как у бабушки. Конструктор тортов — очень удобная штука.',
+        rating: 5,
+      },
+      {
+        authorName: 'Елена С.',
+        text: 'Красный бархат — просто бомба! Заказываю уже третий раз, всегда на высоте.',
+        rating: 4,
+      },
+    ]);
+  }
   console.log('✅ Reviews');
 
   console.log('\n🎉 Seeding complete!');

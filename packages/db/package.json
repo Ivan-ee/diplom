@@ -10,6 +10,9 @@
     "./client": "./src/client.ts"
   },
   "scripts": {
+    "db:migrate": "drizzle-kit migrate",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio",
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
