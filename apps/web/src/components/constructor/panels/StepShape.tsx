@@ -35,7 +35,7 @@ export function StepShape() {
   const ingredients = useConstructorStore((s) => s.ingredients);
 
   const getTierSurcharge = (tiers: number): number => {
-    const found = ingredients?.tierSurcharges?.find((s) => s.tiers === tiers);
+    const found = ingredients?.tierSurcharges?.find((s) => s.tierCount === tiers);
     return found ? Math.round(found.surcharge / 100) : tiers === 2 ? 300 : 600;
   };
 
