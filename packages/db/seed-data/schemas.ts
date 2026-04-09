@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { fillingCategoryEnum } from '../src/schema/constructor-fillings';
+import { coatingTypeEnum } from '../src/schema/constructor-coatings';
+import { decorCategoryEnum } from '../src/schema/constructor-decorations';
 
 // Category
 export const categorySchema = z.object({
@@ -27,14 +30,9 @@ export const constructorBaseSchema = z.object({
 export type ConstructorBaseSeed = z.infer<typeof constructorBaseSchema>;
 
 // Constructor filling
-export const fillingCategorySchema = z.enum([
-  'white',
-  'chocolate',
-  'honey',
-  'sour_cream',
-  'shortcrust',
-  'specialty',
-]);
+export const fillingCategorySchema = z.enum(
+  [...fillingCategoryEnum.enumValues] as [string, ...string[]]
+);
 export const constructorFillingSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().nullable(),
@@ -46,26 +44,29 @@ export const constructorFillingSchema = z.object({
 export type ConstructorFillingSeed = z.infer<typeof constructorFillingSchema>;
 
 // Constructor coating
-export const coatingTypeSchema = z.enum(['cream', 'fondant']);
+export const coatingTypeSchema = z.enum(
+  [...coatingTypeEnum.enumValues] as [string, ...string[]]
+);
 export const constructorCoatingSchema = z.object({
   name: z.string().min(1).max(100),
   type: coatingTypeSchema,
   pricePerKg: z.number().int().positive(), // kopecks
   // numeric(3,2) in DB, stored as string in Drizzle (0.00 - 1.00)
-  roughness: z.string().regex(/^\d(\.\d+)?$/),
+  roughness: z.string()
+    .regex(/^(0|1)(\.\d{1,2})?$/, 'roughness must be 0-1 with up to 2 decimals')
+    .refine((v) => {
+      const n = parseFloat(v);
+      return n >= 0 && n <= 1;
+    }, 'roughness must be in range 0.00-1.00'),
   sortOrder: z.number().int().nonnegative(),
   isAvailable: z.boolean().default(true),
 });
 export type ConstructorCoatingSeed = z.infer<typeof constructorCoatingSchema>;
 
 // Constructor decoration
-export const decorCategorySchema = z.enum([
-  'berries',
-  'chocolate',
-  'toppers',
-  'flowers',
-  'figures',
-]);
+export const decorCategorySchema = z.enum(
+  [...decorCategoryEnum.enumValues] as [string, ...string[]]
+);
 export const constructorDecorationSchema = z.object({
   name: z.string().min(1).max(100),
   category: decorCategorySchema,
