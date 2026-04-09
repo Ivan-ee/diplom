@@ -15,6 +15,7 @@ export const products = pgTable('products', {
   weightStep: numeric('weight_step', { precision: 3, scale: 1 }).notNull().default('0.5'),
   categoryId: uuid('category_id').references(() => categories.id),
   isAvailable: boolean('is_available').notNull().default(true),
+  isDeleted: boolean('is_deleted').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

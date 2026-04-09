@@ -141,7 +141,10 @@ export class ProductsService {
     priceMin?: number;
     priceMax?: number;
   }): SQL {
-    const conditions: SQL[] = [eq(schema.products.isAvailable, true)];
+    const conditions: SQL[] = [
+      eq(schema.products.isAvailable, true),
+      eq(schema.products.isDeleted, false),
+    ];
 
     if (filters.categoryId) {
       conditions.push(eq(schema.products.categoryId, filters.categoryId));
@@ -174,6 +177,7 @@ export class ProductsService {
         maxWeight: schema.products.maxWeight,
         weightStep: schema.products.weightStep,
         isAvailable: schema.products.isAvailable,
+        isDeleted: schema.products.isDeleted,
         createdAt: schema.products.createdAt,
         updatedAt: schema.products.updatedAt,
         categoryId: schema.products.categoryId,
@@ -188,7 +192,7 @@ export class ProductsService {
       .where(eq(schema.products.slug, slug))
       .limit(1);
 
-    if (!row) {
+    if (!row || row.isDeleted) {
       throw new NotFoundException(`Product with slug "${slug}" not found`);
     }
 

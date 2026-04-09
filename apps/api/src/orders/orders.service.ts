@@ -5,7 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { eq, inArray } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '@bakery/db/schema';
 import { DRIZZLE } from '../database/drizzle.token';
@@ -85,7 +85,7 @@ export class OrdersService {
       .select()
       .from(schema.orders)
       .where(eq(schema.orders.userId, userId))
-      .orderBy(schema.orders.createdAt);
+      .orderBy(desc(schema.orders.createdAt));
 
     if (orders.length === 0) return [];
 

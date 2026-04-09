@@ -6,7 +6,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '@bakery/db/schema';
 import { DRIZZLE } from '../database/drizzle.token';
@@ -34,6 +34,61 @@ export class AdminService {
     @Inject(DRIZZLE)
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
+
+  async getStats() {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const [
+      [{ newOrdersToday }],
+      [{ ordersInProgress }],
+      [{ totalRevenue }],
+      recentOrders,
+    ] = await Promise.all([
+      this.db
+        .select({ newOrdersToday: sql<number>`cast(count(*) as int)` })
+        .from(schema.orders)
+        .where(
+          and(
+            gte(schema.orders.createdAt, todayStart),
+            sql`${schema.orders.status} != 'cancelled'`,
+          ),
+        ),
+
+      this.db
+        .select({ ordersInProgress: sql<number>`cast(count(*) as int)` })
+        .from(schema.orders)
+        .where(
+          inArray(schema.orders.status, ['created', 'accepted', 'preparing']),
+        ),
+
+      this.db
+        .select({
+          totalRevenue: sql<number>`cast(coalesce(sum(${schema.orders.totalPrice}), 0) as int)`,
+        })
+        .from(schema.orders)
+        .where(inArray(schema.orders.status, ['completed', 'picked_up'])),
+
+      this.db
+        .select({
+          id: schema.orders.id,
+          orderNumber: schema.orders.orderNumber,
+          status: schema.orders.status,
+          totalPrice: schema.orders.totalPrice,
+          createdAt: schema.orders.createdAt,
+        })
+        .from(schema.orders)
+        .orderBy(desc(schema.orders.createdAt))
+        .limit(5),
+    ]);
+
+    return {
+      newOrdersToday,
+      ordersInProgress,
+      totalRevenue,
+      recentOrders,
+    };
+  }
 
   async getAllOrders(query: PaginationDto & { status?: string }) {
     const { page, limit, order } = query;
@@ -282,7 +337,7 @@ export class AdminService {
 
   async deleteProduct(id: string) {
     const [existingProduct] = await this.db
-      .select({ id: schema.products.id })
+      .select({ id: schema.products.id, isDeleted: schema.products.isDeleted })
       .from(schema.products)
       .where(eq(schema.products.id, id))
       .limit(1);
@@ -291,8 +346,13 @@ export class AdminService {
       throw new NotFoundException(`Product "${id}" not found`);
     }
 
+    if (existingProduct.isDeleted) {
+      throw new NotFoundException(`Product "${id}" not found`);
+    }
+
     await this.db
-      .delete(schema.products)
+      .update(schema.products)
+      .set({ isDeleted: true, isAvailable: false, updatedAt: new Date() })
       .where(eq(schema.products.id, id));
 
     return { deleted: true, id };
