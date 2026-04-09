@@ -50,7 +50,7 @@ export class AuthController {
   ) {
     const result = await this.authService.register(dto);
     res.cookie(COOKIE_NAME, result.token, COOKIE_OPTIONS);
-    return { user: result.user };
+    return result.user;
   }
 
   @Post('login')
@@ -65,7 +65,7 @@ export class AuthController {
   ) {
     const result = await this.authService.login(dto);
     res.cookie(COOKIE_NAME, result.token, COOKIE_OPTIONS);
-    return { user: result.user };
+    return result.user;
   }
 
   @Post('logout')
