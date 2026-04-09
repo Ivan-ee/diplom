@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, integer, numeric, text, jsonb, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, integer, numeric, text, jsonb, pgEnum, index } from 'drizzle-orm/pg-core';
 import { orders } from './orders';
 import { products } from './products';
 
@@ -19,4 +19,6 @@ export const orderItems = pgTable('order_items', {
   price: integer('price').notNull(),
   inscription: varchar('inscription', { length: 50 }),
   screenshotUrl: text('screenshot_url'),
-});
+}, (table) => [
+  index('order_items_order_id_idx').on(table.orderId),
+]);

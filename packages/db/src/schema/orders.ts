@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, integer, text, date, timestamp, pgEnum, serial } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, integer, text, date, timestamp, pgEnum, serial, index } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 export const orderStatusEnum = pgEnum('order_status', [
@@ -27,4 +27,8 @@ export const orders = pgTable('orders', {
   comment: text('comment'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index('orders_user_id_idx').on(table.userId),
+  index('orders_status_idx').on(table.status),
+  index('orders_created_at_idx').on(table.createdAt),
+]);

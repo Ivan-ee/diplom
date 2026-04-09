@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, integer, numeric, boolean, timestamp, json } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, integer, numeric, boolean, timestamp, json, index } from 'drizzle-orm/pg-core';
 import { categories } from './categories';
 
 export const products = pgTable('products', {
@@ -18,4 +18,7 @@ export const products = pgTable('products', {
   isDeleted: boolean('is_deleted').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index('products_category_id_idx').on(table.categoryId),
+  index('products_is_available_idx').on(table.isAvailable),
+]);
