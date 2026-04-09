@@ -14,6 +14,39 @@ import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
 import type { CartItem } from '@/stores/cart-store';
 
+// ── cakeConfig → API DTO adapter ─────────────────────────────────────────────
+
+/**
+ * Maps the FE cart CakeConfigData shape to the API CalculatePriceDto shape:
+ * - layers → tiers
+ * - tier weights from grams → integer tenths of kg (1500 g → 15)
+ * - coating.coatingId → coatingId (top-level)
+ * - flat placed decorations grouped by decorationId with counts
+ */
+function cakeConfigToDto(cakeConfig: NonNullable<CartItem['cakeConfig']>) {
+  const decorationCounts: Record<string, number> = {};
+  for (const d of cakeConfig.decorations) {
+    decorationCounts[d.decorationId] = (decorationCounts[d.decorationId] ?? 0) + 1;
+  }
+  const decorations = Object.entries(decorationCounts).map(([decorationId, quantity]) => ({
+    decorationId,
+    quantity,
+  }));
+
+  return {
+    shape: cakeConfig.shape,
+    tiers: cakeConfig.layers.map((l) => ({
+      baseId: l.baseId,
+      fillingId: l.fillingId,
+      // Grams → int tenths of kg (e.g. 1500 g → 15 = 1.5 kg)
+      weight: Math.round(l.weight / 100),
+    })),
+    coatingId: cakeConfig.coating.coatingId,
+    ...(decorations.length > 0 && { decorations }),
+    ...(cakeConfig.inscription && { inscription: cakeConfig.inscription }),
+  };
+}
+
 // ── Validation schema ────────────────────────────────────────────────────────
 
 function getTomorrow(): string {
@@ -212,13 +245,20 @@ export function CheckoutForm() {
         comment: data.comment ?? '',
         items: items.map((item) => ({
           type: item.type,
-          productId: item.productId ?? undefined,
-          // Convert integer grams → integer tenths of kg (e.g. 1500 g → 15 = 1.5 kg).
+          ...(item.type === 'product' && item.productId ? { productId: item.productId } : {}),
+          ...(item.type === 'constructor' && item.cakeConfig
+            ? { cakeConfig: cakeConfigToDto(item.cakeConfig) }
+            : {}),
+          // Grams → int tenths of kg (e.g. 1500 g → 15 = 1.5 kg).
           // API DTO expects @IsInt() @Min(5) where 10 = 1.0 kg.
           weight: Math.round(item.weight / 100),
           quantity: item.quantity,
-          inscription: item.inscription ?? undefined,
-          cakeConfig: item.cakeConfig ?? undefined,
+          ...(item.inscription ? { inscription: item.inscription } : {}),
+          // Send MinIO screenshot URL only when it is an absolute http URL.
+          // The fallback /images/custom-cake.jpg must not be sent.
+          ...(item.type === 'constructor' && item.imageUrl && item.imageUrl.startsWith('http')
+            ? { screenshotUrl: item.imageUrl }
+            : {}),
           // name, imageUrl, price are NOT in CreateOrderItemDto and will be
           // rejected by forbidNonWhitelisted: true — intentionally omitted.
         })),

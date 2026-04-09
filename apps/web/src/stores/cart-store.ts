@@ -5,8 +5,19 @@ export interface CakeConfigData {
   shape: string;
   tierCount: number;
   layers: Array<{ baseId: string; fillingId: string; weight: number }>;
-  coating: { type: string; color: string };
-  decorations: Array<{ decorationId: string; position: number[] }>;
+  coating: {
+    type: string;
+    coatingId: string;
+    color: string;
+    gradient?: unknown;
+    drips?: unknown;
+  };
+  decorations: Array<{
+    id: string;
+    decorationId: string;
+    position: number[];
+    normal?: number[];
+  }>;
   inscription?: string;
 }
 
