@@ -1,10 +1,10 @@
 export { users, userRoleEnum } from './users';
 export { categories } from './categories';
 export { occasions } from './occasions';
-export { products } from './products';
+export { products, priceTypeEnum } from './products';
 export { productOccasions } from './product-occasions';
 export { constructorBases } from './constructor-bases';
-export { constructorFillings } from './constructor-fillings';
+export { constructorFillings, fillingCategoryEnum } from './constructor-fillings';
 export { constructorCoatings, coatingTypeEnum } from './constructor-coatings';
 export { constructorDecorations, decorCategoryEnum } from './constructor-decorations';
 export { orders, orderStatusEnum, pickupTimeSlotEnum } from './orders';

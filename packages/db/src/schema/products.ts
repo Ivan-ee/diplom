@@ -1,5 +1,7 @@
-import { pgTable, uuid, varchar, text, integer, numeric, boolean, timestamp, json, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, integer, numeric, boolean, timestamp, json, index, pgEnum } from 'drizzle-orm/pg-core';
 import { categories } from './categories';
+
+export const priceTypeEnum = pgEnum('price_type', ['per_kg', 'per_unit']);
 
 export const products = pgTable('products', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -9,7 +11,9 @@ export const products = pgTable('products', {
   composition: text('composition'),
   imageUrl: text('image_url'),
   images: json('images').$type<string[]>().default([]),
-  pricePerKg: integer('price_per_kg').notNull(),
+  priceType: priceTypeEnum('price_type').notNull().default('per_kg'),
+  pricePerKg: integer('price_per_kg'),
+  pricePerUnit: integer('price_per_unit'),
   minWeight: numeric('min_weight', { precision: 4, scale: 1 }).notNull().default('1.0'),
   maxWeight: numeric('max_weight', { precision: 4, scale: 1 }).notNull().default('5.0'),
   weightStep: numeric('weight_step', { precision: 3, scale: 1 }).notNull().default('0.5'),
