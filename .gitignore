@@ -4,6 +4,8 @@ dist
 .turbo
 *.tsbuildinfo
 
+.playwright-mcp
+
 # env
 .env
 .env*.local
