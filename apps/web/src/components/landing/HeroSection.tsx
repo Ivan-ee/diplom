@@ -62,7 +62,7 @@ export function HeroSection() {
           <span className="h-4 w-px bg-gray-200 hidden sm:block" />
           <span>Собственный цех</span>
           <span className="h-4 w-px bg-gray-200 hidden sm:block" />
-          <span>Доставка по Арзамасу</span>
+          <span>Доставка {shopConfig.deliveryArea}</span>
         </div>
       </div>
     </section>
