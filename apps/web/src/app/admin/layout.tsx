@@ -2,19 +2,26 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Package, Layers, LogOut, ChefHat } from 'lucide-react';
+import { ShoppingBag, Package, Layers, LogOut, ChefHat, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores/auth-store';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
-  { href: '/admin/orders',      label: 'Заказы',      icon: ShoppingBag },
-  { href: '/admin/products',    label: 'Товары',       icon: Package },
-  { href: '/admin/constructor', label: 'Конструктор',  icon: Layers },
+  { href: '/admin',             label: 'Дашборд',      icon: LayoutDashboard, exact: true },
+  { href: '/admin/orders',      label: 'Заказы',       icon: ShoppingBag },
+  { href: '/admin/products',    label: 'Товары',        icon: Package },
+  { href: '/admin/constructor', label: 'Конструктор',   icon: Layers },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuth();
+  const isLoading = useAuthStore((s) => s.isLoading);
+
+  if (isLoading) {
+    return null;
+  }
 
   if (!isAuthenticated || user?.role !== 'admin') {
     return (
@@ -48,8 +55,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Nav */}
         <nav className="flex flex-1 flex-col gap-1 p-3">
-          {navLinks.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || pathname.startsWith(href + '/');
+          {navLinks.map(({ href, label, icon: Icon, exact }) => {
+            const active = exact
+              ? pathname === href
+              : pathname === href || pathname.startsWith(href + '/');
             return (
               <Link
                 key={href}
@@ -86,8 +95,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="flex h-14 items-center gap-4 border-b border-[var(--color-soft-peach)]/60 bg-white px-5">
           {/* Mobile nav pills */}
           <div className="flex items-center gap-1 lg:hidden">
-            {navLinks.map(({ href, label, icon: Icon }) => {
-              const active = pathname === href || pathname.startsWith(href + '/');
+            {navLinks.map(({ href, label, icon: Icon, exact }) => {
+              const active = exact
+                ? pathname === href
+                : pathname === href || pathname.startsWith(href + '/');
               return (
                 <Link
                   key={href}
@@ -108,7 +119,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Desktop title */}
           <span className="hidden font-heading text-sm font-bold text-[var(--color-dark)] lg:block">
-            {navLinks.find(({ href }) => pathname === href || pathname.startsWith(href + '/'))?.label ?? 'Админ-панель'}
+            {navLinks.find(({ href, exact }) =>
+              exact ? pathname === href : pathname === href || pathname.startsWith(href + '/'),
+            )?.label ?? 'Админ-панель'}
           </span>
 
           {/* Spacer + mobile logout */}

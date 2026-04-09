@@ -24,10 +24,11 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(COOKIE_NAME)?.value;
 
-  // No token — redirect to home with ?auth=login
+  // No token — redirect to home with ?auth=login&from=<path>
   if (!token) {
     const loginUrl = new URL('/', request.url);
     loginUrl.searchParams.set('auth', 'login');
+    loginUrl.searchParams.set('from', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -37,6 +38,7 @@ export function middleware(request: NextRequest) {
     if (!payload || (payload.role as string)?.toLowerCase() !== 'admin') {
       const homeUrl = new URL('/', request.url);
       homeUrl.searchParams.set('auth', 'login');
+      homeUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(homeUrl);
     }
   }

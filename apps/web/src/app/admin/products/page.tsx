@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Plus, RefreshCw, Pencil, Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +18,168 @@ const CATEGORY_LABELS: Record<string, string> = {
   macaron:  'Макарон',
   pastry:   'Выпечка',
 };
+
+const CATEGORY_OPTIONS = [
+  { value: 'cake',    label: 'Торт' },
+  { value: 'cupcake', label: 'Капкейк' },
+  { value: 'macaron', label: 'Макарон' },
+  { value: 'pastry',  label: 'Выпечка' },
+];
+
+// ---------- Add Product Modal ----------
+
+interface AddProductModalProps {
+  onClose: () => void;
+  onCreated: () => void;
+}
+
+function AddProductModal({ onClose, onCreated }: AddProductModalProps) {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [pricePerKg, setPricePerKg] = useState('');
+  const [categoryId, setCategoryId] = useState('cake');
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = parseFloat(pricePerKg);
+    if (!name.trim()) { toast.error('Введите название товара'); return; }
+    if (isNaN(parsed) || parsed <= 0) { toast.error('Введите корректную цену'); return; }
+
+    setSaving(true);
+    try {
+      await fetchClient('/admin/products', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim() || undefined,
+          pricePerKg: Math.round(parsed * 100),
+          categoryId,
+          isAvailable,
+        }),
+      });
+      toast.success('Товар успешно создан');
+      onCreated();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Не удалось создать товар');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const fieldClass =
+    'w-full rounded-lg border border-[var(--color-soft-peach)] bg-white px-3 py-2 text-sm text-[var(--color-dark)] focus:border-[var(--color-dusty-rose)] focus:outline-none focus:ring-1 focus:ring-[var(--color-dusty-rose)]';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="font-heading text-lg font-bold text-[var(--color-dark)]">Добавить товар</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-cream)] hover:text-[var(--color-dark)]"
+            aria-label="Закрыть"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[var(--color-text-secondary)]" htmlFor="ap-name">
+              Название
+            </label>
+            <input
+              id="ap-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Например: Медовик классический"
+              className={fieldClass}
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[var(--color-text-secondary)]" htmlFor="ap-desc">
+              Описание
+            </label>
+            <textarea
+              id="ap-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Краткое описание товара"
+              rows={3}
+              className={cn(fieldClass, 'resize-none')}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[var(--color-text-secondary)]" htmlFor="ap-price">
+              Цена за кг (руб.)
+            </label>
+            <input
+              id="ap-price"
+              type="number"
+              min="1"
+              step="0.01"
+              value={pricePerKg}
+              onChange={(e) => setPricePerKg(e.target.value)}
+              placeholder="Например: 1500"
+              className={fieldClass}
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[var(--color-text-secondary)]" htmlFor="ap-category">
+              Категория
+            </label>
+            <select
+              id="ap-category"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className={fieldClass}
+            >
+              {CATEGORY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              id="ap-available"
+              type="checkbox"
+              checked={isAvailable}
+              onChange={(e) => setIsAvailable(e.target.checked)}
+              className="h-4 w-4 rounded border-[var(--color-soft-peach)] accent-[var(--color-dusty-rose)]"
+            />
+            <label htmlFor="ap-available" className="text-sm text-[var(--color-dark)]">
+              Доступен для заказа
+            </label>
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            <Button type="button" variant="outline" size="sm" className="flex-1" onClick={onClose} disabled={saving}>
+              Отмена
+            </Button>
+            <Button type="submit" size="sm" className="flex-1" disabled={saving}>
+              {saving ? <RefreshCw size={13} className="animate-spin" /> : null}
+              {saving ? 'Сохранение...' : 'Создать'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 // ---------- Availability toggle ----------
 
@@ -38,7 +201,7 @@ function AvailabilityToggle({ productId, available, onToggle }: AvailabilityTogg
       });
       onToggle(productId, !available);
     } catch {
-      alert('Не удалось изменить доступность');
+      toast.error('Не удалось изменить доступность');
       onToggle(productId, available);
     } finally {
       setLoading(false);
@@ -106,7 +269,7 @@ function PriceEditor({ productId, price, onSaved }: PriceEditorProps) {
       onSaved(productId, newPriceKopecks);
       setEditing(false);
     } catch {
-      alert('Не удалось сохранить цену');
+      toast.error('Не удалось сохранить цену');
       cancel();
     } finally {
       setSaving(false);
@@ -191,6 +354,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const load = useCallback(() => {
     setError(null);
@@ -232,7 +396,7 @@ export default function AdminProductsPage() {
             <RefreshCw size={14} className={cn(loading && 'animate-spin')} />
             Обновить
           </Button>
-          <Button size="sm">
+          <Button size="sm" onClick={() => setShowAddModal(true)}>
             <Plus size={14} />
             Добавить товар
           </Button>
@@ -377,6 +541,13 @@ export default function AdminProductsPage() {
           </table>
         </div>
       </div>
+
+      {showAddModal && (
+        <AddProductModal
+          onClose={() => setShowAddModal(false)}
+          onCreated={load}
+        />
+      )}
     </div>
   );
 }

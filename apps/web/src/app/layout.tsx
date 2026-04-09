@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { AuthParamHandler } from '@/components/auth/AuthParamHandler';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { Toaster } from 'sonner';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1"><ErrorBoundary>{children}</ErrorBoundary></main>
           <Footer />
         </AuthProvider>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

@@ -12,9 +12,10 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultTab?: Tab;
+  returnPath?: string;
 }
 
-export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, defaultTab = 'login', returnPath }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
 
   // Sync active tab when defaultTab changes (e.g. opened via "register" link)
@@ -111,7 +112,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
                     exit={{ opacity: 0, x: 8 }}
                     transition={{ duration: 0.18 }}
                   >
-                    <LoginForm onSuccess={onClose} />
+                    <LoginForm onSuccess={onClose} returnPath={returnPath} />
                   </motion.div>
                 ) : (
                   <motion.div

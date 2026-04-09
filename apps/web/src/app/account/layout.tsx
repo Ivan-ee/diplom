@@ -2,13 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Heart, LogOut } from 'lucide-react';
+import { ShoppingBag, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
   { href: '/account/orders', label: 'Заказы', icon: ShoppingBag },
-  { href: '/account/favorites', label: 'Избранное', icon: Heart },
 ];
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {

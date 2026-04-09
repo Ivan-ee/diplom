@@ -1,10 +1,63 @@
 'use client';
 
-import { ShoppingCart, ArrowLeft, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { ShoppingCart, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useConstructorStore, type ConstructorStep } from '@/stores/constructor-store';
 import { useCartStore } from '@/stores/cart-store';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { fetchClient } from '@/lib/api';
+import { glRef } from '@/lib/screenshot-ref';
+
+const SCREENSHOT_FALLBACK = '/images/custom-cake.jpg';
+
+interface PresignData {
+  uploadUrl: string;
+  fileUrl: string;
+  objectName: string;
+  bucket: string;
+  expiresIn: number;
+}
+
+/**
+ * Takes a screenshot of the current R3F canvas, uploads it to MinIO via the
+ * presign endpoint, and returns the public file URL.
+ * Throws if any step fails — caller handles the fallback.
+ */
+async function captureAndUpload(): Promise<string> {
+  const renderer = glRef.current;
+  if (!renderer) throw new Error('WebGL renderer not available');
+
+  const dataUrl = renderer.domElement.toDataURL('image/png');
+
+  // Convert data URL to Blob
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+
+  const filename = `cake-screenshot-${Date.now()}.png`;
+
+  // Get presigned PUT URL from our backend
+  const presignRes = await fetchClient<PresignData>('/upload/presign', {
+    method: 'POST',
+    body: JSON.stringify({ filename, bucket: 'screenshots' }),
+  });
+
+  const { uploadUrl, fileUrl } = presignRes.data;
+
+  // PUT the blob directly to MinIO — no auth header needed for presigned URLs
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    body: blob,
+    headers: { 'Content-Type': 'image/png' },
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error(`MinIO upload failed: ${uploadRes.status}`);
+  }
+
+  return fileUrl;
+}
 
 function useStepValid(): boolean {
   const currentStep = useConstructorStore((s) => s.currentStep);
@@ -41,6 +94,8 @@ export function StepNavigation() {
   const ingredients = useConstructorStore((s) => s.ingredients);
   const addItem = useCartStore((s) => s.addItem);
 
+  const [isCapturing, setIsCapturing] = useState(false);
+
   const isValid = useStepValid();
   const isFirst = currentStep === 1;
   const isLast = currentStep === 5;
@@ -51,15 +106,24 @@ export function StepNavigation() {
 
   const handleNext = () => {
     if (isLast) {
-      handleAddToCart();
+      void handleAddToCart();
     } else {
       setStep((currentStep + 1) as ConstructorStep);
     }
   };
 
-  const handleAddToCart = () => {
-    const totalWeight = layers.reduce((sum, l) => sum + l.weight, 0);
+  const handleAddToCart = async () => {
+    setIsCapturing(true);
 
+    let imageUrl = SCREENSHOT_FALLBACK;
+    try {
+      imageUrl = await captureAndUpload();
+    } catch (err) {
+      console.warn('[StepNavigation] Screenshot upload failed, using fallback image:', err);
+      toast.error('Не удалось загрузить скриншот торта. Используем стандартное изображение.');
+    }
+
+    const totalWeight = layers.reduce((sum, l) => sum + l.weight, 0);
     const baseName = ingredients?.bases.find((b) => b.id === layers[0]?.baseId)?.name ?? 'Торт';
     const tierLabel = tierCount > 1 ? `, ${tierCount} яруса` : '';
     const name = `${baseName}${tierLabel}`;
@@ -67,7 +131,7 @@ export function StepNavigation() {
     addItem({
       type: 'constructor',
       name,
-      imageUrl: '/images/custom-cake.jpg',
+      imageUrl,
       weight: totalWeight,
       price: totalPrice,
       inscription: inscription || undefined,
@@ -80,6 +144,8 @@ export function StepNavigation() {
         inscription,
       },
     });
+
+    setIsCapturing(false);
   };
 
   return (
@@ -100,7 +166,7 @@ export function StepNavigation() {
         variant="default"
         size="default"
         onClick={handleNext}
-        disabled={!isValid}
+        disabled={!isValid || isCapturing}
         className={cn(
           'flex-1 font-semibold transition-all duration-200',
           isLast && 'bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] gap-2'
@@ -109,8 +175,12 @@ export function StepNavigation() {
       >
         {isLast ? (
           <>
-            <ShoppingCart size={16} strokeWidth={2} />
-            Добавить в корзину
+            {isCapturing ? (
+              <Loader2 size={16} strokeWidth={2} className="animate-spin" />
+            ) : (
+              <ShoppingCart size={16} strokeWidth={2} />
+            )}
+            {isCapturing ? 'Сохранение...' : 'Добавить в корзину'}
           </>
         ) : (
           <>

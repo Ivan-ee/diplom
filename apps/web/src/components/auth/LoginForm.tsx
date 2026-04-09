@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,12 +20,14 @@ type LoginFields = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
   onSuccess: () => void;
+  returnPath?: string;
 }
 
-export function LoginForm({ onSuccess }: LoginFormProps) {
+export function LoginForm({ onSuccess, returnPath }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const setUser = useAuthStore((s) => s.setUser);
+  const router = useRouter();
 
   const {
     register,
@@ -43,6 +46,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       });
       setUser(res.data);
       onSuccess();
+      if (returnPath) {
+        router.push(returnPath);
+      }
     } catch (err) {
       const message = err instanceof Error && (err.message.includes('fetch') || err.message.includes('Failed') || err.message.includes('network'))
         ? 'Ошибка сети. Проверьте подключение к интернету.'

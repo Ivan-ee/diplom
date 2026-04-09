@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Cake, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -164,7 +165,7 @@ function StatusCell({ order, onUpdated }: StatusCellProps) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch {
-      alert('Не удалось обновить статус');
+      toast.error('Не удалось обновить статус');
       setSelected(order.status);
     } finally {
       setSaving(false);
