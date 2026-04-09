@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { shopConfig } from '@/config/shop.config';
 
 export function HeroSection() {
   return (
@@ -31,7 +32,7 @@ export function HeroSection() {
         {/* Eyebrow */}
         <span className="inline-flex items-center gap-2 rounded-full bg-[var(--color-soft-peach)]/60 px-4 py-1.5 text-sm font-medium text-[var(--color-dusty-rose)]">
           <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-dusty-rose)]" />
-          Кондитерская в Арзамасе
+          {shopConfig.shortName} — {shopConfig.city}
         </span>
 
         {/* Main heading */}
@@ -57,12 +58,9 @@ export function HeroSection() {
 
         {/* Trust indicators */}
         <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-sm text-[var(--color-text-secondary)]">
-          <span className="flex items-center gap-1.5">
-            <span className="text-[var(--color-dusty-rose)]">★★★★★</span>
-            4.9 из 5
-          </span>
+          <span>Авторские торты</span>
           <span className="h-4 w-px bg-gray-200 hidden sm:block" />
-          <span>Более 500 довольных клиентов</span>
+          <span>Собственный цех</span>
           <span className="h-4 w-px bg-gray-200 hidden sm:block" />
           <span>Доставка по Арзамасу</span>
         </div>

@@ -7,12 +7,22 @@ import { AuthProvider } from '@/components/auth/AuthProvider';
 import { AuthParamHandler } from '@/components/auth/AuthParamHandler';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from 'sonner';
+import { shopConfig } from '@/config/shop.config';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Кондитерская — торты на заказ с 3D-конструктором',
-  description:
-    'Интернет-магазин кондитерской в Арзамасе. Закажите торт из каталога или соберите уникальный торт в 3D-конструкторе.',
+  title: {
+    default: `${shopConfig.name} — ${shopConfig.tagline}`,
+    template: `%s | ${shopConfig.name}`,
+  },
+  description: shopConfig.description,
+  openGraph: {
+    title: shopConfig.name,
+    description: shopConfig.description,
+    siteName: shopConfig.name,
+    locale: 'ru_RU',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { shopConfig } from '@/config/shop.config';
 
 const navLinks = [
   { href: '/catalog', label: 'Каталог' },
@@ -19,7 +20,7 @@ export function Footer() {
               href="/"
               className="font-heading font-semibold text-xl text-[var(--color-dark)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200 w-fit"
             >
-              Кондитерская
+              {shopConfig.name}
             </Link>
             <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed max-w-[220px]">
               Авторские торты на заказ. Создаём сладкие моменты с любовью к каждой детали.
@@ -50,22 +51,18 @@ export function Footer() {
               Контакты
             </h3>
             <div className="flex flex-col gap-2">
-              <a
-                href="tel:+78312000000"
-                className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200 w-fit"
-              >
-                +7 (831) 200-00-00
-              </a>
-              <a
-                href="mailto:hello@konditer.ru"
-                className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200 w-fit"
-              >
-                hello@konditer.ru
-              </a>
-              <address className="not-italic text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                г. Арзамас,<br />
-                ул. Ленина, д. 15
-              </address>
+              {shopConfig.phones.map((phone) => (
+                <a
+                  key={phone.value}
+                  href={`tel:${phone.value}`}
+                  className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200 w-fit"
+                >
+                  {phone.display}
+                </a>
+              ))}
+              <p className="not-italic text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                Принимаем заказы в г. {shopConfig.city}
+              </p>
             </div>
           </div>
 
@@ -76,7 +73,7 @@ export function Footer() {
             </h3>
             <div className="flex flex-col gap-2">
               <a
-                href="https://vk.com"
+                href={shopConfig.socials.vk}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200 w-fit"
@@ -87,18 +84,6 @@ export function Footer() {
                 </svg>
                 ВКонтакте
               </a>
-              <a
-                href="https://t.me"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200 w-fit"
-              >
-                {/* Telegram icon */}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M11.944 0A12 12 0 1 0 24 12 12 12 0 0 0 11.944 0Zm5.688 8.22-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.04 13.67l-2.965-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.851.888Z"/>
-                </svg>
-                Telegram
-              </a>
             </div>
           </div>
         </div>
@@ -106,7 +91,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-[var(--color-soft-peach)]/60">
           <p className="text-xs text-[var(--color-text-secondary)] text-center">
-            © 2026 Кондитерская. Все права защищены.
+            © 2026 {shopConfig.name}. Все права защищены.
           </p>
         </div>
       </div>
