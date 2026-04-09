@@ -38,6 +38,19 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs', app, document);
   }
 
+  const jwtSecret = process.env.JWT_SECRET;
+  const isProduction = process.env.NODE_ENV === 'production';
+  const placeholder = 'your-secret-change-in-production-min-32-chars';
+
+  if (isProduction) {
+    if (!jwtSecret || jwtSecret === placeholder || jwtSecret.length < 32) {
+      throw new Error(
+        'JWT_SECRET must be set to a strong random value (>= 32 chars) in production. ' +
+        'Refusing to start with a placeholder or weak secret.'
+      );
+    }
+  }
+
   const port = process.env.PORT || 4000;
   await app.listen(port);
   logger.log(`API running on http://localhost:${port}`);
