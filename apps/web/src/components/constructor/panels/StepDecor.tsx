@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, MousePointerClick } from 'lucide-react';
 import { useConstructorStore } from '@/stores/constructor-store';
 import { formatPrice, cn } from '@/lib/utils';
 
@@ -24,24 +24,17 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Фигурки': '🎂',
 };
 
-// Generate a predictable surface position for a decoration added to the cake
-function generateDecorPosition(index: number): [number, number, number] {
-  const angle = (index * 137.5 * Math.PI) / 180; // golden angle
-  const radius = 0.8 + (index % 3) * 0.2;
-  const x = Math.cos(angle) * radius;
-  const z = Math.sin(angle) * radius;
-  const y = 1.0 + (index % 4) * 0.3;
-  return [x, y, z];
-}
 
 export function StepDecor() {
   const decorations = useConstructorStore((s) => s.decorations);
   const ingredients = useConstructorStore((s) => s.ingredients);
   const inscription = useConstructorStore((s) => s.inscription);
-  const addDecoration = useConstructorStore((s) => s.addDecoration);
   const removeDecoration = useConstructorStore((s) => s.removeDecoration);
   const setInscription = useConstructorStore((s) => s.setInscription);
-  const config = useConstructorStore((s) => s.getConfig)();
+  const config = useConstructorStore((s) => s.getConfig());
+
+  const placingDecorationId = useConstructorStore((s) => s.placingDecorationId);
+  const setPlacingDecorationId = useConstructorStore((s) => s.setPlacingDecorationId);
 
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0]);
 
@@ -57,12 +50,19 @@ export function StepDecor() {
     countMap[d.decorationId] = (countMap[d.decorationId] ?? 0) + 1;
   }
 
-  const handleAdd = (decorationId: string) => {
+  /**
+   * Enter click-to-place mode for the selected decoration type.
+   * If this type is already being placed, toggle it off (second click cancels).
+   * Falls back to algorithmic placement when already at max or when the user
+   * explicitly triggers via the count button instead of the place button.
+   */
+  const handleEnterPlacementMode = (decorationId: string) => {
     if (!canAddMore) return;
-    const idx = decorations.length;
-    const position = generateDecorPosition(idx);
-    const normal: [number, number, number] = [0, 1, 0];
-    addDecoration(decorationId, position, normal);
+    if (placingDecorationId === decorationId) {
+      setPlacingDecorationId(null);
+    } else {
+      setPlacingDecorationId(decorationId);
+    }
   };
 
   const handleRemoveLast = (decorationId: string) => {
@@ -70,6 +70,10 @@ export function StepDecor() {
     const last = decorations.findLast((d) => d.decorationId === decorationId);
     if (last) removeDecoration(last.id);
   };
+
+  const placingDecorName = placingDecorationId
+    ? allDecorations.find((d) => d.id === placingDecorationId)?.name
+    : null;
 
   return (
     <div className="flex flex-col gap-5">
@@ -86,6 +90,39 @@ export function StepDecor() {
           {decorations.length}/{maxDecorations}
         </span>
       </div>
+
+      {/* Placement-mode banner */}
+      <AnimatePresence>
+        {placingDecorationId && (
+          <motion.div
+            key="placement-banner"
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -6, height: 0 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="overflow-hidden"
+          >
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[var(--color-dusty-rose)]/10 border border-[var(--color-dusty-rose)]/30">
+              <MousePointerClick
+                size={14}
+                className="text-[var(--color-dusty-rose)] flex-shrink-0 animate-pulse"
+              />
+              <p className="text-xs text-[var(--color-dusty-rose)] font-medium leading-tight flex-1">
+                Нажмите на торт, чтобы разместить
+                {placingDecorName ? <> «{placingDecorName}»</> : null}.
+                {' '}Правая кнопка или <kbd className="font-mono bg-white/60 px-1 rounded text-[10px]">Esc</kbd> — отмена.
+              </p>
+              <button
+                onClick={() => setPlacingDecorationId(null)}
+                className="w-5 h-5 flex-shrink-0 rounded-md hover:bg-[var(--color-dusty-rose)]/20 flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Отменить размещение"
+              >
+                <X size={10} className="text-[var(--color-dusty-rose)]" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
         {CATEGORIES.map((cat) => {
@@ -120,11 +157,17 @@ export function StepDecor() {
         {filtered.map((decor) => {
           const count = countMap[decor.id] ?? 0;
           const color = CATEGORY_COLORS[decor.category] ?? '#c4a08a';
+          const isBeingPlaced = placingDecorationId === decor.id;
 
           return (
             <div
               key={decor.id}
-              className="flex flex-col gap-2 p-3 rounded-xl bg-white border border-gray-200 hover:border-[var(--color-soft-peach)] hover:shadow-sm transition-all duration-150"
+              className={cn(
+                'flex flex-col gap-2 p-3 rounded-xl bg-white border transition-all duration-150',
+                isBeingPlaced
+                  ? 'border-[var(--color-dusty-rose)] shadow-sm shadow-[var(--color-dusty-rose)]/20 ring-1 ring-[var(--color-dusty-rose)]/30'
+                  : 'border-gray-200 hover:border-[var(--color-soft-peach)] hover:shadow-sm'
+              )}
             >
               {/* Color indicator */}
               <div
@@ -147,6 +190,7 @@ export function StepDecor() {
                     <button
                       onClick={() => handleRemoveLast(decor.id)}
                       className="w-6 h-6 rounded-md bg-gray-100 hover:bg-red-100 text-[var(--color-text-secondary)] hover:text-red-500 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+                      title="Убрать последнюю"
                     >
                       <X size={10} strokeWidth={2.5} />
                     </button>
@@ -156,17 +200,24 @@ export function StepDecor() {
                       {count}
                     </span>
                   )}
+                  {/* Place-on-cake button — enters click-to-place mode */}
                   <button
-                    onClick={() => handleAdd(decor.id)}
-                    disabled={!canAddMore}
+                    onClick={() => handleEnterPlacementMode(decor.id)}
+                    disabled={!canAddMore && !isBeingPlaced}
+                    title={isBeingPlaced ? 'Отменить размещение' : 'Нажмите, затем кликните на торт'}
                     className={cn(
                       'w-6 h-6 rounded-md flex items-center justify-center transition-all duration-150 cursor-pointer',
-                      canAddMore
+                      isBeingPlaced
+                        ? 'bg-[var(--color-dusty-rose)] text-white ring-2 ring-[var(--color-dusty-rose)]/40 scale-110'
+                        : canAddMore
                         ? 'bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white'
                         : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                     )}
                   >
-                    <Plus size={11} strokeWidth={2.5} />
+                    {isBeingPlaced
+                      ? <MousePointerClick size={11} strokeWidth={2.5} />
+                      : <Plus size={11} strokeWidth={2.5} />
+                    }
                   </button>
                 </div>
               </div>

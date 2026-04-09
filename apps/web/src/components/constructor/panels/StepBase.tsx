@@ -24,7 +24,7 @@ export function StepBase() {
   const ingredients = useConstructorStore((s) => s.ingredients);
   const setLayerBase = useConstructorStore((s) => s.setLayerBase);
   const setLayerWeight = useConstructorStore((s) => s.setLayerWeight);
-  const config = useConstructorStore((s) => s.getConfig)();
+  const config = useConstructorStore((s) => s.getConfig());
 
   const [activeTier, setActiveTier] = useState(0);
 

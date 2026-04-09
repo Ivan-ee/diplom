@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Cake, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
@@ -353,9 +353,8 @@ export default function AdminOrdersPage() {
                     order.orderNumber ?? order.id.slice(0, 8).toUpperCase();
 
                   return (
-                    <>
+                    <React.Fragment key={order.id}>
                       <tr
-                        key={order.id}
                         className={cn(
                           'border-b border-[var(--color-soft-peach)]/40 transition-colors duration-100',
                           idx % 2 === 1 && 'bg-[var(--color-cream)]/20',
@@ -418,7 +417,7 @@ export default function AdminOrdersPage() {
                       {isExpanded && (
                         <ExpandedOrderRow key={`${order.id}-expanded`} order={order} />
                       )}
-                    </>
+                    </React.Fragment>
                   );
                 })
               )}
