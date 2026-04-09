@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@bakery/shared-types": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@react-spring/core": "^10.0.3",
     "@react-spring/three": "^10.0.3",

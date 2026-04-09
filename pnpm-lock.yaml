@@ -26,6 +26,9 @@ importers:
       '@bakery/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@bakery/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       '@nestjs/common':
         specifier: ^11.0.0
         version: 11.1.17(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -123,6 +126,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@bakery/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.72.1(react@19.2.4))
@@ -242,6 +248,8 @@ importers:
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
+
+  packages/shared-types: {}
 
 packages:
 
