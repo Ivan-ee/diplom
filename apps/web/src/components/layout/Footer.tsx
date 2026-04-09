@@ -3,8 +3,8 @@ import Link from 'next/link';
 const navLinks = [
   { href: '/catalog', label: 'Каталог' },
   { href: '/constructor', label: 'Конструктор' },
+  { href: '/fillings', label: 'Начинки' },
   { href: '/about', label: 'О нас' },
-  { href: '/delivery', label: 'Доставка и оплата' },
 ];
 
 export function Footer() {
