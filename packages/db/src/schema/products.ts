@@ -1,4 +1,5 @@
-import { pgTable, uuid, varchar, text, integer, numeric, boolean, timestamp, json, index, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, integer, numeric, boolean, timestamp, json, index, pgEnum, check } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { categories } from './categories';
 
 export const priceTypeEnum = pgEnum('price_type', ['per_kg', 'per_unit']);
@@ -25,4 +26,9 @@ export const products = pgTable('products', {
 }, (table) => [
   index('products_category_id_idx').on(table.categoryId),
   index('products_is_available_idx').on(table.isAvailable),
+  check(
+    'products_price_type_consistency',
+    sql`(${table.priceType} = 'per_kg' AND ${table.pricePerKg} IS NOT NULL AND ${table.pricePerUnit} IS NULL)
+     OR (${table.priceType} = 'per_unit' AND ${table.pricePerUnit} IS NOT NULL AND ${table.pricePerKg} IS NULL)`
+  ),
 ]);

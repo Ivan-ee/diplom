@@ -14,7 +14,7 @@ export const constructorFillings = pgTable('constructor_fillings', {
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
   pricePerKg: integer('price_per_kg').notNull(),
-  category: fillingCategoryEnum('category'),
+  category: fillingCategoryEnum('category').notNull().default('specialty'),
   imageUrl: text('image_url'),
   sortOrder: integer('sort_order').notNull().default(0),
   isAvailable: boolean('is_available').notNull().default(true),
