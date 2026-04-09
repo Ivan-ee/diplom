@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Bottom tier -->
+  <rect x="3" y="19" width="26" height="10" rx="3" fill="#d4a5a5"/>
+  <!-- Top tier -->
+  <rect x="8" y="11" width="16" height="9" rx="2" fill="#faf3e7" stroke="#d4a5a5" stroke-width="1.5"/>
+  <!-- Candle body -->
+  <rect x="15" y="5" width="2" height="5" rx="1" fill="#faf3e7" stroke="#d4a5a5" stroke-width="1"/>
+  <!-- Flame -->
+  <ellipse cx="16" cy="4" rx="1.2" ry="1.8" fill="#e8c07a"/>
+</svg>
