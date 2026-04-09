@@ -12,7 +12,7 @@ import { CatalogFilters } from '@/components/catalog/CatalogFilters';
 import { Pagination } from '@/components/catalog/Pagination';
 
 interface CatalogSearchParams {
-  type?: string;
+  categorySlug?: string;
   occasion?: string;
   priceMin?: string;
   priceMax?: string;
@@ -39,7 +39,7 @@ async function CatalogContent({ searchParams }: { searchParams: CatalogSearchPar
   try {
     const res = await fetchServer<ProductsApiResponse>('/products', {
       params: {
-        type: searchParams.type,
+        categorySlug: searchParams.categorySlug,
         occasion: searchParams.occasion,
         priceMin: searchParams.priceMin,
         priceMax: searchParams.priceMax,

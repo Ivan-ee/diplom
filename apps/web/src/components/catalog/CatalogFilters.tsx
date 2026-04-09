@@ -7,14 +7,14 @@ import { Button } from '@/components/ui/button';
 
 const categories = [
   { value: '', label: 'Все' },
-  { value: 'cake', label: 'Торты' },
-  { value: 'cupcake', label: 'Капкейки' },
-  { value: 'macaron', label: 'Макаронс' },
+  { value: 'torty', label: 'Торты' },
+  { value: 'kapkejki', label: 'Капкейки' },
+  { value: 'makarons', label: 'Макаронс' },
 ];
 
 const sortOptions = [
-  { value: 'priceMin:asc', label: 'По цене ↑' },
-  { value: 'priceMin:desc', label: 'По цене ↓' },
+  { value: 'pricePerKg:asc', label: 'По цене ↑' },
+  { value: 'pricePerKg:desc', label: 'По цене ↓' },
   { value: 'createdAt:desc', label: 'Сначала новые' },
 ];
 
@@ -24,7 +24,7 @@ export function CatalogFilters() {
   const searchParams = useSearchParams();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const currentType = searchParams.get('type') ?? '';
+  const currentCategorySlug = searchParams.get('categorySlug') ?? '';
   const currentSort = `${searchParams.get('sort') ?? 'createdAt'}:${searchParams.get('order') ?? 'desc'}`;
 
   const updateParam = useCallback(
@@ -45,7 +45,7 @@ export function CatalogFilters() {
   );
 
   function handleCategory(value: string) {
-    updateParam({ type: value || null });
+    updateParam({ categorySlug: value || null });
   }
 
   function handleSort(value: string) {
@@ -57,7 +57,7 @@ export function CatalogFilters() {
     router.push(pathname, { scroll: false });
   }
 
-  const hasActiveFilters = currentType !== '' || currentSort !== 'createdAt:desc';
+  const hasActiveFilters = currentCategorySlug !== '' || currentSort !== 'createdAt:desc';
 
   const filtersContent = (
     <div className="flex flex-wrap items-center gap-3">
@@ -67,11 +67,11 @@ export function CatalogFilters() {
             key={cat.value}
             onClick={() => handleCategory(cat.value)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border ${
-              currentType === cat.value
+              currentCategorySlug === cat.value
                 ? 'bg-[var(--color-dusty-rose)] text-white border-[var(--color-dusty-rose)] shadow-sm'
                 : 'bg-white text-[var(--color-dark)] border-gray-200 hover:border-[var(--color-dusty-rose)] hover:text-[var(--color-dusty-rose)]'
             }`}
-            aria-pressed={currentType === cat.value}
+            aria-pressed={currentCategorySlug === cat.value}
           >
             {cat.label}
           </button>
