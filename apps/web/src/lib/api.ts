@@ -1,5 +1,16 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
+/**
+ * Read the XSRF-TOKEN cookie that the backend sets on every response.
+ * Returns null in SSR context (document is undefined) — fetchServer does not
+ * need CSRF tokens because it communicates over the internal Docker network.
+ */
+function getCsrfToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+  return match?.[1] ?? null;
+}
+
 interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -80,11 +91,13 @@ export async function fetchClient<T>(
   }
   const clientUrl = url.toString();
 
+  const csrfToken = getCsrfToken();
   const res = await fetch(clientUrl, {
     ...fetchOptions,
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      ...(csrfToken ? { 'X-XSRF-TOKEN': csrfToken } : {}),
       ...fetchOptions.headers,
     },
   });

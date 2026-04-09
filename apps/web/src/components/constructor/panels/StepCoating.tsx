@@ -152,6 +152,25 @@ export function StepCoating() {
             );
           })}
         </div>
+        <div className="mt-3 flex items-center gap-3">
+          <label className="relative flex-1 group cursor-pointer">
+            <input
+              type="color"
+              value={coating.color}
+              onChange={(e) => setCoatingColor(e.target.value)}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-dashed border-gray-300 group-hover:border-[var(--color-dusty-rose)] transition-colors duration-150">
+              <div
+                className="w-6 h-6 rounded-lg border border-gray-200 shadow-sm flex-shrink-0"
+                style={{ backgroundColor: coating.color }}
+              />
+              <span className="text-xs font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-dark)] transition-colors">
+                Свой цвет
+              </span>
+            </div>
+          </label>
+        </div>
       </div>
 
       <div className="p-3 bg-white rounded-xl border border-gray-200 flex flex-col gap-3">

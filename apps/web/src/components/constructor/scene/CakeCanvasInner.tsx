@@ -1,10 +1,12 @@
 'use client';
 
-import { Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Suspense, useEffect } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SceneSetup } from './SceneSetup';
 import { CakeModel } from './CakeModel';
+import { DecorationDropHandler } from './DecorationDropHandler';
+import { glRef } from '@/lib/screenshot-ref';
 
 function CakeLoadingFallback() {
   return (
@@ -13,6 +15,19 @@ function CakeLoadingFallback() {
       <meshStandardMaterial color="#c4a08a" wireframe />
     </mesh>
   );
+}
+
+/** Registers the WebGL renderer into the module-level glRef so that
+ *  components outside the R3F tree (e.g. StepNavigation) can take screenshots. */
+function GlRegistrar() {
+  const { gl } = useThree();
+  useEffect(() => {
+    glRef.current = gl;
+    return () => {
+      glRef.current = null;
+    };
+  }, [gl]);
+  return null;
 }
 
 export default function CakeCanvasInner() {
@@ -29,10 +44,12 @@ export default function CakeCanvasInner() {
       shadows
       style={{ width: '100%', height: '100%' }}
     >
+      <GlRegistrar />
       <SceneSetup />
       <Suspense fallback={<CakeLoadingFallback />}>
         <CakeModel />
       </Suspense>
+      <DecorationDropHandler />
     </Canvas>
   );
 }

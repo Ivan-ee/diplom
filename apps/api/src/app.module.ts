@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { CsrfMiddleware } from './common/middleware/csrf.middleware';
 
 import { AppController } from './app.controller';
 
@@ -52,4 +53,10 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    // Apply CSRF middleware to all routes. The middleware itself exempts
+    // GET / HEAD / OPTIONS so only state-changing requests are validated.
+    consumer.apply(CsrfMiddleware).forRoutes('*');
+  }
+}

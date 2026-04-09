@@ -40,6 +40,15 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Get dashboard statistics (admin)' })
+  @ApiResponse({ status: 200, description: 'Dashboard stats' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden — admin role required' })
+  getStats() {
+    return this.adminService.getStats();
+  }
+
   @Get('orders')
   @ApiOperation({ summary: 'List all orders with pagination (admin)' })
   @ApiQuery({ name: 'status', required: false, description: 'Filter by order status' })

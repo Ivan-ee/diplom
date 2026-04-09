@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { and, asc, desc, eq, gte, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { AnyPgTable } from 'drizzle-orm/pg-core';
+import { PgColumn } from 'drizzle-orm/pg-core';
 import * as schema from '@bakery/db/schema';
 import { DRIZZLE } from '../database/drizzle.token';
 import { PaginationDto } from '../common/dto/pagination.dto';
@@ -426,8 +428,8 @@ export class AdminService {
   }
 
   private async updateIngredientTable(
-    table: any,
-    idCol: any,
+    table: AnyPgTable,
+    idCol: PgColumn,
     id: string,
     values: Record<string, unknown>,
     label: string,

@@ -15,7 +15,7 @@ export class UploadService implements OnModuleInit {
 
   constructor(private readonly config: ConfigService) {}
 
-  onModuleInit() {
+  async onModuleInit(): Promise<void> {
     this.client = new Minio.Client({
       endPoint: this.config.getOrThrow<string>('MINIO_ENDPOINT'),
       port: this.config.get<number>('MINIO_PORT', 9000),
@@ -28,6 +28,8 @@ export class UploadService implements OnModuleInit {
       'MINIO_PUBLIC_URL',
       'http://localhost:9000',
     );
+
+    await this.ensureBucketExists('screenshots');
   }
 
   async presignUrl(dto: PresignDto): Promise<{
@@ -40,8 +42,6 @@ export class UploadService implements OnModuleInit {
     const bucket = dto.bucket ?? 'screenshots';
     const ext = extname(dto.filename) || '';
     const objectName = `${randomUUID()}${ext}`;
-
-    await this.ensureBucketExists(bucket);
 
     let uploadUrl: string;
     try {

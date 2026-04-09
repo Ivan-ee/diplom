@@ -13,6 +13,7 @@ interface MobileMenuProps {
 const navLinks = [
   { href: '/catalog', label: 'Каталог' },
   { href: '/constructor', label: 'Конструктор' },
+  { href: '/fillings', label: 'Начинки' },
   { href: '/about', label: 'О нас' },
 ];
 

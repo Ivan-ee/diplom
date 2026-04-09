@@ -114,6 +114,10 @@ export interface ConstructorState {
   totalPrice: number;
   isLoading: boolean;
 
+  /** ID of the decoration type currently being placed via click-to-place mode. Null when idle. */
+  placingDecorationId: string | null;
+  setPlacingDecorationId: (id: string | null) => void;
+
   setStep: (step: ConstructorStep) => void;
   setShape: (shape: CakeShape) => void;
   setTierCount: (count: TierCount) => void;
@@ -127,6 +131,7 @@ export interface ConstructorState {
   setDrips: (drips: CoatingDrips | null) => void;
   addDecoration: (decorationId: string, position: [number, number, number], normal: [number, number, number]) => void;
   removeDecoration: (id: string) => void;
+  moveDecoration: (id: string, position: [number, number, number], normal: [number, number, number]) => void;
   setInscription: (text: string) => void;
   loadIngredients: () => Promise<void>;
   recalculatePrice: () => void;
@@ -192,6 +197,9 @@ export const useConstructorStore = create<ConstructorState>()(
     ingredients: null,
     totalPrice: 0,
     isLoading: false,
+    placingDecorationId: null,
+
+    setPlacingDecorationId: (id) => set({ placingDecorationId: id }),
 
     setStep: (step) => set({ currentStep: step }),
 
@@ -279,6 +287,14 @@ export const useConstructorStore = create<ConstructorState>()(
         decorations: state.decorations.filter((d) => d.id !== id),
       }));
       get().recalculatePrice();
+    },
+
+    moveDecoration: (id, position, normal) => {
+      set((state) => ({
+        decorations: state.decorations.map((d) =>
+          d.id === id ? { ...d, position, normal } : d,
+        ),
+      }));
     },
 
     setInscription: (text) => {
