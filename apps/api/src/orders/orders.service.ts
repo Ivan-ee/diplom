@@ -5,7 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '@bakery/db/schema';
 import { DRIZZLE } from '../database/drizzle.token';
@@ -105,6 +105,25 @@ export class OrdersService {
       ...order,
       items: itemsByOrder.get(order.id) ?? [],
     }));
+  }
+
+  async findOneByUser(orderId: string, userId: string) {
+    const [order] = await this.db
+      .select()
+      .from(schema.orders)
+      .where(and(eq(schema.orders.id, orderId), eq(schema.orders.userId, userId)))
+      .limit(1);
+
+    if (!order) {
+      throw new NotFoundException(`Order "${orderId}" not found`);
+    }
+
+    const items = await this.db
+      .select()
+      .from(schema.orderItems)
+      .where(eq(schema.orderItems.orderId, orderId));
+
+    return { ...order, items };
   }
 
   private async recalculateItemPrice(item: CreateOrderItemDto): Promise<

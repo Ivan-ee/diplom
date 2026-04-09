@@ -4,6 +4,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseUUIDPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -45,5 +47,18 @@ export class OrdersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(@CurrentUser() user: SafeUser) {
     return this.ordersService.findByUser(user.id);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: "Get a single order by ID (authenticated)" })
+  @ApiResponse({ status: 200, description: 'Order found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  async getOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: SafeUser,
+  ) {
+    return this.ordersService.findOneByUser(id, user.id);
   }
 }
