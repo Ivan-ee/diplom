@@ -16,6 +16,7 @@ export interface CartItem {
   productId?: string;
   name: string;
   imageUrl: string;
+  /** integer grams */
   weight: number;
   price: number;
   quantity: number;

@@ -20,30 +20,44 @@ const categoryLabels: Record<string, string> = {
 };
 
 function buildWeightOptions(product: Product): number[] {
+  // Returns integer grams — same unit convention as ProductCard and constructor-store.
   if (product.weightOptions && product.weightOptions.length > 0) {
     return product.weightOptions;
   }
-  const min = product.minWeight ? parseFloat(product.minWeight) : (product.weightMin ?? 1);
-  const max = product.maxWeight ? parseFloat(product.maxWeight) : (product.weightMax ?? min);
-  const step = product.weightStep ? parseFloat(product.weightStep) : 0.5;
+  // minWeight/maxWeight/weightStep are string kg from the API (e.g. '1.0').
+  // weightMin/weightMax are numeric grams from the API (e.g. 1000).
+  const minKg = product.minWeight
+    ? parseFloat(product.minWeight)
+    : product.weightMin != null
+      ? product.weightMin / 1000
+      : 1;
+  const maxKg = product.maxWeight
+    ? parseFloat(product.maxWeight)
+    : product.weightMax != null
+      ? product.weightMax / 1000
+      : minKg;
+  const stepKg = product.weightStep ? parseFloat(product.weightStep) : 0.5;
   const opts: number[] = [];
-  for (let w = min; w <= max; w += step) {
-    opts.push(w);
+  for (let wKg = minKg; wKg <= maxKg + 1e-9; wKg += stepKg) {
+    opts.push(Math.round(wKg * 1000));
   }
-  if (opts.length === 0) opts.push(min);
-  if (!opts.includes(max)) opts.push(max);
+  if (opts.length === 0) opts.push(Math.round(minKg * 1000));
+  const maxG = Math.round(maxKg * 1000);
+  if (!opts.includes(maxG)) opts.push(maxG);
   return opts;
 }
 
-function calcPrice(product: Product, weightKg: number): number {
+function calcPrice(product: Product, weightG: number): number {
+  // weightG is integer grams; convert to kg before multiplying by pricePerKg.
   if (product.pricePerKg) {
-    return Math.round(product.pricePerKg * weightKg);
+    return Math.round(product.pricePerKg * (weightG / 1000));
   }
   return product.priceMin ?? 0;
 }
 
 export function ProductInfo({ product }: ProductInfoProps) {
   const weightOptions = buildWeightOptions(product);
+  /** selectedWeight is stored as integer grams */
   const [selectedWeight, setSelectedWeight] = useState(weightOptions[0] ?? 1000);
   const [inscription, setInscription] = useState('');
   const [added, setAdded] = useState(false);
@@ -93,7 +107,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         </span>
         {weightOptions.length > 1 && (
           <span className="text-sm text-[var(--color-text-secondary)]">
-            за {selectedWeight} кг
+            за {(selectedWeight / 1000).toLocaleString('ru-RU')} кг
           </span>
         )}
       </div>
@@ -123,7 +137,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
                     : 'bg-white text-[var(--color-dark)] border-gray-200 hover:border-[var(--color-dusty-rose)] hover:text-[var(--color-dusty-rose)]'
                 }`}
               >
-                {w / 1000} кг
+                {(w / 1000).toLocaleString('ru-RU')} кг
               </button>
             ))}
           </div>

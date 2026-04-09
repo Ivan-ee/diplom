@@ -207,20 +207,23 @@ export function CheckoutForm() {
     try {
       const payload = {
         pickupDate: data.pickupDate,
-        timeSlot: data.timeSlot,
+        // DTO field is pickupTimeSlot; timeSlot from the form maps to it.
+        pickupTimeSlot: data.timeSlot,
         comment: data.comment ?? '',
         items: items.map((item) => ({
           type: item.type,
-          productId: item.productId ?? null,
-          name: item.name,
-          imageUrl: item.imageUrl,
-          weight: item.weight,
-          price: item.price,
+          productId: item.productId ?? undefined,
+          // Convert integer grams → integer tenths of kg (e.g. 1500 g → 15 = 1.5 kg).
+          // API DTO expects @IsInt() @Min(5) where 10 = 1.0 kg.
+          weight: Math.round(item.weight / 100),
           quantity: item.quantity,
-          inscription: item.inscription ?? null,
-          cakeConfig: item.cakeConfig ?? null,
+          inscription: item.inscription ?? undefined,
+          cakeConfig: item.cakeConfig ?? undefined,
+          // name, imageUrl, price are NOT in CreateOrderItemDto and will be
+          // rejected by forbidNonWhitelisted: true — intentionally omitted.
         })),
-        totalPrice,
+        // totalPrice omitted — API recomputes server-side and forbidNonWhitelisted
+        // would reject it since it is not in CreateOrderDto.
       };
 
       const res = await fetchClient<OrderCreatedResponse>('/orders', {

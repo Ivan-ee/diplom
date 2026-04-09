@@ -95,7 +95,7 @@ function ProductItemRow({ item }: { item: OrderItemProduct }) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-[var(--color-dark)] leading-snug">{item.name}</p>
         <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-          {item.weight >= 1000 ? `${item.weight / 1000} кг` : `${item.weight} г`}
+          {`${parseFloat(String(item.weight)).toLocaleString('ru-RU')} кг`}
           {item.quantity > 1 && ` × ${item.quantity}`}
         </p>
       </div>
@@ -128,7 +128,7 @@ function ConstructorItemRow({ item }: { item: OrderItemConstructor }) {
               <li key={i}>
                 Ярус {i + 1}: {l.baseName ?? '—'}
                 {l.fillingName ? ` / ${l.fillingName}` : ''}
-                {` (${l.weight >= 1000 ? `${l.weight / 1000} кг` : `${l.weight} г`})`}
+                {` (${parseFloat(String(l.weight)).toLocaleString('ru-RU')} кг)`}
               </li>
             ))}
             {cfg.coatingName && <li>Покрытие: {cfg.coatingName}</li>}

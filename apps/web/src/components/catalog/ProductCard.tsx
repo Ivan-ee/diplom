@@ -55,7 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
   const [added, setAdded] = useState(false);
 
-  const minWeight = product.weightMin ?? (product.weightOptions?.[0] ?? (product.minWeight ? parseFloat(product.minWeight) * 1000 : 1000));
+  const minWeight = product.weightMin ?? (product.weightOptions?.[0] ?? (product.minWeight ? Math.round(parseFloat(product.minWeight) * 1000) : 1000));
   const categoryName = typeof product.category === 'object' && product.category !== null
     ? product.category.name
     : (product.category ?? '');

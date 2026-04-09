@@ -99,7 +99,7 @@ function ExpandedOrderRow({ order }: { order: Order }) {
                             <li key={i}>
                               Ярус {i + 1}: {l.baseName ?? '—'}
                               {l.fillingName ? ` / ${l.fillingName}` : ''}
-                              {` (${l.weight >= 1000 ? `${l.weight / 1000} кг` : `${l.weight} г`})`}
+                              {` (${parseFloat(String(l.weight)).toLocaleString('ru-RU')} кг)`}
                             </li>
                           ))}
                           {(item as OrderItemConstructor).cakeConfig?.coatingName && (
@@ -123,7 +123,7 @@ function ExpandedOrderRow({ order }: { order: Order }) {
                     <>
                       <p className="text-sm font-medium text-[var(--color-dark)]">{item.name}</p>
                       <p className="text-xs text-[var(--color-text-secondary)]">
-                        {item.weight >= 1000 ? `${item.weight / 1000} кг` : `${item.weight} г`}
+                        {`${parseFloat(String(item.weight)).toLocaleString('ru-RU')} кг`}
                         {'quantity' in item && item.quantity > 1 ? ` × ${item.quantity}` : ''}
                       </p>
                     </>
