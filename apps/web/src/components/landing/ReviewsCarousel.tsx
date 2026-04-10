@@ -1,9 +1,4 @@
-'use client';
-
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Autoplay } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
+import { StaggerChildren, StaggerItem } from '@/components/ui/stagger-children';
 
 const reviews = [
   {
@@ -35,7 +30,7 @@ function StarRating({ rating }: { rating: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <span
           key={i}
-          className={`text-lg ${i < rating ? 'text-[var(--color-dusty-rose)]' : 'text-gray-200'}`}
+          className={`text-lg leading-none ${i < rating ? 'text-[var(--color-dusty-rose)]' : 'text-gray-200'}`}
           aria-hidden="true"
         >
           ★
@@ -47,70 +42,33 @@ function StarRating({ rating }: { rating: number }) {
 
 export function ReviewsCarousel() {
   return (
-    <section className="py-16 px-4 bg-white">
-      <div className="mx-auto max-w-7xl">
-        {/* Heading */}
-        <div className="mb-10 flex flex-col gap-2">
-          <h2 className="font-heading font-semibold text-3xl text-[var(--color-dark)]">
-            Отзывы наших клиентов
-          </h2>
-          <p className="text-[var(--color-text-secondary)]">
-            Нам доверяют сотни семей в Арзамасе
-          </p>
-        </div>
+    <section className="py-24 px-4">
+      <h2 className="font-heading font-bold tracking-tight text-4xl lg:text-5xl text-center mb-16 text-[var(--color-dark)]">
+        Отзывы
+      </h2>
 
-        <Swiper
-          modules={[Pagination, Autoplay]}
-          spaceBetween={24}
-          slidesPerView={1}
-          pagination={{ clickable: true }}
-          autoplay={{ delay: 6000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-          breakpoints={{
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-          }}
-          className="!pb-10"
-        >
-          {reviews.map((review) => (
-            <SwiperSlide key={review.id}>
-              <div className="flex flex-col gap-4 rounded-xl bg-[var(--color-cream)] p-6 h-full min-h-[200px]">
-                {/* Stars */}
-                <StarRating rating={review.rating} />
+      <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        {reviews.map((review) => (
+          <StaggerItem key={review.id}>
+            <div className="flex flex-col bg-white rounded-2xl p-8 border border-neutral-100 h-full">
+              <StarRating rating={review.rating} />
 
-                {/* Quote */}
-                <p className="text-sm text-[var(--color-dark)] leading-relaxed flex-1">
-                  &ldquo;{review.text}&rdquo;
-                </p>
+              <p className="text-neutral-600 mt-4 text-sm leading-relaxed flex-1">
+                &ldquo;{review.text}&rdquo;
+              </p>
 
-                {/* Author */}
-                <div className="flex items-center justify-between mt-auto pt-2 border-t border-[var(--color-soft-peach)]/60">
-                  <span className="font-heading font-semibold text-sm text-[var(--color-dark)]">
-                    {review.author}
-                  </span>
-                  <span className="text-xs text-[var(--color-text-secondary)]">
-                    {review.date}
-                  </span>
-                </div>
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-neutral-100">
+                <span className="font-semibold text-sm text-[var(--color-dark)]">
+                  {review.author}
+                </span>
+                <span className="text-xs text-neutral-400">
+                  {review.date}
+                </span>
               </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
-
-      <style>{`
-        .swiper-pagination-bullet {
-          background: var(--color-dusty-rose);
-          opacity: 0.35;
-          width: 8px;
-          height: 8px;
-        }
-        .swiper-pagination-bullet-active {
-          opacity: 1;
-          width: 24px;
-          border-radius: 4px;
-          transition: width 0.3s ease;
-        }
-      `}</style>
+            </div>
+          </StaggerItem>
+        ))}
+      </StaggerChildren>
     </section>
   );
 }

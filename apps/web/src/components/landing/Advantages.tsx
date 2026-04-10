@@ -1,4 +1,5 @@
 import { Leaf, Clock, Sparkles } from 'lucide-react';
+import { StaggerChildren, StaggerItem } from '@/components/ui/stagger-children';
 
 const advantages = [
   {
@@ -17,56 +18,34 @@ const advantages = [
     icon: Sparkles,
     title: 'Всегда свежее',
     description:
-      'Каждый торт готовится под ваш заказ. Никаких заготовок — только свежая выпечка к&nbsp;вашей дате.',
+      'Каждый торт готовится под ваш заказ. Никаких заготовок — только свежая выпечка к вашей дате.',
   },
 ];
 
 export function Advantages() {
   return (
-    <section className="bg-[var(--color-cream)] py-16 px-4">
-      <div className="mx-auto max-w-7xl">
-        {/* Inner container */}
-        <div className="rounded-2xl bg-white/60 px-6 py-12 sm:px-10 lg:px-16">
-          {/* Heading */}
-          <div className="mb-10 text-center">
-            <h2 className="font-heading font-semibold text-3xl text-[var(--color-dark)]">
-              Наши преимущества
-            </h2>
-            <p className="mt-2 text-[var(--color-text-secondary)]">
-              Почему клиенты выбирают нас снова и снова
+    <section className="py-24 px-4 bg-neutral-50">
+      <h2 className="font-heading font-bold tracking-tight text-4xl lg:text-5xl text-center mb-16 text-[var(--color-dark)]">
+        Почему выбирают нас
+      </h2>
+
+      <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+        {advantages.map(({ icon: Icon, title, description }) => (
+          <StaggerItem key={title} className="flex flex-col items-center text-center">
+            <Icon
+              size={48}
+              className="text-[var(--color-dusty-rose)] mb-4"
+              strokeWidth={1.5}
+            />
+            <h3 className="font-heading font-semibold text-xl mb-2 text-[var(--color-dark)]">
+              {title}
+            </h3>
+            <p className="text-neutral-500 text-sm leading-relaxed">
+              {description}
             </p>
-          </div>
-
-          {/* Cards grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {advantages.map(({ icon: Icon, title, description }) => (
-              <div
-                key={title}
-                className="flex flex-col items-center text-center gap-4"
-              >
-                {/* Icon circle */}
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-cream)] shadow-sm">
-                  <Icon
-                    size={28}
-                    className="text-[var(--color-dusty-rose)]"
-                    strokeWidth={1.5}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <h3 className="font-heading font-semibold text-lg text-[var(--color-dark)]">
-                    {title}
-                  </h3>
-                  <p
-                    className="text-sm text-[var(--color-text-secondary)] leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: description }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+          </StaggerItem>
+        ))}
+      </StaggerChildren>
     </section>
   );
 }

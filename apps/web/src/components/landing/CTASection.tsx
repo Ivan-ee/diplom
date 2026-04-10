@@ -1,35 +1,51 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
+
+// Set to true once /public/images/constructor-preview.jpg is added to the project
+const HAS_CONSTRUCTOR_IMAGE = false;
 
 export function CTASection() {
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-[var(--color-soft-peach)]/30 to-white">
-      <div className="mx-auto max-w-3xl text-center flex flex-col items-center gap-6">
-        {/* Decorative element */}
-        <span className="text-5xl select-none" aria-hidden="true">🎂</span>
+    <section className="py-24 px-4 bg-[var(--color-cream)]">
+      <div className="grid lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
+        {/* Left — photo */}
+        <RevealOnScroll delay={0}>
+          <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-white shadow-xl">
+            {HAS_CONSTRUCTOR_IMAGE ? (
+              <Image
+                src="/images/constructor-preview.jpg"
+                alt="3D конструктор тортов"
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[var(--color-soft-peach)]/20 to-white">
+                <span className="text-sm text-neutral-400 tracking-wide">Фото конструктора</span>
+              </div>
+            )}
+          </div>
+        </RevealOnScroll>
 
-        <h2 className="font-heading font-bold text-4xl lg:text-5xl text-[var(--color-dark)] leading-tight">
-          Создайте торт{' '}
-          <span className="text-[var(--color-dusty-rose)]">мечты</span>
-        </h2>
+        {/* Right — text */}
+        <RevealOnScroll delay={0.2} className="flex flex-col gap-6">
+          <h2 className="font-heading font-bold tracking-tight text-4xl lg:text-5xl text-[var(--color-dark)] leading-tight">
+            Создайте свой идеальный торт
+          </h2>
 
-        <p className="text-lg text-[var(--color-text-secondary)] max-w-xl leading-relaxed">
-          Наш 3D-конструктор позволит увидеть результат до заказа. Выберите форму, крем, декор и надпись — и мы воплотим вашу идею.
-        </p>
+          <p className="text-lg text-neutral-500 leading-relaxed">
+            Выберите форму, начинку, покрытие и декор — увидите результат в 3D.
+          </p>
 
-        <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-          <Button asChild size="lg" className="w-full sm:w-auto min-w-[220px]">
-            <Link href="/constructor">Открыть конструктор</Link>
-          </Button>
-          <Button asChild size="lg" variant="outline" className="w-full sm:w-auto min-w-[220px]">
-            <Link href="/catalog">Перейти в каталог</Link>
-          </Button>
-        </div>
-
-        {/* Small note */}
-        <p className="text-sm text-[var(--color-text-secondary)]">
-          Бесплатно и без регистрации — просто начните собирать
-        </p>
+          <div>
+            <Link
+              href="/constructor"
+              className="inline-flex items-center justify-center rounded-full px-8 py-3 text-base font-medium bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white transition-colors duration-200"
+            >
+              Открыть конструктор
+            </Link>
+          </div>
+        </RevealOnScroll>
       </div>
     </section>
   );
