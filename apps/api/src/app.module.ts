@@ -57,6 +57,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     // Apply CSRF middleware to all routes. The middleware itself exempts
     // GET / HEAD / OPTIONS so only state-changing requests are validated.
-    consumer.apply(CsrfMiddleware).forRoutes('*');
+    consumer.apply(CsrfMiddleware).forRoutes('{*path}');
   }
 }
