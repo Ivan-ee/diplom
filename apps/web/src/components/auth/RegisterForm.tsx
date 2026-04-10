@@ -34,6 +34,24 @@ const registerSchema = z
 
 type RegisterFields = z.infer<typeof registerSchema>;
 
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '');
+
+  if (!digits) return '';
+
+  // Ensure starts with 7
+  const normalized = digits.startsWith('7') ? digits : digits.startsWith('8') ? '7' + digits.slice(1) : '7' + digits;
+
+  const parts = ['+7'];
+  if (normalized.length > 1) parts.push(' (' + normalized.slice(1, 4));
+  if (normalized.length >= 4) parts[1] += ')';
+  if (normalized.length > 4) parts.push(' ' + normalized.slice(4, 7));
+  if (normalized.length > 7) parts.push('-' + normalized.slice(7, 9));
+  if (normalized.length > 9) parts.push('-' + normalized.slice(9, 11));
+
+  return parts.join('');
+}
+
 interface RegisterFormProps {
   onSuccess: () => void;
 }
@@ -47,6 +65,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFields>({
     resolver: zodResolver(registerSchema),
@@ -60,7 +79,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         email: data.email,
         password: data.password,
       };
-      if (data.phone) payload.phone = data.phone;
+      if (data.phone) payload.phone = data.phone.replace(/[^\d+]/g, '');
 
       const res = await fetchClient<User>('/auth/register', {
         method: 'POST',
@@ -70,8 +89,12 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       onSuccess();
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
-      if (message.toLowerCase().includes('email')) {
-        setServerError('Email уже зарегистрирован');
+      if (message.toLowerCase().includes('email already registered')) {
+        setServerError('Этот email уже зарегистрирован');
+      } else if (message.toLowerCase().includes('phone')) {
+        setServerError('Введите телефон в формате +7XXXXXXXXXX');
+      } else if (message) {
+        setServerError(message);
       } else {
         setServerError('Не удалось создать аккаунт. Попробуйте позже');
       }
@@ -100,6 +123,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           placeholder="+7 (___) ___-__-__"
           autoComplete="tel"
           {...register('phone')}
+          onChange={(e) => {
+            const formatted = formatPhone(e.target.value);
+            setValue('phone', formatted, { shouldValidate: true });
+          }}
           className={inputClass}
         />
       </FieldWrapper>

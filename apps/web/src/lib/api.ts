@@ -43,8 +43,13 @@ function buildUrl(path: string, params?: Record<string, string | number | undefi
 }
 
 async function parseErrorResponse(res: Response): Promise<never> {
-  const error = await res.json().catch(() => ({ error: { message: res.statusText } }));
-  throw new Error(error.error?.message || `API error: ${res.status}`, { cause: error });
+  const body = await res.json().catch(() => ({ error: { message: res.statusText } }));
+  const errObj = body.error;
+  const message =
+    Array.isArray(errObj?.details) && errObj.details.length > 0
+      ? errObj.details.join('; ')
+      : errObj?.message || `API error: ${res.status}`;
+  throw new Error(message, { cause: body });
 }
 
 /**
