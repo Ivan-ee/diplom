@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { LoginForm } from './LoginForm';
@@ -17,6 +17,7 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose, defaultTab = 'login', returnPath }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Sync active tab when defaultTab changes (e.g. opened via "register" link)
   useEffect(() => {
@@ -24,6 +25,40 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login', returnPath }:
       setActiveTab(defaultTab);
     }
   }, [defaultTab, isOpen]);
+
+  // Focus trap
+  useEffect(() => {
+    if (!isOpen || !modalRef.current) return;
+
+    const modal = modalRef.current;
+    const focusableElements = modal.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstEl = focusableElements[0];
+    const lastEl = focusableElements[focusableElements.length - 1];
+
+    // Focus first input
+    const firstInput = modal.querySelector<HTMLElement>('input');
+    firstInput?.focus();
+
+    function handleTab(e: KeyboardEvent) {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === firstEl) {
+          e.preventDefault();
+          lastEl?.focus();
+        }
+      } else {
+        if (document.activeElement === lastEl) {
+          e.preventDefault();
+          firstEl?.focus();
+        }
+      }
+    }
+
+    modal.addEventListener('keydown', handleTab);
+    return () => modal.removeEventListener('keydown', handleTab);
+  }, [isOpen]);
 
   // Lock body scroll and handle Escape key while modal is open
   useEffect(() => {
@@ -67,6 +102,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login', returnPath }:
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               className="relative w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl"
+              ref={modalRef}
               role="dialog"
               aria-modal="true"
               aria-label={activeTab === 'login' ? 'Вход в аккаунт' : 'Регистрация'}

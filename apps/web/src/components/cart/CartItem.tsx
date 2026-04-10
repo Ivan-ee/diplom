@@ -10,6 +10,7 @@ import { formatPrice, cn } from '@/lib/utils';
 
 interface CartItemProps {
   item: CartItemType;
+  isUnavailable?: boolean;
 }
 
 function ConstructorConfigSummary({ config }: { config: unknown }) {
@@ -47,7 +48,7 @@ function ConstructorConfigSummary({ config }: { config: unknown }) {
   );
 }
 
-export function CartItem({ item }: CartItemProps) {
+export function CartItem({ item, isUnavailable = false }: CartItemProps) {
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -83,7 +84,10 @@ export function CartItem({ item }: CartItemProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -24, transition: { duration: 0.2 } }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="bg-white rounded-2xl border border-[var(--color-champagne)] p-4 lg:p-6"
+      className={cn(
+        'bg-white rounded-2xl border border-[var(--color-champagne)] p-4 lg:p-6 transition-opacity duration-200',
+        isUnavailable && 'opacity-50',
+      )}
     >
       <div className="flex items-start gap-4">
         {/* Image */}
@@ -100,6 +104,13 @@ export function CartItem({ item }: CartItemProps) {
             <div className="flex h-full w-full items-center justify-center">
               <span className="text-3xl select-none text-neutral-300" aria-hidden="true">
                 &#9728;
+              </span>
+            </div>
+          )}
+          {isUnavailable && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/70">
+              <span className="rounded-full bg-[var(--color-error,#ef4444)] px-2 py-0.5 text-[10px] font-medium text-white">
+                Нет в наличии
               </span>
             </div>
           )}
@@ -186,11 +197,13 @@ export function CartItem({ item }: CartItemProps) {
             <div className="flex items-center gap-3 bg-[var(--color-champagne)]/40 rounded-full p-1">
               <button
                 onClick={handleDecrement}
+                disabled={item.quantity <= 1 || isUnavailable}
                 aria-label="Уменьшить количество"
                 className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150 cursor-pointer',
-                  'hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1',
-                  item.quantity <= 1 ? 'text-neutral-300' : 'text-[var(--color-graphite-light)]'
+                  'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150',
+                  item.quantity <= 1 || isUnavailable
+                    ? 'opacity-30 cursor-not-allowed text-neutral-400'
+                    : 'cursor-pointer text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1'
                 )}
               >
                 <Minus size={13} />
@@ -202,8 +215,14 @@ export function CartItem({ item }: CartItemProps) {
 
               <button
                 onClick={handleIncrement}
+                disabled={isUnavailable}
                 aria-label="Увеличить количество"
-                className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1"
+                className={cn(
+                  'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150',
+                  isUnavailable
+                    ? 'opacity-30 cursor-not-allowed text-neutral-400'
+                    : 'cursor-pointer text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1'
+                )}
               >
                 <Plus size={13} />
               </button>

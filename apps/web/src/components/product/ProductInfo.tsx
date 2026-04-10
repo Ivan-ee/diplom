@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ChevronDown, Check, ShoppingCart } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronDown, Check, ShoppingCart, CreditCard, Clock, Leaf } from 'lucide-react';
 import { Chip, Button, Disclosure } from '@heroui/react';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart-store';
 import { type Product } from '@/components/catalog/ProductCard';
+import { showCartToast } from '@/lib/cart-toast';
 
 interface ProductInfoProps {
   product: Product;
@@ -61,6 +63,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const [added, setAdded] = useState(false);
 
   const addItem = useCartStore((s) => s.addItem);
+  const cartItems = useCartStore((s) => s.items);
+  const isInCart = cartItems.some((item) => item.productId === product.id);
   const price = calcPrice(product, selectedWeight);
 
   const categoryName =
@@ -92,6 +96,11 @@ export function ProductInfo({ product }: ProductInfoProps) {
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
+    showCartToast({
+      name: product.name,
+      image: product.imageUrl ?? product.images?.[0],
+      weight: isPerUnit ? undefined : `${(selectedWeight / 1000).toLocaleString('ru-RU')} кг`,
+    });
   }, [addItem, product, isPerUnit, selectedWeight, price, inscription]);
 
   return (
@@ -116,9 +125,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
           {formatPrice(price)}
         </span>
         {isPerUnit ? (
-          <span className="text-sm text-[var(--color-graphite-light)]/60">за штуку</span>
+          <span className="text-sm text-[var(--color-graphite-light)]">за штуку</span>
         ) : weightOptions.length > 1 ? (
-          <span className="text-sm text-[var(--color-graphite-light)]/60">
+          <span className="text-sm text-[var(--color-graphite-light)]">
             за {(selectedWeight / 1000).toLocaleString('ru-RU')} кг
           </span>
         ) : null}
@@ -166,7 +175,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
             className="text-sm font-semibold text-[var(--color-graphite)]"
           >
             Надпись на торте{' '}
-            <span className="font-normal text-[var(--color-graphite-light)]/60">(необязательно)</span>
+            <span className="font-normal text-[var(--color-graphite-light)]">(необязательно)</span>
           </label>
           <div className="relative">
             <input
@@ -211,6 +220,15 @@ export function ProductInfo({ product }: ProductInfoProps) {
           <p className="text-center text-sm text-[var(--color-graphite-light)]/60 mt-3">
             Этот товар временно недоступен
           </p>
+        )}
+
+        {isInCart && !added && (
+          <Link
+            href="/cart"
+            className="block text-center text-xs text-[var(--color-caramel)] hover:underline transition-colors mt-2"
+          >
+            Уже в корзине → Перейти
+          </Link>
         )}
       </div>
 

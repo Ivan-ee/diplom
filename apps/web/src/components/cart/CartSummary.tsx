@@ -7,7 +7,11 @@ import { useCartStore } from '@/stores/cart-store';
 import { useAuth } from '@/hooks/useAuth';
 import { formatPrice } from '@/lib/utils';
 
-export function CartSummary() {
+interface CartSummaryProps {
+  hasUnavailable?: boolean;
+}
+
+export function CartSummary({ hasUnavailable = false }: CartSummaryProps) {
   const router = useRouter();
   const { isAuthenticated, openAuth } = useAuth();
   const totalPrice = useCartStore((s) => s.getTotalPrice());
@@ -72,15 +76,23 @@ export function CartSummary() {
       {/* CTA */}
       <button
         onClick={handleCheckout}
-        className="w-full flex items-center justify-center gap-2 bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white rounded-xl h-12 text-base font-medium mt-6 transition-colors duration-150 cursor-pointer"
+        disabled={hasUnavailable}
+        className="w-full flex items-center justify-center gap-2 bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white rounded-xl h-12 text-base font-medium mt-6 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--color-caramel)] cursor-pointer"
       >
         Оформить заказ
         <ArrowRight size={16} />
       </button>
 
+      {/* Unavailable warning */}
+      {hasUnavailable && (
+        <p className="text-xs text-[var(--color-error,#ef4444)] mt-2 text-center">
+          Удалите недоступные товары для оформления заказа
+        </p>
+      )}
+
       {/* Auth hint */}
       {!isAuthenticated && (
-        <p className="mt-3 text-center text-xs text-[var(--color-graphite-light)]/60">
+        <p className="mt-3 text-center text-xs text-[var(--color-graphite-light)]">
           Для оформления необходимо{' '}
           <button
             onClick={() => openAuth('login')}

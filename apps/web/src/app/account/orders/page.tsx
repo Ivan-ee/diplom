@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ShoppingBag } from 'lucide-react';
 import { fetchClient } from '@/lib/api';
 import { OrderCard, type Order } from '@/components/account/OrderCard';
 
@@ -27,15 +26,23 @@ function OrderSkeleton() {
 
 function EmptyOrders() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl bg-white py-20">
-      <ShoppingBag className="w-12 h-12 text-neutral-300 mb-4" />
+    <div className="flex flex-col items-center justify-center rounded-2xl bg-white py-20 text-center">
+      <span className="text-5xl mb-4" aria-hidden="true">🎂</span>
       <p className="text-neutral-500 mb-6">У вас пока нет заказов</p>
-      <Link
-        href="/catalog"
-        className="px-6 py-2.5 rounded-xl bg-[var(--color-caramel)] text-white text-sm font-medium hover:bg-[var(--color-caramel-hover)] transition-colors"
-      >
-        В каталог
-      </Link>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Link
+          href="/catalog"
+          className="inline-flex items-center justify-center rounded-full bg-[var(--color-caramel)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--color-caramel-hover)]"
+        >
+          В каталог
+        </Link>
+        <Link
+          href="/constructor"
+          className="inline-flex items-center justify-center rounded-full border border-[var(--color-champagne)] px-6 py-3 text-sm font-medium text-[var(--color-graphite)] transition-colors hover:bg-[var(--color-champagne)]/40"
+        >
+          Собрать торт в 3D
+        </Link>
+      </div>
     </div>
   );
 }

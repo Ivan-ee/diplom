@@ -24,6 +24,7 @@ export const orders = pgTable('orders', {
   totalPrice: integer('total_price').notNull(),
   pickupDate: date('pickup_date').notNull(),
   pickupTimeSlot: pickupTimeSlotEnum('pickup_time_slot').notNull(),
+  phone: varchar('phone', { length: 20 }),
   comment: text('comment'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

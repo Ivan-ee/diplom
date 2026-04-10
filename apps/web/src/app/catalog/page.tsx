@@ -105,7 +105,18 @@ export default async function CatalogPage({
 
       {/* Product grid + pagination */}
       <div className="max-w-7xl mx-auto px-4">
-        <Suspense fallback={<ProductGridSkeleton />}>
+        <Suspense
+          key={[
+            params.categorySlug,
+            params.occasion,
+            params.priceMin,
+            params.priceMax,
+            params.sort,
+            params.order,
+            params.page,
+          ].join('|')}
+          fallback={<ProductGridSkeleton />}
+        >
           <CatalogContent searchParams={params} />
         </Suspense>
       </div>

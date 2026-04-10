@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConstructorStore, type ConstructorStep } from '@/stores/constructor-store';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { fetchClient } from '@/lib/api';
 import { glRef } from '@/lib/screenshot-ref';
+import { ConstructorSuccessModal } from '@/components/constructor/ConstructorSuccessModal';
 
 const SCREENSHOT_FALLBACK = '/images/custom-cake.jpg';
 
@@ -92,9 +94,43 @@ export function StepNavigation() {
   const decorations = useConstructorStore((s) => s.decorations);
   const inscription = useConstructorStore((s) => s.inscription);
   const ingredients = useConstructorStore((s) => s.ingredients);
+  const reset = useConstructorStore((s) => s.reset);
   const addItem = useCartStore((s) => s.addItem);
+  const router = useRouter();
 
   const [isCapturing, setIsCapturing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successData, setSuccessData] = useState<{
+    screenshot?: string;
+    summary: string;
+    price: number;
+  }>({ summary: '', price: 0 });
+
+  const buildConfigSummary = (): string => {
+    const parts: string[] = [];
+
+    const shapeLabel: Record<string, string> = {
+      circle: 'Круглый',
+      square: 'Квадратный',
+      heart: 'Сердце',
+    };
+    parts.push(shapeLabel[shape] ?? shape);
+
+    const tierWord = tierCount === 1 ? 'ярус' : tierCount < 5 ? 'яруса' : 'ярусов';
+    parts.push(`${tierCount} ${tierWord}`);
+
+    const firstFilling = layers[0]?.fillingId
+      ? ingredients?.fillings.find((f) => f.id === layers[0].fillingId)?.name
+      : undefined;
+    if (firstFilling) parts.push(firstFilling);
+
+    const coatingName = coating.coatingId
+      ? ingredients?.coatings.find((c) => c.id === coating.coatingId)?.name
+      : undefined;
+    if (coatingName) parts.push(coatingName);
+
+    return parts.join(' · ');
+  };
 
   const isValid = useStepValid();
   const isFirst = currentStep === 1;
@@ -146,9 +182,37 @@ export function StepNavigation() {
     });
 
     setIsCapturing(false);
+
+    const screenshotUrl = imageUrl !== SCREENSHOT_FALLBACK ? imageUrl : undefined;
+    setSuccessData({
+      screenshot: screenshotUrl,
+      summary: buildConfigSummary(),
+      price: totalPrice,
+    });
+    setShowSuccess(true);
+  };
+
+  const handleGoToCart = () => {
+    setShowSuccess(false);
+    router.push('/cart');
+  };
+
+  const handleBuildAnother = () => {
+    setShowSuccess(false);
+    reset();
   };
 
   return (
+    <>
+    <ConstructorSuccessModal
+      isOpen={showSuccess}
+      onClose={() => setShowSuccess(false)}
+      onGoToCart={handleGoToCart}
+      onBuildAnother={handleBuildAnother}
+      screenshotUrl={successData.screenshot}
+      configSummary={successData.summary}
+      totalPrice={successData.price}
+    />
     <div className="px-4 py-3 bg-white border-t border-neutral-200 flex items-center gap-3">
       <Button
         variant="ghost"
@@ -190,5 +254,6 @@ export function StepNavigation() {
         )}
       </Button>
     </div>
+    </>
   );
 }

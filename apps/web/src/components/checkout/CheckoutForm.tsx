@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MapPin, Clock, MessageSquare, Loader2, AlertCircle, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Clock, MessageSquare, Phone, Loader2, AlertCircle, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/stores/cart-store';
 import { fetchClient } from '@/lib/api';
@@ -47,6 +47,10 @@ function getTomorrow(): string {
 }
 
 const checkoutSchema = z.object({
+  phone: z
+    .string()
+    .min(11, 'Введите номер телефона')
+    .regex(/^\+7\d{10}$/, 'Неверный формат номера'),
   pickupDate: z
     .string()
     .min(1, 'Выберите дату получения')
@@ -87,6 +91,19 @@ const TIME_SLOTS: { id: CheckoutFormData['timeSlot']; label: string; sub: string
   { id: 'day', label: 'День', sub: '12:00 — 16:00' },
   { id: 'evening', label: 'Вечер', sub: '16:00 — 19:00' },
 ];
+
+// ── Phone formatter ──────────────────────────────────────────────────────────
+
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  const d = digits.startsWith('7') ? digits : '7' + digits;
+  let formatted = '+7';
+  if (d.length > 1) formatted += ` (${d.slice(1, 4)}`;
+  if (d.length > 4) formatted += `) ${d.slice(4, 7)}`;
+  if (d.length > 7) formatted += `-${d.slice(7, 9)}`;
+  if (d.length > 9) formatted += `-${d.slice(9, 11)}`;
+  return formatted;
+}
 
 // ── Shared input className ───────────────────────────────────────────────────
 
@@ -414,10 +431,12 @@ export function CheckoutForm() {
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
+      phone: '',
       pickupDate: '',
       comment: '',
     },
@@ -430,6 +449,7 @@ export function CheckoutForm() {
     setSubmitError(null);
     try {
       const payload = {
+        phone: data.phone,
         pickupDate: data.pickupDate,
         pickupTimeSlot: data.timeSlot,
         comment: data.comment ?? '',
@@ -475,6 +495,46 @@ export function CheckoutForm() {
 
         {/* Left column: form sections */}
         <div className="flex flex-col">
+
+          {/* Section: Contact */}
+          <section className="bg-white rounded-2xl border border-neutral-100 p-6 mb-6">
+            <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4 flex items-center gap-2">
+              <Phone size={17} className="text-[var(--color-caramel)]" />
+              Контактная информация
+            </h2>
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-graphite)] mb-1.5">
+                Телефон <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="tel"
+                placeholder="+7 (___) ___-__-__"
+                value={watch('phone') ? formatPhone(watch('phone')) : ''}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, '');
+                  const normalized = raw.startsWith('7')
+                    ? `+${raw.slice(0, 11)}`
+                    : `+7${raw.slice(0, 10)}`;
+                  setValue('phone', normalized, { shouldValidate: true });
+                }}
+                className={inputClass(!!errors.phone)}
+              />
+              <AnimatePresence>
+                {errors.phone && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="mt-1 text-red-500 text-xs flex items-center gap-1"
+                  >
+                    <AlertCircle size={11} />
+                    {errors.phone.message}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
+          </section>
 
           {/* Section: Address */}
           <section className="bg-white rounded-2xl border border-neutral-100 p-6 mb-6">
