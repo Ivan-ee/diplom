@@ -26,7 +26,12 @@ export interface Product {
   type?: string;
   imageUrl?: string;
   images?: string[];
-  pricePerKg?: number;
+  /** Pricing mode. Defaults to 'per_kg' for backward-compat with older API responses. */
+  priceType?: 'per_kg' | 'per_unit';
+  /** Price per kilogram in kopecks. Present when priceType === 'per_kg'. */
+  pricePerKg?: number | null;
+  /** Fixed price per unit in kopecks. Present when priceType === 'per_unit'. */
+  pricePerUnit?: number | null;
   priceMin?: number;
   priceMax?: number;
   minWeight?: string;
@@ -64,6 +69,11 @@ export function ProductCard({ product }: ProductCardProps) {
     : (product.type ?? product.category ?? '');
   const categoryLabel = categoryLabels[categorySlug] ?? categoryName;
 
+  const isPerUnit = product.priceType === 'per_unit';
+  const displayPrice = isPerUnit
+    ? (product.pricePerUnit ?? 0)
+    : (product.pricePerKg ?? product.priceMin ?? 0);
+
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
@@ -72,8 +82,8 @@ export function ProductCard({ product }: ProductCardProps) {
       productId: product.id,
       name: product.name,
       imageUrl: product.imageUrl ?? product.images?.[0] ?? '',
-      weight: minWeight,
-      price: product.pricePerKg ?? product.priceMin ?? 0,
+      weight: isPerUnit ? 0 : minWeight,
+      price: displayPrice,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -134,13 +144,13 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-center justify-between gap-2 mt-auto">
             <div>
               <span className="font-heading font-bold text-lg text-[var(--color-dusty-rose)]">
-                {formatPrice(product.pricePerKg ?? product.priceMin ?? 0)}
+                {isPerUnit
+                  ? formatPrice(product.pricePerUnit ?? 0)
+                  : `от ${formatPrice(product.pricePerKg ?? product.priceMin ?? 0)}`}
               </span>
-              {product.pricePerKg && (
-                <span className="text-xs text-[var(--color-text-secondary)] ml-1">
-                  /кг
-                </span>
-              )}
+              <span className="text-xs text-[var(--color-text-secondary)] ml-1">
+                {isPerUnit ? '/шт' : '/кг'}
+              </span>
             </div>
 
             <Button

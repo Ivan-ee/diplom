@@ -144,12 +144,22 @@ export interface IngredientBase {
   available: boolean;
 }
 
+/** Filling category values matching the DB enum. */
+export type FillingCategory =
+  | 'white'
+  | 'chocolate'
+  | 'honey'
+  | 'sour_cream'
+  | 'shortcrust'
+  | 'specialty';
+
 /** Filling ingredient. */
 export interface IngredientFilling {
   id: string;
   name: string;
   description?: string;
   pricePerKg: number;
+  category: FillingCategory;
   available: boolean;
 }
 
@@ -205,6 +215,50 @@ export interface ConstructorCatalog {
   shapes: ShapeInfo[];
   tierSurcharges: TierSurcharge[];
   config: ConstructorConfig;
+}
+
+// ---------------------------------------------------------------------------
+// Product catalog
+// ---------------------------------------------------------------------------
+
+/** How the product is priced. */
+export type PriceType = 'per_kg' | 'per_unit';
+
+/** Product category summary. */
+export interface ProductCategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/**
+ * A single product as returned by GET /api/products and GET /api/products/:slug.
+ * Mirrors: apps/web/src/components/catalog/ProductCard.tsx (Product interface)
+ */
+export interface Product {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string | null;
+  composition?: string | null;
+  imageUrl?: string | null;
+  images?: string[];
+  priceType: PriceType;
+  /** Price per kilogram in kopecks. Present only when priceType === 'per_kg'. */
+  pricePerKg?: number | null;
+  /** Price per unit in kopecks. Present only when priceType === 'per_unit'. */
+  pricePerUnit?: number | null;
+  /** Numeric string in kg, e.g. "1.0" */
+  minWeight?: string;
+  /** Numeric string in kg, e.g. "5.0" */
+  maxWeight?: string;
+  /** Numeric string in kg, e.g. "0.5" */
+  weightStep?: string;
+  isAvailable?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  category?: ProductCategory | null;
+  occasions?: Array<{ id: string; name: string; slug: string }>;
 }
 
 // ---------------------------------------------------------------------------

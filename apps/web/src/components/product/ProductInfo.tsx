@@ -48,6 +48,9 @@ function buildWeightOptions(product: Product): number[] {
 }
 
 function calcPrice(product: Product, weightG: number): number {
+  if (product.priceType === 'per_unit') {
+    return product.pricePerUnit ?? 0;
+  }
   // weightG is integer grams; convert to kg before multiplying by pricePerKg.
   if (product.pricePerKg) {
     return Math.round(product.pricePerKg * (weightG / 1000));
@@ -56,7 +59,8 @@ function calcPrice(product: Product, weightG: number): number {
 }
 
 export function ProductInfo({ product }: ProductInfoProps) {
-  const weightOptions = buildWeightOptions(product);
+  const isPerUnit = product.priceType === 'per_unit';
+  const weightOptions = isPerUnit ? [] : buildWeightOptions(product);
   /** selectedWeight is stored as integer grams */
   const [selectedWeight, setSelectedWeight] = useState(weightOptions[0] ?? 1000);
   const [inscription, setInscription] = useState('');
@@ -78,13 +82,13 @@ export function ProductInfo({ product }: ProductInfoProps) {
       productId: product.id,
       name: product.name,
       imageUrl: product.imageUrl ?? product.images?.[0] ?? '',
-      weight: selectedWeight,
+      weight: isPerUnit ? 0 : selectedWeight,
       price,
       inscription: inscription.trim() || undefined,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
-  }, [addItem, product, selectedWeight, price, inscription]);
+  }, [addItem, product, isPerUnit, selectedWeight, price, inscription]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -105,11 +109,13 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <span className="font-heading font-bold text-3xl text-[var(--color-dusty-rose)]">
           {formatPrice(price)}
         </span>
-        {weightOptions.length > 1 && (
+        {isPerUnit ? (
+          <span className="text-sm text-[var(--color-text-secondary)]">за штуку</span>
+        ) : weightOptions.length > 1 ? (
           <span className="text-sm text-[var(--color-text-secondary)]">
             за {(selectedWeight / 1000).toLocaleString('ru-RU')} кг
           </span>
-        )}
+        ) : null}
       </div>
 
       {/* Description */}

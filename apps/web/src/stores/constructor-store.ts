@@ -49,11 +49,21 @@ export interface IngredientBase {
   available: boolean;
 }
 
+export type FillingCategory =
+  | 'white'
+  | 'chocolate'
+  | 'honey'
+  | 'sour_cream'
+  | 'shortcrust'
+  | 'specialty';
+
 export interface IngredientFilling {
   id: string;
   name: string;
   description?: string;
   pricePerKg: number;
+  /** Category as returned by the API. May be absent in legacy mock data. */
+  category?: FillingCategory;
   available: boolean;
 }
 
