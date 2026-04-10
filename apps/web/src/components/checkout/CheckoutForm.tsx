@@ -69,7 +69,7 @@ const checkoutSchema = z.object({
       // 0 = Sunday
       return new Date(val).getDay() !== 0;
     }, 'Мы не работаем по воскресеньям'),
-  timeSlot: z.enum(['morning', 'afternoon', 'evening'], {
+  timeSlot: z.enum(['morning', 'day', 'evening'], {
     required_error: 'Выберите время получения',
   }),
   comment: z
@@ -94,7 +94,7 @@ interface OrderCreatedResponse {
 
 const TIME_SLOTS: { id: CheckoutFormData['timeSlot']; label: string; sub: string }[] = [
   { id: 'morning', label: 'Утро', sub: '10:00 — 12:00' },
-  { id: 'afternoon', label: 'День', sub: '12:00 — 16:00' },
+  { id: 'day', label: 'День', sub: '12:00 — 16:00' },
   { id: 'evening', label: 'Вечер', sub: '16:00 — 19:00' },
 ];
 
