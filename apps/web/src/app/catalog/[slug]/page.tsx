@@ -65,46 +65,32 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       : [];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-      {/* Breadcrumb */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Breadcrumbs */}
       <nav
-        className="flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] mb-8"
+        className="flex items-center gap-2 text-sm text-neutral-400 mb-10"
         aria-label="Хлебные крошки"
       >
-        <Link href="/" className="hover:text-[var(--color-dusty-rose)] transition-colors duration-200">
+        <Link href="/" className="hover:text-neutral-600 transition-colors duration-200">
           Главная
         </Link>
-        <ChevronRight size={14} className="shrink-0" />
-        <Link href="/catalog" className="hover:text-[var(--color-dusty-rose)] transition-colors duration-200">
+        <ChevronRight size={13} className="shrink-0 text-neutral-300" />
+        <Link href="/catalog" className="hover:text-neutral-600 transition-colors duration-200">
           Каталог
         </Link>
-        <ChevronRight size={14} className="shrink-0" />
-        <span className="text-[var(--color-dark)] font-medium truncate max-w-[200px]">
+        <ChevronRight size={13} className="shrink-0 text-neutral-300" />
+        <span className="text-neutral-700 font-medium truncate max-w-[200px]">
           {product.name}
         </span>
       </nav>
 
-      {/* Main content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-        {/* Gallery */}
+      {/* Main content — Apple-style asymmetric grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-12 lg:gap-16">
+        {/* Gallery — sticky on desktop */}
         <ProductGallery images={images} name={product.name} />
 
         {/* Info */}
         <ProductInfo product={product} />
-      </div>
-
-      {/* Divider */}
-      <div className="mt-16 border-t border-gray-100" />
-
-      {/* Back to catalog */}
-      <div className="mt-8 flex justify-center">
-        <Link
-          href="/catalog"
-          className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200 flex items-center gap-1"
-        >
-          <ChevronRight size={14} className="rotate-180" />
-          Вернуться в каталог
-        </Link>
       </div>
     </div>
   );
