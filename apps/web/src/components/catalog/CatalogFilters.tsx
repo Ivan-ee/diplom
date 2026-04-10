@@ -7,9 +7,12 @@ import { Button } from '@/components/ui/button';
 
 const categories = [
   { value: '', label: 'Все' },
-  { value: 'torty', label: 'Торты' },
-  { value: 'kapkejki', label: 'Капкейки' },
-  { value: 'makarons', label: 'Макаронс' },
+  { value: 'classic', label: 'Классические' },
+  { value: 'wedding', label: 'Свадебные' },
+  { value: 'kids', label: 'Детские' },
+  { value: 'bento', label: 'Бенто' },
+  { value: 'cupcakes', label: 'Капкейки' },
+  { value: 'trifles', label: 'Трайфлы' },
 ];
 
 const sortOptions = [

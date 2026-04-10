@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { fetchServer } from '@/lib/api';
+import { shopConfig } from '@/config/shop.config';
 
 export const metadata: Metadata = {
-  title: 'Каталог — Кондитерская',
-  description: 'Торты, капкейки и макаронс на заказ. Выберите из каталога или соберите свой торт в 3D-конструкторе.',
+  title: `Каталог — ${shopConfig.name}`,
+  description: 'Свадебные, детские, классические торты, бенто, капкейки и трайфлы на заказ в Арзамасе.',
 };
 import { type Product } from '@/components/catalog/ProductCard';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
@@ -87,7 +88,7 @@ export default async function CatalogPage({
       <div className="mb-8 flex flex-col gap-2">
         <h1 className="font-heading font-bold text-4xl text-[var(--color-dark)]">Каталог</h1>
         <p className="text-[var(--color-text-secondary)]">
-          Авторские торты, капкейки и макаронс ручной работы
+          Авторские торты, капкейки и трайфлы ручной работы
         </p>
       </div>
 
