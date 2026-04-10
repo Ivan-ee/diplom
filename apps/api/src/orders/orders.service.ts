@@ -139,7 +139,9 @@ export class OrdersService {
       const [product] = await this.db
         .select({
           id: schema.products.id,
+          priceType: schema.products.priceType,
           pricePerKg: schema.products.pricePerKg,
+          pricePerUnit: schema.products.pricePerUnit,
           isAvailable: schema.products.isAvailable,
           name: schema.products.name,
         })
@@ -156,8 +158,23 @@ export class OrdersService {
         );
       }
 
-      const weightKg = item.weight / 10;
-      const price = Math.round(product.pricePerKg * weightKg);
+      let price: number;
+      if (product.priceType === 'per_unit') {
+        if (!product.pricePerUnit) {
+          throw new BadRequestException(
+            `Product "${product.name}" is per_unit but has no pricePerUnit`,
+          );
+        }
+        price = product.pricePerUnit * (item.quantity ?? 1);
+      } else {
+        if (!product.pricePerKg) {
+          throw new BadRequestException(
+            `Product "${product.name}" is per_kg but has no pricePerKg`,
+          );
+        }
+        const weightKg = item.weight / 10;
+        price = Math.round(product.pricePerKg * weightKg);
+      }
       return { ...item, price };
     }
 
