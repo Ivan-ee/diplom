@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MapPin, Clock, MessageSquare, Loader2, AlertCircle, ShoppingBag } from 'lucide-react';
+import { MapPin, Clock, MessageSquare, Loader2, AlertCircle, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/stores/cart-store';
 import { fetchClient } from '@/lib/api';
@@ -98,6 +98,201 @@ const inputClass = (hasError: boolean) =>
       ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
       : 'border-neutral-200 focus:border-[var(--color-dusty-rose)] focus:ring-[var(--color-dusty-rose)]/30'
   );
+
+// ── CalendarPicker ───────────────────────────────────────────────────────────
+
+const MONTH_NAMES = [
+  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
+];
+
+const WEEKDAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+interface CalendarPickerProps {
+  value: string; // 'YYYY-MM-DD' or ''
+  onChange: (date: string) => void;
+  minDate: Date; // tomorrow
+  isDateDisabled?: (date: Date) => boolean; // sundays
+  error?: string;
+}
+
+function CalendarPicker({ value, onChange, minDate, isDateDisabled, error }: CalendarPickerProps) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const minDateNormalized = new Date(minDate);
+  minDateNormalized.setHours(0, 0, 0, 0);
+
+  const initialViewDate = value ? new Date(value + 'T00:00:00') : minDateNormalized;
+
+  const [viewYear, setViewYear] = useState(initialViewDate.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initialViewDate.getMonth());
+
+  const minYear = minDateNormalized.getFullYear();
+  const minMonth = minDateNormalized.getMonth();
+
+  const isPrevDisabled = viewYear === minYear && viewMonth === minMonth;
+
+  function handlePrev() {
+    if (isPrevDisabled) return;
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((y) => y - 1);
+    } else {
+      setViewMonth((m) => m - 1);
+    }
+  }
+
+  function handleNext() {
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((y) => y + 1);
+    } else {
+      setViewMonth((m) => m + 1);
+    }
+  }
+
+  // Build grid: weeks start on Monday (ISO)
+  // First day of the month
+  const firstDay = new Date(viewYear, viewMonth, 1);
+  // getDay(): 0=Sun,1=Mon,...,6=Sat — convert to Mon-based index
+  const firstDow = (firstDay.getDay() + 6) % 7; // 0=Mon … 6=Sun
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+  // Build cell array: nulls for padding + day numbers
+  const cells: (number | null)[] = [
+    ...Array<null>(firstDow).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+
+  function isDisabled(day: number): boolean {
+    const d = new Date(viewYear, viewMonth, day);
+    d.setHours(0, 0, 0, 0);
+    if (d < minDateNormalized) return true;
+    if (isDateDisabled?.(d)) return true;
+    return false;
+  }
+
+  function isToday(day: number): boolean {
+    const d = new Date(viewYear, viewMonth, day);
+    return (
+      d.getFullYear() === today.getFullYear() &&
+      d.getMonth() === today.getMonth() &&
+      d.getDate() === today.getDate()
+    );
+  }
+
+  function isSelected(day: number): boolean {
+    if (!value) return false;
+    const [y, m, d] = value.split('-').map(Number);
+    return y === viewYear && (m as number) - 1 === viewMonth && d === day;
+  }
+
+  function handleDayClick(day: number) {
+    if (isDisabled(day)) return;
+    const yyyy = viewYear;
+    const mm = String(viewMonth + 1).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    onChange(`${yyyy}-${mm}-${dd}`);
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100">
+        <button
+          type="button"
+          onClick={handlePrev}
+          disabled={isPrevDisabled}
+          aria-label="Предыдущий месяц"
+          className={cn(
+            'w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 transition-colors duration-150',
+            isPrevDisabled
+              ? 'opacity-30 cursor-not-allowed'
+              : 'hover:bg-neutral-100 cursor-pointer'
+          )}
+        >
+          <ChevronLeft size={16} />
+        </button>
+
+        <span className="text-sm font-semibold text-neutral-900 capitalize select-none">
+          {MONTH_NAMES[viewMonth]} {viewYear}
+        </span>
+
+        <button
+          type="button"
+          onClick={handleNext}
+          aria-label="Следующий месяц"
+          className="w-8 h-8 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-500 transition-colors duration-150 cursor-pointer"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
+
+      {/* Weekday labels */}
+      <div className="grid grid-cols-7 px-2 pt-2">
+        {WEEKDAY_LABELS.map((label) => (
+          <div key={label} className="text-center text-xs font-medium text-neutral-400 py-2">
+            {label}
+          </div>
+        ))}
+      </div>
+
+      {/* Day cells */}
+      <div className="grid grid-cols-7 px-2 pb-2 gap-y-1">
+        {cells.map((day, idx) => {
+          if (day === null) {
+            return <div key={`empty-${idx}`} />;
+          }
+
+          const disabled = isDisabled(day);
+          const selected = isSelected(day);
+          const todayCell = isToday(day);
+
+          return (
+            <button
+              key={day}
+              type="button"
+              onClick={() => handleDayClick(day)}
+              disabled={disabled}
+              aria-label={`${day} ${MONTH_NAMES[viewMonth]} ${viewYear}`}
+              aria-pressed={selected}
+              className={cn(
+                'w-full aspect-square flex items-center justify-center text-sm rounded-lg transition-colors duration-150',
+                selected
+                  ? 'bg-[var(--color-dusty-rose)] text-white font-semibold cursor-pointer'
+                  : disabled
+                    ? cn(
+                        'cursor-not-allowed hover:bg-transparent',
+                        todayCell ? 'text-neutral-400 font-medium' : 'text-neutral-300'
+                      )
+                    : 'text-neutral-700 hover:bg-[var(--color-dusty-rose)]/10 cursor-pointer'
+              )}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Error */}
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="px-4 pb-3 text-red-500 text-xs flex items-center gap-1"
+          >
+            <AlertCircle size={11} />
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 // ── OrderSummary component ───────────────────────────────────────────────────
 
@@ -216,7 +411,6 @@ export function CheckoutForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
-    register,
     handleSubmit,
     control,
     watch,
@@ -230,6 +424,7 @@ export function CheckoutForm() {
   });
 
   const commentValue = watch('comment') ?? '';
+  const pickupDateValue = watch('pickupDate') ?? '';
 
   async function onSubmit(data: CheckoutFormData) {
     setSubmitError(null);
@@ -307,47 +502,44 @@ export function CheckoutForm() {
               Дата и время получения
             </h2>
 
-            {/* Date */}
+            {/* Date — CalendarPicker */}
             <div className="mb-5">
-              <label
-                htmlFor="pickupDate"
-                className="block text-sm font-medium text-[var(--color-dark)] mb-1.5"
-              >
+              <label className="block text-sm font-medium text-[var(--color-dark)] mb-1.5">
                 Дата <span className="text-red-400">*</span>
               </label>
-              <input
-                id="pickupDate"
-                type="date"
-                min={getTomorrow()}
-                {...register('pickupDate')}
-                className={inputClass(!!errors.pickupDate)}
-              />
-              <AnimatePresence>
-                {errors.pickupDate && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.15 }}
-                    className="mt-1 text-red-500 text-xs flex items-center gap-1"
-                  >
-                    <AlertCircle size={11} />
-                    {errors.pickupDate.message}
-                  </motion.p>
+              <Controller
+                name="pickupDate"
+                control={control}
+                render={({ field }) => (
+                  <CalendarPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    minDate={new Date(getTomorrow() + 'T00:00:00')}
+                    isDateDisabled={(d) => d.getDay() === 0}
+                    error={errors.pickupDate?.message}
+                  />
                 )}
-              </AnimatePresence>
+              />
             </div>
 
             {/* Time slots */}
             <div>
-              <p className="text-sm font-medium text-[var(--color-dark)] mb-2.5">
-                Время <span className="text-red-400">*</span>
-              </p>
+              <div className="flex items-center justify-between mb-2.5">
+                <p className="text-sm font-medium text-[var(--color-dark)]">
+                  Время <span className="text-red-400">*</span>
+                </p>
+                {!pickupDateValue && (
+                  <span className="text-xs text-neutral-400">Сначала выберите дату</span>
+                )}
+              </div>
               <Controller
                 name="timeSlot"
                 control={control}
                 render={({ field }) => (
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className={cn(
+                    'grid grid-cols-3 gap-3',
+                    !pickupDateValue && 'opacity-50 pointer-events-none'
+                  )}>
                     {TIME_SLOTS.map(({ id, label, sub }) => {
                       const isSelected = field.value === id;
                       return (
@@ -411,14 +603,20 @@ export function CheckoutForm() {
               Комментарий к заказу
             </h2>
             <div className="relative">
-              <textarea
-                id="comment"
-                rows={4}
-                placeholder="Пожелания по упаковке, аллергии, особые требования..."
-                {...register('comment')}
-                className={cn(
-                  inputClass(!!errors.comment),
-                  'resize-none min-h-[100px] leading-relaxed placeholder:text-neutral-300'
+              <Controller
+                name="comment"
+                control={control}
+                render={({ field }) => (
+                  <textarea
+                    id="comment"
+                    rows={4}
+                    placeholder="Пожелания по упаковке, аллергии, особые требования..."
+                    {...field}
+                    className={cn(
+                      inputClass(!!errors.comment),
+                      'resize-none min-h-[100px] leading-relaxed placeholder:text-neutral-300'
+                    )}
+                  />
                 )}
               />
               <p

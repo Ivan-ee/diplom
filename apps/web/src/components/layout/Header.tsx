@@ -29,7 +29,7 @@ export function Header() {
           href="/"
           className="font-heading text-xl font-semibold text-neutral-900 hover:text-[var(--color-dusty-rose)] transition-colors duration-200 shrink-0"
         >
-          Victoria Tort
+          Виктория Торт
         </Link>
 
         {/* Desktop nav */}

@@ -21,7 +21,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
             src={images[activeIndex]}
             alt={`${name} — фото ${activeIndex + 1}`}
             fill
-            className="object-cover"
+            className="object-contain"
             sizes="(max-width: 768px) 100vw, 55vw"
             priority
           />

@@ -214,11 +214,12 @@ export function CartItem({ item }: CartItemProps) {
               <p className="text-lg font-semibold text-[var(--color-dusty-rose)] tabular-nums">
                 {formatPrice(itemTotal)}
               </p>
-              {item.quantity > 1 && (
-                <p className="text-xs text-neutral-400 tabular-nums">
-                  {formatPrice(item.price)} × {item.quantity}
-                </p>
-              )}
+              <p className={cn(
+                "text-xs tabular-nums",
+                item.quantity > 1 ? "text-neutral-400" : "invisible"
+              )}>
+                {formatPrice(item.price)} × {item.quantity}
+              </p>
             </div>
           </div>
         </div>

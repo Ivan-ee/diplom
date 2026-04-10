@@ -79,7 +79,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           Каталог
         </Link>
         <ChevronRight size={13} className="shrink-0 text-neutral-300" />
-        <span className="text-neutral-700 font-medium truncate max-w-[200px]">
+        <span className="text-neutral-700 font-medium">
           {product.name}
         </span>
       </nav>

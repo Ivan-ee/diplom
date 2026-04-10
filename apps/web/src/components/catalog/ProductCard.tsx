@@ -104,8 +104,8 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <Link href={`/catalog/${product.slug}`} className="group block focus:outline-none">
-      <div className="rounded-2xl overflow-hidden bg-white border border-neutral-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-[var(--color-dusty-rose)] focus-within:ring-offset-2">
+    <Link href={`/catalog/${product.slug}`} className="group block focus:outline-none h-full">
+      <div className="rounded-2xl overflow-hidden bg-white border border-neutral-100 hover:shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-[var(--color-dusty-rose)] focus-within:ring-offset-2 flex flex-col h-full">
         {/* Image area */}
         <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-cream)]">
           {imageUrl ? (
@@ -144,8 +144,8 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Content */}
-        <div className="p-4">
-          <h3 className="text-base font-medium text-neutral-900 line-clamp-2 leading-snug">
+        <div className="p-4 flex flex-col flex-1">
+          <h3 className="text-base font-medium text-neutral-900 line-clamp-2 leading-snug min-h-[2.75rem]">
             {product.name}
           </h3>
 
@@ -155,7 +155,7 @@ export function ProductCard({ product }: ProductCardProps) {
               : `от ${formatPrice(product.pricePerKg ?? product.priceMin ?? 0)} ₽/кг`}
           </p>
 
-          <motion.div whileTap={{ scale: 0.98 }} className="mt-3">
+          <motion.div whileTap={{ scale: 0.98 }} className="mt-auto pt-3">
             <Button
               fullWidth
               onClick={handleAddToCart}
