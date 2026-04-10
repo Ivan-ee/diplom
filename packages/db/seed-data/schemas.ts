@@ -91,7 +91,7 @@ export type ReviewSeed = z.infer<typeof reviewSchema>;
 export const priceTypeSchema = z.enum(['per_kg', 'per_unit']);
 
 export const productSchema = z.object({
-  slug: z.string().min(1).max(255),
+  slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be lowercase ASCII alphanumeric with hyphens'),
   name: z.string().min(1).max(255),
   description: z.string().min(1),
   composition: z.string().min(1),
