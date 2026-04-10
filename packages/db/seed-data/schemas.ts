@@ -105,6 +105,8 @@ export const productSchema = z.object({
   weightStep: z.string().regex(/^\d+(\.\d)?$/),
   imageKey: z.string().min(1), // links to vk-photos.json key (wedding/kids/bento/cupcakes/trifles/classic)
   imageIndex: z.number().int().nonnegative(),
+  imageUrl: z.string().url().optional(),   // injected by vk:assign script
+  images: z.array(z.string().url()).optional(), // gallery URLs, injected by vk:assign script
   isAvailable: z.boolean().default(true),
 }).refine(
   (p) => {
