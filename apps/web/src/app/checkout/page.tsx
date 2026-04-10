@@ -33,7 +33,7 @@ export default function CheckoutPage() {
   if (!isAuthenticated || items.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-24 flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[var(--color-dusty-rose)] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[var(--color-caramel)] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -49,16 +49,16 @@ export default function CheckoutPage() {
       >
         <Link
           href="/cart"
-          className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-[var(--color-dusty-rose)] transition-colors duration-150 mb-4"
+          className="inline-flex items-center gap-1.5 text-sm text-[var(--color-graphite-light)]/60 hover:text-[var(--color-caramel)] transition-colors duration-150 mb-4"
         >
           <ArrowLeft size={14} />
           Корзина
         </Link>
 
-        <h1 className="font-heading font-bold text-4xl lg:text-5xl tracking-tight text-[var(--color-dark)]">
+        <h1 className="font-heading font-bold text-4xl lg:text-5xl tracking-tight text-[var(--color-graphite)]">
           Оформление заказа
         </h1>
-        <p className="text-sm text-neutral-400 mt-2">
+        <p className="text-sm text-[var(--color-graphite-light)]/60 mt-2">
           Оплата при получении · Самовывоз
         </p>
       </motion.div>

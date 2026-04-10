@@ -20,7 +20,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Page heading */}
         <div className="mb-8">
-          <h1 className="font-heading text-3xl font-bold text-[var(--color-dark)]">
+          <h1 className="font-heading text-3xl font-bold text-[var(--color-graphite)]">
             Личный кабинет
           </h1>
           {user?.name && (
@@ -78,7 +78,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                     className={cn(
                       'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-2 transition-colors',
                       active
-                        ? 'bg-[var(--color-dusty-rose)] text-white'
+                        ? 'bg-[var(--color-caramel)] text-white'
                         : 'bg-white text-neutral-500'
                     )}
                   >

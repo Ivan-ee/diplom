@@ -88,17 +88,17 @@ export default async function CatalogPage({
     <div className="pb-16">
       {/* Page header */}
       <div className="pt-12 pb-8 px-4 max-w-7xl mx-auto">
-        <h1 className="text-5xl lg:text-6xl font-bold tracking-tight font-heading text-neutral-900">
+        <h1 className="text-5xl lg:text-6xl font-bold tracking-tight font-heading text-[var(--color-graphite)]">
           Каталог
         </h1>
-        <p className="text-lg text-neutral-500 mt-3">
+        <p className="text-lg text-[var(--color-graphite-light)] mt-3">
           Торты, капкейки и десерты ручной работы
         </p>
       </div>
 
       {/* Filters */}
       <div className="mb-8">
-        <Suspense fallback={<div className="h-10 animate-pulse rounded-xl bg-neutral-100 max-w-7xl mx-auto px-4" />}>
+        <Suspense fallback={<div className="h-10 animate-pulse rounded-xl bg-[var(--color-champagne)]/40 max-w-7xl mx-auto px-4" />}>
           <CatalogFilters />
         </Suspense>
       </div>

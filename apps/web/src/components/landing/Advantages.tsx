@@ -24,8 +24,8 @@ const advantages = [
 
 export function Advantages() {
   return (
-    <section className="py-24 px-4 bg-neutral-50">
-      <h2 className="font-heading font-bold tracking-tight text-4xl lg:text-5xl text-center mb-16 text-[var(--color-dark)]">
+    <section className="py-20 lg:py-28 px-4 bg-[var(--color-warm-ivory)]">
+      <h2 className="font-heading font-bold tracking-tight text-4xl lg:text-5xl text-center mb-12 text-[var(--color-graphite)]">
         Почему выбирают нас
       </h2>
 
@@ -33,14 +33,14 @@ export function Advantages() {
         {advantages.map(({ icon: Icon, title, description }) => (
           <StaggerItem key={title} className="flex flex-col items-center text-center">
             <Icon
-              size={48}
-              className="text-[var(--color-dusty-rose)] mb-4"
+              size={36}
+              className="text-[var(--color-caramel)] mb-4"
               strokeWidth={1.5}
             />
-            <h3 className="font-heading font-semibold text-xl mb-2 text-[var(--color-dark)]">
+            <h3 className="font-heading font-semibold text-xl mb-2 text-[var(--color-graphite)]">
               {title}
             </h3>
-            <p className="text-neutral-500 text-sm leading-relaxed">
+            <p className="text-[var(--color-graphite-light)] text-sm leading-relaxed">
               {description}
             </p>
           </StaggerItem>

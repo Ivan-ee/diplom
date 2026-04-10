@@ -63,7 +63,7 @@ export function UserMenu() {
         aria-haspopup="true"
         aria-expanded={open}
         aria-label="Меню пользователя"
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-dusty-rose)] text-sm font-semibold text-white shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-caramel)] text-sm font-semibold text-white shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2"
       >
         {initial}
       </button>
@@ -82,12 +82,12 @@ export function UserMenu() {
           >
             {/* User info */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-soft-peach)] text-sm font-semibold text-[var(--color-dark)]">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-toffee)] text-sm font-semibold text-[var(--color-graphite)]">
                 {initial}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-[var(--color-dark)]">{user.name}</p>
-                <p className="truncate text-xs text-[var(--color-text-secondary)]">{user.email}</p>
+                <p className="truncate text-sm font-medium text-[var(--color-graphite)]">{user.name}</p>
+                <p className="truncate text-xs text-[var(--color-graphite-light)]">{user.email}</p>
               </div>
             </div>
 
@@ -117,7 +117,7 @@ export function UserMenu() {
               type="button"
               role="menuitem"
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-red-50 hover:text-red-600"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-graphite-light)] transition-colors duration-150 hover:bg-red-50 hover:text-red-600"
             >
               <LogOut size={16} />
               Выйти
@@ -142,9 +142,9 @@ function DropdownLink({ href, icon, onClick, children }: DropdownLinkProps) {
       href={href}
       role="menuitem"
       onClick={onClick}
-      className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-dark)] transition-colors duration-150 hover:bg-[var(--color-cream)] hover:text-[var(--color-dusty-rose)]"
+      className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-graphite)] transition-colors duration-150 hover:bg-[var(--color-warm-ivory)] hover:text-[var(--color-caramel)]"
     >
-      <span className="text-[var(--color-text-secondary)]">{icon}</span>
+      <span className="text-[var(--color-graphite-light)]">{icon}</span>
       {children}
     </Link>
   );

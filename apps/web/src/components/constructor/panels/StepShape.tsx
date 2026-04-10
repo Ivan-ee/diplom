@@ -42,7 +42,7 @@ export function StepShape() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
+        <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm mb-3 uppercase tracking-wide">
           Форма торта
         </h3>
         <motion.div
@@ -59,17 +59,17 @@ export function StepShape() {
                 variants={itemVariants}
                 onClick={() => setShape(id)}
                 className={cn(
-                  'relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
+                  'relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                   isSelected
-                    ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5 shadow-sm'
-                    : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-sm'
+                    ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5 shadow-sm'
+                    : 'border-[var(--color-champagne)] bg-[var(--color-milk-white)] hover:border-[var(--color-champagne)] hover:shadow-sm'
                 )}
                 whileTap={{ scale: 0.97 }}
               >
                 {isSelected && (
                   <motion.div
                     layoutId="shape-selection"
-                    className="absolute inset-0 rounded-[10px] border-2 border-[var(--color-dusty-rose)]"
+                    className="absolute inset-0 rounded-[10px] border-2 border-[var(--color-caramel)]"
                     transition={{ type: 'spring', stiffness: 350, damping: 28 }}
                   />
                 )}
@@ -77,11 +77,11 @@ export function StepShape() {
                 <div className="text-center">
                   <p className={cn(
                     'text-sm font-semibold leading-tight',
-                    isSelected ? 'text-[var(--color-dusty-rose)]' : 'text-[var(--color-dark)]'
+                    isSelected ? 'text-[var(--color-caramel)]' : 'text-[var(--color-graphite)]'
                   )}>
                     {label}
                   </p>
-                  <p className="text-[10px] text-[var(--color-text-secondary)] mt-0.5 leading-tight">
+                  <p className="text-[10px] text-[var(--color-graphite-light)] mt-0.5 leading-tight">
                     {description}
                   </p>
                 </div>
@@ -92,10 +92,10 @@ export function StepShape() {
       </div>
 
       <div>
-        <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
+        <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm mb-3 uppercase tracking-wide">
           Количество ярусов
         </h3>
-        <div className="flex gap-1 p-1 bg-neutral-100 rounded-xl">
+        <div className="flex gap-1 p-1 bg-[var(--color-champagne)]/40 rounded-xl">
           {TIERS.map((t) => {
             const isActive = tierCount === t;
             return (
@@ -103,16 +103,16 @@ export function StepShape() {
                 key={t}
                 onClick={() => setTierCount(t)}
                 className={cn(
-                  'relative flex-1 py-2 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1 cursor-pointer',
+                  'relative flex-1 py-2 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1 cursor-pointer',
                   isActive
-                    ? 'bg-white shadow-sm text-neutral-900'
-                    : 'text-neutral-500 hover:text-neutral-700'
+                    ? 'bg-[var(--color-milk-white)] shadow-sm text-[var(--color-graphite)]'
+                    : 'text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)]'
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="tier-selection"
-                    className="absolute inset-0 bg-white rounded-lg shadow-sm"
+                    className="absolute inset-0 bg-[var(--color-milk-white)] rounded-lg shadow-sm"
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -126,7 +126,7 @@ export function StepShape() {
           <motion.p
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-2 text-xs text-[var(--color-text-secondary)] text-center"
+            className="mt-2 text-xs text-[var(--color-graphite-light)] text-center"
           >
             {`+ ${getTierSurcharge(tierCount)} ₽ за многоярусность`}
           </motion.p>
@@ -137,10 +137,10 @@ export function StepShape() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="flex items-start gap-2.5 p-3 bg-[var(--color-cream)] rounded-lg border border-[var(--color-soft-peach)]"
+        className="flex items-start gap-2.5 p-3 bg-[var(--color-warm-ivory)] rounded-lg border border-[var(--color-toffee)]/40"
       >
         <span className="text-base leading-none mt-0.5">💡</span>
-        <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+        <p className="text-xs text-[var(--color-graphite-light)] leading-relaxed">
           Форма торта влияет на сложность приготовления. Круглая — классика, сердце и квадрат требуют дополнительной обработки.
         </p>
       </motion.div>

@@ -65,9 +65,9 @@ export function Pagination({ currentPage, totalPages, totalItems }: PaginationPr
   return (
     <div className="flex flex-col items-center gap-3 mt-12">
       {totalItems > 0 && (
-        <p className="text-sm text-neutral-400">
-          Страница <span className="text-neutral-700 font-medium">{currentPage}</span> из{' '}
-          <span className="text-neutral-700 font-medium">{totalPages}</span>
+        <p className="text-sm text-[var(--color-graphite-light)]/60">
+          Страница <span className="text-[var(--color-graphite-light)] font-medium">{currentPage}</span> из{' '}
+          <span className="text-[var(--color-graphite-light)] font-medium">{totalPages}</span>
           {' '}&mdash; {totalItems} товаров
         </p>
       )}
@@ -78,7 +78,7 @@ export function Pagination({ currentPage, totalPages, totalItems }: PaginationPr
           onClick={() => goToPage(currentPage - 1)}
           disabled={currentPage <= 1}
           aria-label="Предыдущая страница"
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-neutral-100 text-neutral-600 hover:bg-neutral-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-champagne)]/50 text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200"
         >
           <ChevronLeft size={16} />
         </button>
@@ -88,7 +88,7 @@ export function Pagination({ currentPage, totalPages, totalItems }: PaginationPr
           page === '...' ? (
             <span
               key={`ellipsis-${idx}`}
-              className="w-10 text-center text-sm text-neutral-400 select-none"
+              className="w-10 text-center text-sm text-[var(--color-graphite-light)]/60 select-none"
             >
               …
             </span>
@@ -99,8 +99,8 @@ export function Pagination({ currentPage, totalPages, totalItems }: PaginationPr
               aria-current={page === currentPage ? 'page' : undefined}
               className={`w-10 h-10 rounded-full text-sm font-medium transition-all duration-200 ${
                 page === currentPage
-                  ? 'bg-[var(--color-dusty-rose)] text-white shadow-sm'
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                  ? 'bg-[var(--color-caramel)] text-white shadow-sm'
+                  : 'bg-[var(--color-champagne)]/50 text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)]'
               }`}
             >
               {page}
@@ -113,7 +113,7 @@ export function Pagination({ currentPage, totalPages, totalItems }: PaginationPr
           onClick={() => goToPage(currentPage + 1)}
           disabled={currentPage >= totalPages}
           aria-label="Следующая страница"
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-neutral-100 text-neutral-600 hover:bg-neutral-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-champagne)]/50 text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200"
         >
           <ChevronRight size={16} />
         </button>

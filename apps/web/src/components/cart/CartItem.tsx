@@ -41,7 +41,7 @@ function ConstructorConfigSummary({ config }: { config: unknown }) {
   if (parts.length === 0) return null;
 
   return (
-    <p className="text-sm text-neutral-500 mt-1 line-clamp-2">
+    <p className="text-sm text-[var(--color-graphite-light)] mt-1 line-clamp-2">
       {parts.join(' · ')}
     </p>
   );
@@ -83,11 +83,11 @@ export function CartItem({ item }: CartItemProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -24, transition: { duration: 0.2 } }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="bg-white rounded-2xl border border-neutral-100 p-4 lg:p-6"
+      className="bg-white rounded-2xl border border-[var(--color-champagne)] p-4 lg:p-6"
     >
       <div className="flex items-start gap-4">
         {/* Image */}
-        <div className="relative shrink-0 w-20 h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden bg-[var(--color-cream)] flex-shrink-0">
+        <div className="relative shrink-0 w-20 h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden bg-[var(--color-warm-ivory)] flex-shrink-0">
           {item.imageUrl ? (
             <Image
               src={item.imageUrl}
@@ -111,7 +111,7 @@ export function CartItem({ item }: CartItemProps) {
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base font-medium text-neutral-900 leading-tight line-clamp-2">
+                <h3 className="text-base font-medium text-[var(--color-graphite)] leading-tight line-clamp-2">
                   {item.name}
                 </h3>
                 {isConstructor && (
@@ -127,7 +127,7 @@ export function CartItem({ item }: CartItemProps) {
               </div>
 
               {/* Weight */}
-              <p className="text-sm text-neutral-500 mt-1">
+              <p className="text-sm text-[var(--color-graphite-light)] mt-1">
                 {item.weight >= 1000
                   ? `${(item.weight / 1000).toLocaleString('ru-RU')} кг`
                   : `${item.weight} г`}
@@ -152,7 +152,7 @@ export function CartItem({ item }: CartItemProps) {
                   >
                     <button
                       onClick={handleCancelDelete}
-                      className="text-xs text-neutral-400 hover:text-neutral-700 px-2 py-1 rounded-md transition-colors duration-150 cursor-pointer"
+                      className="text-xs text-[var(--color-graphite-light)]/60 hover:text-[var(--color-graphite-light)] px-2 py-1 rounded-md transition-colors duration-150 cursor-pointer"
                     >
                       Отмена
                     </button>
@@ -183,27 +183,27 @@ export function CartItem({ item }: CartItemProps) {
           {/* Bottom: quantity stepper + price */}
           <div className="flex items-center justify-between gap-4">
             {/* Quantity stepper */}
-            <div className="flex items-center gap-3 bg-neutral-100 rounded-full p-1">
+            <div className="flex items-center gap-3 bg-[var(--color-champagne)]/40 rounded-full p-1">
               <button
                 onClick={handleDecrement}
                 aria-label="Уменьшить количество"
                 className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150 cursor-pointer',
-                  'hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1',
-                  item.quantity <= 1 ? 'text-neutral-300' : 'text-neutral-700'
+                  'hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1',
+                  item.quantity <= 1 ? 'text-neutral-300' : 'text-[var(--color-graphite-light)]'
                 )}
               >
                 <Minus size={13} />
               </button>
 
-              <span className="text-sm font-medium w-6 text-center select-none tabular-nums text-neutral-900">
+              <span className="text-sm font-medium w-6 text-center select-none tabular-nums text-[var(--color-graphite)]">
                 {item.quantity}
               </span>
 
               <button
                 onClick={handleIncrement}
                 aria-label="Увеличить количество"
-                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-700 hover:bg-neutral-200 transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1"
               >
                 <Plus size={13} />
               </button>
@@ -211,12 +211,12 @@ export function CartItem({ item }: CartItemProps) {
 
             {/* Price */}
             <div className="text-right">
-              <p className="text-lg font-semibold text-[var(--color-dusty-rose)] tabular-nums">
+              <p className="text-lg font-semibold text-[var(--color-caramel)] tabular-nums">
                 {formatPrice(itemTotal)}
               </p>
               <p className={cn(
                 "text-xs tabular-nums",
-                item.quantity > 1 ? "text-neutral-400" : "invisible"
+                item.quantity > 1 ? "text-[var(--color-graphite-light)]/60" : "invisible"
               )}>
                 {formatPrice(item.price)} × {item.quantity}
               </p>

@@ -63,8 +63,8 @@ function AvailabilityToggle({ id, available, onToggle }: AvailabilityToggleProps
       onClick={handleChange}
       disabled={loading}
       className={cn(
-        'relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1 disabled:opacity-50',
-        available ? 'bg-[var(--color-dusty-rose)]' : 'bg-neutral-200'
+        'relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1 disabled:opacity-50',
+        available ? 'bg-[var(--color-caramel)]' : 'bg-[var(--color-champagne)]'
       )}
     >
       <span
@@ -130,7 +130,7 @@ function PriceEditor({ id, price, priceKey, onSaved }: PriceEditorProps) {
         title="Нажмите для редактирования"
         className="group flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 transition-colors hover:bg-neutral-100"
       >
-        <span className="font-heading text-sm font-bold text-neutral-900">
+        <span className="font-heading text-sm font-bold text-[var(--color-graphite)]">
           {formatPrice(price)}
         </span>
         <span className="text-xs text-neutral-400 opacity-0 transition-opacity group-hover:opacity-100">
@@ -152,7 +152,7 @@ function PriceEditor({ id, price, priceKey, onSaved }: PriceEditorProps) {
           if (e.key === 'Enter') void save();
           if (e.key === 'Escape') cancel();
         }}
-        className="border border-neutral-200 rounded-lg px-2 py-1 w-24 text-sm text-neutral-900 focus:outline-none focus:border-[var(--color-dusty-rose)]"
+        className="border border-[var(--color-champagne)] rounded-lg px-2 py-1 w-24 text-sm text-[var(--color-graphite)] focus:outline-none focus:border-[var(--color-caramel)]"
         disabled={saving}
       />
       <button

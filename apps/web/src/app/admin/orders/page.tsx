@@ -80,7 +80,7 @@ function ExpandedOrderRow({ order }: { order: Order }) {
                   {item.type === 'constructor' ? (
                     <>
                       <div className="flex items-center gap-1.5">
-                        <Cake size={13} className="text-[var(--color-dusty-rose)]" />
+                        <Cake size={13} className="text-[var(--color-caramel)]" />
                         <span className="text-sm font-medium text-neutral-900">
                           Собранный торт
                         </span>
@@ -179,7 +179,7 @@ function StatusCell({ order, onUpdated }: StatusCellProps) {
       <select
         value={selected}
         onChange={(e) => setSelected(e.target.value as OrderStatus)}
-        className="border border-neutral-200 rounded-lg px-2 py-1 text-sm bg-white text-neutral-700 focus:border-[var(--color-dusty-rose)] focus:outline-none"
+        className="border border-[var(--color-champagne)] rounded-lg px-2 py-1 text-sm bg-white text-[var(--color-graphite-light)] focus:border-[var(--color-caramel)] focus:outline-none"
       >
         {ALL_STATUSES.map(([value, cfg]) => (
           <option key={value} value={value}>
@@ -196,7 +196,7 @@ function StatusCell({ order, onUpdated }: StatusCellProps) {
             ? 'text-emerald-600'
             : selected === order.status
             ? 'text-neutral-300 cursor-default'
-            : 'text-[var(--color-dusty-rose)] hover:underline disabled:opacity-50'
+            : 'text-[var(--color-caramel)] hover:underline disabled:opacity-50'
         )}
       >
         {saving ? (
@@ -286,8 +286,8 @@ export default function AdminOrdersPage() {
             className={cn(
               'px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap',
               activeFilter === idx
-                ? 'bg-[var(--color-dusty-rose)] text-white'
-                : 'bg-white border border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                ? 'bg-[var(--color-caramel)] text-white'
+                : 'bg-white border border-[var(--color-champagne)] text-neutral-600 hover:border-neutral-300'
             )}
           >
             {group.label}

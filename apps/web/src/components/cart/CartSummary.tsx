@@ -33,36 +33,36 @@ export function CartSummary() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="sticky lg:top-24 bg-neutral-50 rounded-2xl p-6 lg:p-8 border border-neutral-100"
+      className="sticky lg:top-24 bg-[var(--color-warm-ivory)] rounded-2xl p-6 lg:p-8 border border-[var(--color-champagne)]"
     >
-      <h2 className="font-heading font-semibold text-[var(--color-dark)] text-lg mb-4">
+      <h2 className="font-heading font-semibold text-[var(--color-graphite)] text-lg mb-4">
         Итого
       </h2>
 
       {/* Line items */}
       <div className="flex flex-col">
-        <div className="flex justify-between py-3 border-b border-neutral-100">
-          <span className="text-sm text-neutral-500">
+        <div className="flex justify-between py-3 border-b border-[var(--color-champagne)]">
+          <span className="text-sm text-[var(--color-graphite-light)]">
             Товары ({totalItems}&nbsp;{itemWord})
           </span>
-          <span className="text-sm font-medium text-[var(--color-dark)] tabular-nums">
+          <span className="text-sm font-medium text-[var(--color-graphite)] tabular-nums">
             {formatPrice(totalPrice)}
           </span>
         </div>
 
-        <div className="flex justify-between py-3 border-b border-neutral-100">
-          <span className="text-sm text-neutral-500">Доставка</span>
+        <div className="flex justify-between py-3 border-b border-[var(--color-champagne)]">
+          <span className="text-sm text-[var(--color-graphite-light)]">Доставка</span>
           <span className="text-sm text-emerald-600 font-medium">Самовывоз</span>
         </div>
 
         <div className="flex justify-between py-3">
-          <span className="text-sm font-semibold text-[var(--color-dark)]">К оплате</span>
+          <span className="text-sm font-semibold text-[var(--color-graphite)]">К оплате</span>
           <motion.span
             key={totalPrice}
             initial={{ scale: 0.92, opacity: 0.6 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="font-heading font-bold text-2xl text-[var(--color-dusty-rose)] tabular-nums"
+            className="font-heading font-bold text-2xl text-[var(--color-caramel)] tabular-nums"
           >
             {formatPrice(totalPrice)}
           </motion.span>
@@ -72,7 +72,7 @@ export function CartSummary() {
       {/* CTA */}
       <button
         onClick={handleCheckout}
-        className="w-full flex items-center justify-center gap-2 bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white rounded-xl h-12 text-base font-medium mt-6 transition-colors duration-150 cursor-pointer"
+        className="w-full flex items-center justify-center gap-2 bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white rounded-xl h-12 text-base font-medium mt-6 transition-colors duration-150 cursor-pointer"
       >
         Оформить заказ
         <ArrowRight size={16} />
@@ -80,11 +80,11 @@ export function CartSummary() {
 
       {/* Auth hint */}
       {!isAuthenticated && (
-        <p className="mt-3 text-center text-xs text-neutral-400">
+        <p className="mt-3 text-center text-xs text-[var(--color-graphite-light)]/60">
           Для оформления необходимо{' '}
           <button
             onClick={() => openAuth('login')}
-            className="text-[var(--color-dusty-rose)] underline underline-offset-2 cursor-pointer hover:no-underline transition-all duration-150"
+            className="text-[var(--color-caramel)] underline underline-offset-2 cursor-pointer hover:no-underline transition-all duration-150"
           >
             войти
           </button>
@@ -92,7 +92,7 @@ export function CartSummary() {
       )}
 
       {/* Pickup address */}
-      <p className="text-sm text-neutral-500 mt-4 text-center">
+      <p className="text-sm text-[var(--color-graphite-light)] mt-4 text-center">
         Самовывоз: г.&nbsp;Арзамас, ул.&nbsp;Ленина, д.&nbsp;15
       </p>
     </motion.div>

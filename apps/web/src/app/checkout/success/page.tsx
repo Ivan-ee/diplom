@@ -120,7 +120,7 @@ function DetailRow({
   return (
     <div className={cn('flex items-start gap-3', className)}>
       <div className="shrink-0 w-8 h-8 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center mt-0.5">
-        <Icon size={14} className="text-[var(--color-dusty-rose)]" />
+        <Icon size={14} className="text-[var(--color-caramel)]" />
       </div>
       <div>
         <p className="text-xs text-neutral-400 leading-none mb-1">{label}</p>
@@ -164,7 +164,7 @@ function SuccessContent() {
         transition={{ duration: 0.3, ease: 'easeOut', delay: 0.25 }}
         className="text-center mt-6 mb-8"
       >
-        <h1 className="font-heading font-bold text-3xl text-[var(--color-dark)] mb-2">
+        <h1 className="font-heading font-bold text-3xl text-[var(--color-graphite)] mb-2">
           Заказ оформлен!
         </h1>
         <p className="text-neutral-400 text-sm leading-relaxed max-w-xs mx-auto">
@@ -184,7 +184,7 @@ function SuccessContent() {
           <span className="text-xs font-medium text-neutral-400 uppercase tracking-wide">
             Номер заказа
           </span>
-          <span className="font-heading font-bold text-lg text-[var(--color-dusty-rose)] tabular-nums">
+          <span className="font-heading font-bold text-lg text-[var(--color-caramel)] tabular-nums">
             #{orderNumber}
           </span>
         </div>
@@ -222,7 +222,7 @@ function SuccessContent() {
       >
         <Link
           href="/account/orders"
-          className="flex-1 inline-flex items-center justify-center gap-2 h-12 rounded-xl bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white text-sm font-medium transition-colors duration-150"
+          className="flex-1 inline-flex items-center justify-center gap-2 h-12 rounded-xl bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white text-sm font-medium transition-colors duration-150"
         >
           <ShoppingBag size={16} />
           Мои заказы
@@ -265,7 +265,7 @@ export default function CheckoutSuccessPage() {
         <div className="flex flex-col items-center">
           <Suspense
             fallback={
-              <div className="w-8 h-8 rounded-full border-2 border-[var(--color-dusty-rose)] border-t-transparent animate-spin" />
+              <div className="w-8 h-8 rounded-full border-2 border-[var(--color-caramel)] border-t-transparent animate-spin" />
             }
           >
             <SuccessContent />

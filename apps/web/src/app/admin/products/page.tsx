@@ -68,7 +68,7 @@ function AddProductModal({ onClose, onCreated }: AddProductModalProps) {
   };
 
   const fieldClass =
-    'w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-[var(--color-dusty-rose)] focus:outline-none focus:ring-1 focus:ring-[var(--color-dusty-rose)]';
+    'w-full rounded-xl border border-[var(--color-champagne)] bg-white px-4 py-3 text-sm text-[var(--color-graphite)] focus:border-[var(--color-caramel)] focus:outline-none focus:ring-1 focus:ring-[var(--color-caramel)]';
 
   return (
     <div
@@ -160,7 +160,7 @@ function AddProductModal({ onClose, onCreated }: AddProductModalProps) {
               type="checkbox"
               checked={isAvailable}
               onChange={(e) => setIsAvailable(e.target.checked)}
-              className="h-4 w-4 rounded border-neutral-200 accent-[var(--color-dusty-rose)]"
+              className="h-4 w-4 rounded border-neutral-200 accent-[var(--color-caramel)]"
             />
             <label htmlFor="ap-available" className="text-sm text-neutral-700">
               Доступен для заказа
@@ -179,7 +179,7 @@ function AddProductModal({ onClose, onCreated }: AddProductModalProps) {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[var(--color-dusty-rose)] px-4 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-dusty-rose-hover)] transition-colors disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[var(--color-caramel)] px-4 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-caramel-hover)] transition-colors disabled:opacity-50"
             >
               {saving && <RefreshCw size={13} className="animate-spin" />}
               {saving ? 'Сохранение...' : 'Создать'}
@@ -226,8 +226,8 @@ function AvailabilityToggle({ productId, available, onToggle }: AvailabilityTogg
       onClick={handleChange}
       disabled={loading}
       className={cn(
-        'relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1 disabled:opacity-50',
-        available ? 'bg-[var(--color-dusty-rose)]' : 'bg-neutral-200'
+        'relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1 disabled:opacity-50',
+        available ? 'bg-[var(--color-caramel)]' : 'bg-[var(--color-champagne)]'
       )}
     >
       <span
@@ -315,7 +315,7 @@ function PriceEditor({ productId, price, onSaved }: PriceEditorProps) {
           if (e.key === 'Enter') void save();
           if (e.key === 'Escape') cancel();
         }}
-        className="border border-neutral-200 rounded-lg px-2 py-1 w-24 text-sm text-neutral-900 focus:outline-none focus:border-[var(--color-dusty-rose)]"
+        className="border border-[var(--color-champagne)] rounded-lg px-2 py-1 w-24 text-sm text-[var(--color-graphite)] focus:outline-none focus:border-[var(--color-caramel)]"
         disabled={saving}
       />
       <button
@@ -469,7 +469,7 @@ export default function AdminProductsPage() {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-[var(--color-dusty-rose)] text-white rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-dusty-rose-hover)] transition-colors"
+            className="flex items-center gap-2 bg-[var(--color-caramel)] text-white rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-caramel-hover)] transition-colors"
           >
             <Plus size={14} />
             Добавить товар

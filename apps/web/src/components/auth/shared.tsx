@@ -22,4 +22,4 @@ export function FieldWrapper({ id, label, error, children }: FieldWrapperProps) 
 }
 
 export const inputClass =
-  'w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:border-[var(--color-dusty-rose)] focus:ring-1 focus:ring-[var(--color-dusty-rose)]/30 transition-colors outline-none disabled:opacity-50 bg-white text-[var(--color-dark)] placeholder:text-neutral-400';
+  'w-full border border-[var(--color-champagne)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)]/30 transition-colors outline-none disabled:opacity-50 bg-white text-[var(--color-graphite)] placeholder:text-[var(--color-graphite-light)]/60';

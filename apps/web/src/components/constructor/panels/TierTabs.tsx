@@ -21,7 +21,7 @@ export function TierTabs({ tierCount, activeTier, onSelect, layoutId }: TierTabs
           key={i}
           onClick={() => onSelect(i)}
           className={cn(
-            'relative flex-1 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)]',
+            'relative flex-1 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)]',
             activeTier === i
               ? 'bg-white shadow-sm text-neutral-900'
               : 'text-neutral-500 hover:text-neutral-700'

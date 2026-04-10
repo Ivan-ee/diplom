@@ -2,31 +2,35 @@
 @import '@heroui/styles';
 
 @theme {
-  --color-cream: #FDF9F3;
-  --color-dusty-rose: #C4A08A;
-  --color-dusty-rose-hover: #A88770;
-  --color-soft-peach: #F0C9B0;
-  --color-dark: #2D2D2D;
-  --color-text-secondary: #6B6B6B;
+  --color-milk-white: #FEFDFB;
+  --color-warm-ivory: #FAF7F2;
+  --color-champagne: #F0EBE3;
+  --color-soft-oat: #E8E0D4;
+  --color-graphite: #3B3230;
+  --color-graphite-light: #6B6360;
+  --color-caramel: #B8926A;
+  --color-caramel-hover: #9E7A54;
+  --color-toffee: #D4B896;
   --color-success: #4CAF50;
   --color-error: #E53935;
 
-  --font-heading: var(--font-montserrat);
-  --font-body: var(--font-open-sans);
+  --font-heading: var(--font-manrope);
+  --font-body: var(--font-manrope);
+  --font-editorial: var(--font-cormorant);
 }
 
 /* HeroUI semantic palette — mapped to current brand colors */
 :root {
-  --accent: oklch(0.72 0.08 55);          /* dusty-rose #C4A08A */
-  --accent-foreground: oklch(1 0 0);       /* white text on accent */
-  --secondary: oklch(0.90 0.04 60);        /* soft-peach #F0C9B0 */
-  --secondary-foreground: oklch(0.25 0 0); /* dark text on secondary */
+  --accent: oklch(0.68 0.09 65);
+  --accent-foreground: oklch(1 0 0);
+  --secondary: oklch(0.88 0.03 70);
+  --secondary-foreground: oklch(0.28 0.02 30);
 }
 
 body {
   font-family: var(--font-body), system-ui, sans-serif;
-  color: var(--color-dark);
-  background-color: #ffffff;
+  color: var(--color-graphite);
+  background-color: var(--color-milk-white);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -47,7 +51,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Custom scrollbar for settings panel */
 .overflow-y-auto {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-soft-peach) transparent;
+  scrollbar-color: var(--color-champagne) transparent;
 }
 .overflow-y-auto::-webkit-scrollbar {
   width: 4px;
@@ -56,9 +60,9 @@ h1, h2, h3, h4, h5, h6 {
   background: transparent;
 }
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background-color: var(--color-soft-peach);
+  background-color: var(--color-champagne);
   border-radius: 2px;
 }
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-dusty-rose);
+  background-color: var(--color-caramel);
 }

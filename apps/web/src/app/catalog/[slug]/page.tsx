@@ -68,18 +68,18 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumbs */}
       <nav
-        className="flex items-center gap-2 text-sm text-neutral-400 mb-10"
+        className="flex items-center gap-2 text-sm text-[var(--color-graphite-light)]/60 mb-10"
         aria-label="Хлебные крошки"
       >
-        <Link href="/" className="hover:text-neutral-600 transition-colors duration-200">
+        <Link href="/" className="hover:text-[var(--color-graphite)] transition-colors duration-200">
           Главная
         </Link>
-        <ChevronRight size={13} className="shrink-0 text-neutral-300" />
-        <Link href="/catalog" className="hover:text-neutral-600 transition-colors duration-200">
+        <ChevronRight size={13} className="shrink-0 text-[var(--color-champagne)]" />
+        <Link href="/catalog" className="hover:text-[var(--color-graphite)] transition-colors duration-200">
           Каталог
         </Link>
-        <ChevronRight size={13} className="shrink-0 text-neutral-300" />
-        <span className="text-neutral-700 font-medium">
+        <ChevronRight size={13} className="shrink-0 text-[var(--color-champagne)]" />
+        <span className="text-[var(--color-graphite)] font-medium">
           {product.name}
         </span>
       </nav>

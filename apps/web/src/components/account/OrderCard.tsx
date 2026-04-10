@@ -95,13 +95,13 @@ function ProductItemRow({ item }: { item: OrderItemProduct }) {
     <div className="flex items-start gap-3 py-2">
       <Chip size="sm" color="default" variant="secondary" className="mt-0.5 shrink-0">Товар</Chip>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-[var(--color-dark)] leading-snug">{item.name}</p>
+        <p className="text-sm font-medium text-[var(--color-graphite)] leading-snug">{item.name}</p>
         <p className="text-xs text-neutral-400 mt-0.5">
           {`${parseFloat(String(item.weight)).toLocaleString('ru-RU')} кг`}
           {item.quantity > 1 && ` × ${item.quantity}`}
         </p>
       </div>
-      <span className="shrink-0 text-sm font-semibold text-[var(--color-dusty-rose)]">
+      <span className="shrink-0 text-sm font-semibold text-[var(--color-caramel)]">
         {formatPrice(item.price * item.quantity)}
       </span>
     </div>
@@ -115,8 +115,8 @@ function ConstructorItemRow({ item }: { item: OrderItemConstructor }) {
       <Chip size="sm" color="accent" variant="secondary" className="mt-0.5 shrink-0">Конструктор</Chip>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <Cake size={13} className="text-[var(--color-dusty-rose)] shrink-0" />
-          <p className="text-sm font-medium text-[var(--color-dark)]">Собранный торт</p>
+          <Cake size={13} className="text-[var(--color-caramel)] shrink-0" />
+          <p className="text-sm font-medium text-[var(--color-graphite)]">Собранный торт</p>
         </div>
         {cfg && (
           <ul className="mt-1.5 space-y-0.5 text-xs text-neutral-400">
@@ -141,7 +141,7 @@ function ConstructorItemRow({ item }: { item: OrderItemConstructor }) {
           </ul>
         )}
       </div>
-      <span className="shrink-0 text-sm font-semibold text-[var(--color-dusty-rose)]">
+      <span className="shrink-0 text-sm font-semibold text-[var(--color-caramel)]">
         {formatPrice(item.price)}
       </span>
     </div>
@@ -165,11 +165,11 @@ export function OrderCard({ order }: OrderCardProps) {
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <span className="font-semibold text-[var(--color-dark)]">
+          <span className="font-semibold text-[var(--color-graphite)]">
             Заказ #{displayNumber}
           </span>
           <p className="text-sm text-neutral-500 mt-1">{formatDate(order.createdAt)}</p>
-          <p className="text-lg font-semibold text-[var(--color-dusty-rose)] mt-2">
+          <p className="text-lg font-semibold text-[var(--color-caramel)] mt-2">
             {formatPrice(order.totalPrice)}
           </p>
         </div>
@@ -218,7 +218,7 @@ export function OrderCard({ order }: OrderCardProps) {
               <div className="mt-3 flex justify-end border-t border-neutral-100 pt-3">
                 <span className="text-sm text-neutral-500">
                   Итого:&nbsp;
-                  <span className="font-heading font-bold text-[var(--color-dark)]">
+                  <span className="font-heading font-bold text-[var(--color-graphite)]">
                     {formatPrice(order.totalPrice)}
                   </span>
                 </span>

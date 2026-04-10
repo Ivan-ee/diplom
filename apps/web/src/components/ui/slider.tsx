@@ -37,10 +37,10 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
         {(label || showValue) && (
           <div className="flex items-center justify-between">
             {label && (
-              <span className="text-sm font-medium text-[var(--color-dark)]">{label}</span>
+              <span className="text-sm font-medium text-[var(--color-graphite)]">{label}</span>
             )}
             {showValue && (
-              <span className="text-sm font-semibold text-[var(--color-dusty-rose)]">
+              <span className="text-sm font-semibold text-[var(--color-caramel)]">
                 {formatValue ? formatValue(value) : value}
               </span>
             )}
@@ -48,10 +48,10 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
         )}
         <div className="relative flex items-center h-5">
           {/* Track background */}
-          <div className="absolute w-full h-1.5 rounded-full bg-gray-200 overflow-hidden">
+          <div className="absolute w-full h-1.5 rounded-full bg-[var(--color-champagne)] overflow-hidden">
             {/* Filled portion */}
             <div
-              className="h-full rounded-full bg-[var(--color-dusty-rose)] transition-all duration-150 ease-out"
+              className="h-full rounded-full bg-[var(--color-caramel)] transition-all duration-150 ease-out"
               style={{ width: `${percentage}%` }}
             />
           </div>
@@ -71,7 +71,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
               '[&::-webkit-slider-thumb]:w-5',
               '[&::-webkit-slider-thumb]:h-5',
               '[&::-webkit-slider-thumb]:rounded-full',
-              '[&::-webkit-slider-thumb]:bg-[var(--color-dusty-rose)]',
+              '[&::-webkit-slider-thumb]:bg-[var(--color-caramel)]',
               '[&::-webkit-slider-thumb]:border-2',
               '[&::-webkit-slider-thumb]:border-white',
               '[&::-webkit-slider-thumb]:shadow-md',
@@ -83,7 +83,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
           />
           {/* Visual thumb */}
           <div
-            className="absolute w-5 h-5 rounded-full bg-[var(--color-dusty-rose)] border-2 border-white shadow-md pointer-events-none transition-transform duration-150 ease-out"
+            className="absolute w-5 h-5 rounded-full bg-[var(--color-caramel)] border-2 border-white shadow-md pointer-events-none transition-transform duration-150 ease-out"
             style={{ left: `calc(${percentage}% - 10px)` }}
           />
         </div>

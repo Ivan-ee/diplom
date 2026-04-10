@@ -104,10 +104,10 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <Link href={`/catalog/${product.slug}`} className="group block focus:outline-none h-full">
-      <div className="rounded-2xl overflow-hidden bg-white border border-neutral-100 hover:shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-[var(--color-dusty-rose)] focus-within:ring-offset-2 flex flex-col h-full">
+    <Link href={`/catalog/${product.slug}`} aria-label={product.name} className="group block focus:outline-none h-full">
+      <div className="rounded-2xl overflow-hidden bg-white border border-[var(--color-champagne)] hover:shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-[var(--color-caramel)] focus-within:ring-offset-2 flex flex-col h-full">
         {/* Image area */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-cream)]">
+        <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-warm-ivory)]">
           {imageUrl ? (
             <Image
               src={imageUrl}
@@ -117,7 +117,7 @@ export function ProductCard({ product }: ProductCardProps) {
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[var(--color-cream)]">
+            <div className="flex h-full w-full items-center justify-center bg-[var(--color-warm-ivory)]">
               <span className="text-5xl text-neutral-300 font-light select-none" aria-hidden="true">
                 ~
               </span>
@@ -145,17 +145,17 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Content */}
         <div className="p-4 flex flex-col flex-1">
-          <h3 className="text-base font-medium text-neutral-900 line-clamp-2 leading-snug min-h-[2.75rem]">
+          <h3 className="text-base font-medium text-[var(--color-graphite)] line-clamp-2 leading-snug min-h-[2.75rem]">
             {product.name}
           </h3>
 
-          <p className="text-lg font-semibold text-[var(--color-dusty-rose)] mt-1">
+          <p className="text-lg font-semibold text-[var(--color-caramel)] mt-1">
             {isPerUnit
               ? `${formatPrice(product.pricePerUnit ?? 0)} ₽`
               : `от ${formatPrice(product.pricePerKg ?? product.priceMin ?? 0)} ₽/кг`}
           </p>
 
-          <motion.div whileTap={{ scale: 0.98 }} className="mt-auto pt-3">
+          <motion.div whileTap={{ scale: 0.98 }} className="mt-auto pt-3 relative z-10">
             <Button
               fullWidth
               onClick={handleAddToCart}
@@ -163,8 +163,8 @@ export function ProductCard({ product }: ProductCardProps) {
               aria-label={`Добавить ${product.name} в корзину`}
               className={`w-full rounded-xl text-sm font-medium transition-colors duration-200 ${
                 added
-                  ? 'bg-neutral-100 text-neutral-600'
-                  : 'bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white'
+                  ? 'bg-[var(--color-champagne)] text-[var(--color-graphite-light)]'
+                  : 'bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white'
               }`}
             >
               {added ? '✓ Добавлено' : 'В корзину'}

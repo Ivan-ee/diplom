@@ -75,14 +75,14 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login', returnPath }:
               {/* Close button */}
               <button
                 onClick={onClose}
-                className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-[var(--color-dark)] transition-colors duration-150"
+                className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)]/60 hover:text-[var(--color-graphite)] transition-colors duration-150"
                 aria-label="Закрыть"
               >
                 <X size={20} />
               </button>
 
               {/* Tabs */}
-              <div className="mb-8 flex bg-neutral-100 rounded-xl p-1">
+              <div className="mb-8 flex bg-[var(--color-champagne)]/40 rounded-xl p-1">
                 <TabButton
                   active={activeTab === 'login'}
                   onClick={() => setActiveTab('login')}
@@ -123,14 +123,14 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login', returnPath }:
               </AnimatePresence>
 
               {/* Switch tab hint */}
-              <p className="mt-5 text-center text-sm text-[var(--color-text-secondary)]">
+              <p className="mt-5 text-center text-sm text-[var(--color-graphite-light)]">
                 {activeTab === 'login' ? (
                   <>
                     Нет аккаунта?{' '}
                     <button
                       type="button"
                       onClick={() => setActiveTab('register')}
-                      className="font-medium text-[var(--color-dusty-rose)] hover:underline"
+                      className="font-medium text-[var(--color-caramel)] hover:underline"
                     >
                       Зарегистрироваться
                     </button>
@@ -141,7 +141,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login', returnPath }:
                     <button
                       type="button"
                       onClick={() => setActiveTab('login')}
-                      className="font-medium text-[var(--color-dusty-rose)] hover:underline"
+                      className="font-medium text-[var(--color-caramel)] hover:underline"
                     >
                       Войти
                     </button>
@@ -170,8 +170,8 @@ function TabButton({ active, onClick, children }: TabButtonProps) {
       className={[
         'flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-center cursor-pointer',
         active
-          ? 'bg-[var(--color-dusty-rose)] text-white shadow-sm'
-          : 'text-neutral-500 hover:text-neutral-700',
+          ? 'bg-[var(--color-caramel)] text-white shadow-sm'
+          : 'text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)]',
       ].join(' ')}
     >
       {children}

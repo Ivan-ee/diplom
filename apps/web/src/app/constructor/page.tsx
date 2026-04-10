@@ -34,7 +34,7 @@ function ConstructorPageSkeleton() {
       </div>
 
       {/* Panel skeleton */}
-      <div className="border-l border-gray-100 bg-[var(--color-cream)] flex flex-col">
+      <div className="border-l border-[var(--color-champagne)] bg-[var(--color-warm-ivory)] flex flex-col">
         {/* Progress bar skeleton */}
         <div className="px-4 py-4 bg-white border-b border-gray-100 flex items-center justify-between">
           {[0, 1, 2, 3, 4].map((i) => (

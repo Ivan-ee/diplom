@@ -15,7 +15,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
   return (
     <div className="lg:sticky lg:top-24 self-start flex flex-col gap-4">
       {/* Main image */}
-      <div className="relative aspect-[4/5] lg:aspect-square w-full rounded-2xl overflow-hidden bg-[var(--color-cream)]">
+      <div className="relative aspect-[4/5] lg:aspect-square w-full rounded-2xl overflow-hidden bg-[var(--color-warm-ivory)]">
         {hasImages ? (
           <Image
             src={images[activeIndex]}
@@ -43,8 +43,8 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
               aria-pressed={idx === activeIndex}
               className={`relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                 idx === activeIndex
-                  ? 'border-[var(--color-dusty-rose)]'
-                  : 'border-transparent hover:border-neutral-200'
+                  ? 'border-[var(--color-caramel)]'
+                  : 'border-transparent hover:border-[var(--color-champagne)]'
               }`}
             >
               <Image

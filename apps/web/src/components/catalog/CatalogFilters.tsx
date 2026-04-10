@@ -62,7 +62,7 @@ export function CatalogFilters() {
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 max-w-7xl mx-auto px-4">
       {/* Category tabs */}
       <div
-        className="flex flex-wrap items-center gap-1 bg-neutral-100 rounded-xl p-1"
+        className="flex flex-wrap items-center gap-1 bg-[var(--color-champagne)]/40 rounded-xl p-1"
         role="group"
         aria-label="Категория"
       >
@@ -73,8 +73,8 @@ export function CatalogFilters() {
             aria-pressed={currentCategorySlug === cat.value}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
               currentCategorySlug === cat.value
-                ? 'bg-white text-neutral-900 shadow-sm'
-                : 'text-neutral-500 hover:text-neutral-700'
+                ? 'bg-[var(--color-milk-white)] text-[var(--color-graphite)] shadow-sm'
+                : 'text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)]'
             }`}
           >
             {cat.label}
@@ -88,7 +88,7 @@ export function CatalogFilters() {
           value={currentSort}
           onChange={(e) => handleSort(e.target.value)}
           aria-label="Сортировка"
-          className="text-sm border border-neutral-200 rounded-xl px-3 py-2 bg-white text-neutral-700 focus:outline-none focus:border-[var(--color-dusty-rose)] focus:ring-1 focus:ring-[var(--color-dusty-rose)] cursor-pointer transition-colors duration-200"
+          className="text-sm border border-[var(--color-champagne)] rounded-xl px-3 py-2 bg-white text-[var(--color-graphite-light)] focus:outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)] cursor-pointer transition-colors duration-200"
         >
           {sortOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -100,7 +100,7 @@ export function CatalogFilters() {
         {hasActiveFilters && (
           <button
             onClick={handleReset}
-            className="text-sm text-neutral-400 hover:text-neutral-600 transition-colors duration-200 whitespace-nowrap"
+            className="text-sm text-[var(--color-graphite-light)]/60 hover:text-[var(--color-graphite)] transition-colors duration-200 whitespace-nowrap"
             aria-label="Сбросить фильтры"
           >
             Сбросить

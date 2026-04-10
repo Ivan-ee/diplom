@@ -1,15 +1,15 @@
-import { Montserrat, Open_Sans } from 'next/font/google';
+import { Manrope, Cormorant_Garamond } from 'next/font/google';
 
-export const montserrat = Montserrat({
+export const manrope = Manrope({
   subsets: ['latin', 'cyrillic'],
-  weight: ['500', '600', '700'],
-  variable: '--font-montserrat',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-manrope',
   display: 'swap',
 });
 
-export const openSans = Open_Sans({
+export const cormorant = Cormorant_Garamond({
   subsets: ['latin', 'cyrillic'],
-  weight: ['400', '600'],
-  variable: '--font-open-sans',
+  weight: ['400', '500', '600'],
+  variable: '--font-cormorant',
   display: 'swap',
 });

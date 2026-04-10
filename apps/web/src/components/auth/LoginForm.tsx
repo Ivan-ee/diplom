@@ -98,7 +98,7 @@ export function LoginForm({ onSuccess, returnPath }: LoginFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white rounded-xl h-11 text-sm font-medium mt-4 transition-colors disabled:opacity-60 cursor-pointer"
+        className="w-full bg-[var(--color-caramel)] hover:bg-[var(--color-dusty-rose-hover)] text-white rounded-xl h-11 text-sm font-medium mt-4 transition-colors disabled:opacity-60 cursor-pointer"
       >
         {isSubmitting ? 'Входим...' : 'Войти'}
       </button>

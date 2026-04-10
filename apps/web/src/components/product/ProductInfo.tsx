@@ -106,19 +106,19 @@ export function ProductInfo({ product }: ProductInfoProps) {
       )}
 
       {/* Name */}
-      <h1 className="text-3xl lg:text-4xl font-bold tracking-tight font-heading text-[var(--color-dark)] leading-tight">
+      <h1 className="text-3xl lg:text-4xl font-bold tracking-tight font-heading text-[var(--color-graphite)] leading-tight">
         {product.name}
       </h1>
 
       {/* Price */}
       <div className="flex items-baseline gap-2 mt-3">
-        <span className="text-2xl lg:text-3xl font-semibold text-[var(--color-dusty-rose)]">
+        <span className="text-2xl lg:text-3xl font-semibold text-[var(--color-caramel)]">
           {formatPrice(price)}
         </span>
         {isPerUnit ? (
-          <span className="text-sm text-neutral-400">за штуку</span>
+          <span className="text-sm text-[var(--color-graphite-light)]/60">за штуку</span>
         ) : weightOptions.length > 1 ? (
-          <span className="text-sm text-neutral-400">
+          <span className="text-sm text-[var(--color-graphite-light)]/60">
             за {(selectedWeight / 1000).toLocaleString('ru-RU')} кг
           </span>
         ) : null}
@@ -126,97 +126,100 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Description */}
       {product.description && (
-        <p className="text-base text-neutral-600 leading-relaxed mt-6">
+        <p className="text-base text-[var(--color-graphite-light)] leading-relaxed mt-6">
           {product.description}
         </p>
       )}
 
       {/* Divider */}
-      <div className="border-t border-neutral-100 my-6" />
+      <div className="border-t border-[var(--color-champagne)] my-6" />
 
-      {/* Weight selector */}
-      {weightOptions.length > 1 && (
-        <div className="flex flex-col gap-3 mb-6">
-          <p className="text-sm font-semibold text-[var(--color-dark)]">Вес торта</p>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Выбор веса">
-            {weightOptions.map((w) => (
-              <button
-                key={w}
-                onClick={() => setSelectedWeight(w)}
-                aria-pressed={w === selectedWeight}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
-                  w === selectedWeight
-                    ? 'bg-[var(--color-dusty-rose)] text-white border-[var(--color-dusty-rose)] shadow-sm'
-                    : 'bg-white text-[var(--color-dark)] border-neutral-200 hover:border-[var(--color-dusty-rose)] hover:text-[var(--color-dusty-rose)]'
-                }`}
-              >
-                {(w / 1000).toLocaleString('ru-RU')} кг
-              </button>
-            ))}
+      {/* Buy block */}
+      <div className="bg-[var(--color-warm-ivory)]/50 p-6 rounded-2xl border border-[var(--color-champagne)]/60">
+        {/* Weight selector */}
+        {weightOptions.length > 1 && (
+          <div className="flex flex-col gap-3 mb-6">
+            <p className="text-sm font-semibold text-[var(--color-graphite)]">Вес торта</p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Выбор веса">
+              {weightOptions.map((w) => (
+                <button
+                  key={w}
+                  onClick={() => setSelectedWeight(w)}
+                  aria-pressed={w === selectedWeight}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                    w === selectedWeight
+                      ? 'bg-[var(--color-caramel)] text-white border-[var(--color-caramel)] shadow-sm'
+                      : 'bg-white text-[var(--color-graphite)] border-[var(--color-champagne)] hover:border-[var(--color-caramel)] hover:text-[var(--color-caramel)]'
+                  }`}
+                >
+                  {(w / 1000).toLocaleString('ru-RU')} кг
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Inscription input */}
+        <div className="flex flex-col gap-2 mb-6">
+          <label
+            htmlFor="inscription"
+            className="text-sm font-semibold text-[var(--color-graphite)]"
+          >
+            Надпись на торте{' '}
+            <span className="font-normal text-[var(--color-graphite-light)]/60">(необязательно)</span>
+          </label>
+          <div className="relative">
+            <input
+              id="inscription"
+              type="text"
+              value={inscription}
+              onChange={(e) => setInscription(e.target.value.slice(0, 50))}
+              placeholder="Например: С днём рождения, Аня!"
+              maxLength={50}
+              className="w-full rounded-xl border border-[var(--color-champagne)] px-4 py-3 text-sm text-[var(--color-graphite)] placeholder:text-[var(--color-graphite-light)]/60 focus:outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)] transition-colors duration-200 pr-14"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-graphite-light)]/60 select-none pointer-events-none">
+              {inscription.length}/50
+            </span>
           </div>
         </div>
-      )}
 
-      {/* Inscription input */}
-      <div className="flex flex-col gap-2 mb-6">
-        <label
-          htmlFor="inscription"
-          className="text-sm font-semibold text-[var(--color-dark)]"
+        {/* Add to cart button */}
+        <Button
+          onPress={handleAddToCart}
+          isDisabled={product.isAvailable === false}
+          className={`w-full rounded-xl h-12 text-base font-medium text-white transition-all duration-300 cursor-pointer ${
+            added
+              ? 'bg-emerald-500 hover:bg-emerald-500'
+              : 'bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)]'
+          }`}
         >
-          Надпись на торте{' '}
-          <span className="font-normal text-neutral-400">(необязательно)</span>
-        </label>
-        <div className="relative">
-          <input
-            id="inscription"
-            type="text"
-            value={inscription}
-            onChange={(e) => setInscription(e.target.value.slice(0, 50))}
-            placeholder="Например: С днём рождения, Аня!"
-            maxLength={50}
-            className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm text-[var(--color-dark)] placeholder:text-neutral-400 focus:outline-none focus:border-[var(--color-dusty-rose)] focus:ring-1 focus:ring-[var(--color-dusty-rose)] transition-colors duration-200 pr-14"
-          />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400 select-none pointer-events-none">
-            {inscription.length}/50
-          </span>
-        </div>
-      </div>
+          {added ? (
+            <span className="flex items-center justify-center gap-2">
+              <Check size={18} />
+              Добавлено
+            </span>
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              <ShoppingCart size={18} />
+              В корзину — {formatPrice(price)}
+            </span>
+          )}
+        </Button>
 
-      {/* Add to cart button */}
-      <Button
-        onPress={handleAddToCart}
-        isDisabled={product.isAvailable === false}
-        className={`w-full rounded-xl h-12 text-base font-medium text-white transition-all duration-300 cursor-pointer ${
-          added
-            ? 'bg-emerald-500 hover:bg-emerald-500'
-            : 'bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)]'
-        }`}
-      >
-        {added ? (
-          <span className="flex items-center justify-center gap-2">
-            <Check size={18} />
-            Добавлено
-          </span>
-        ) : (
-          <span className="flex items-center justify-center gap-2">
-            <ShoppingCart size={18} />
-            В корзину — {formatPrice(price)}
-          </span>
+        {product.isAvailable === false && (
+          <p className="text-center text-sm text-[var(--color-graphite-light)]/60 mt-3">
+            Этот товар временно недоступен
+          </p>
         )}
-      </Button>
-
-      {product.isAvailable === false && (
-        <p className="text-center text-sm text-neutral-400 mt-3">
-          Этот товар временно недоступен
-        </p>
-      )}
+      </div>
 
       {/* Details disclosure — shown when product has both description and weight */}
       {hasDetails && (
         <div className="mt-6">
-          <Disclosure className="border-t border-neutral-100">
+          <Disclosure className="border-t border-[var(--color-champagne)]">
             <Disclosure.Heading>
-              <Disclosure.Trigger className="flex w-full items-center justify-between py-4 text-sm font-semibold text-[var(--color-dark)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200 cursor-pointer">
+              <Disclosure.Trigger className="flex w-full items-center justify-between py-4 text-sm font-semibold text-[var(--color-graphite)] hover:text-[var(--color-caramel)] transition-colors duration-200 cursor-pointer">
                 Состав и детали
                 <Disclosure.Indicator className="transition-transform duration-200 data-[open]:rotate-180">
                   <ChevronDown size={16} />
@@ -224,16 +227,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
               </Disclosure.Trigger>
             </Disclosure.Heading>
             <Disclosure.Content>
-              <Disclosure.Body className="pb-4 flex flex-col gap-2 text-sm text-neutral-600 leading-relaxed">
+              <Disclosure.Body className="pb-4 flex flex-col gap-2 text-sm text-[var(--color-graphite-light)] leading-relaxed">
                 {weightDisplay && (
                   <p>
-                    <span className="font-medium text-[var(--color-dark)]">Вес: </span>
+                    <span className="font-medium text-[var(--color-graphite)]">Вес: </span>
                     {weightDisplay}
                   </p>
                 )}
                 {product.composition && (
                   <p>
-                    <span className="font-medium text-[var(--color-dark)]">Состав: </span>
+                    <span className="font-medium text-[var(--color-graphite)]">Состав: </span>
                     {product.composition}
                   </p>
                 )}
@@ -245,7 +248,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Pickup info */}
       {product.isAvailable !== false && (
-        <p className="text-xs text-neutral-400 leading-relaxed mt-6">
+        <p className="text-xs text-[var(--color-graphite-light)]/60 leading-relaxed mt-6">
           Самовывоз из кондитерской: г. Арзамас, ул. Ленина, д. 15
           <br />
           Готовность: уточняется при оформлении заказа

@@ -73,10 +73,10 @@ export function StepFilling() {
         variants={itemVariants}
         onClick={() => setLayerFilling(activeTier, filling.id)}
         className={cn(
-          'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
+          'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
           isSelected
-            ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5'
-            : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-sm'
+            ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5'
+            : 'border-[var(--color-champagne)] bg-[var(--color-milk-white)] hover:border-[var(--color-champagne)] hover:shadow-sm'
         )}
         whileTap={{ scale: 0.985 }}
       >
@@ -90,12 +90,12 @@ export function StepFilling() {
         <div className="flex-1 min-w-0">
           <p className={cn(
             'text-sm font-semibold leading-tight',
-            isSelected ? 'text-[var(--color-dusty-rose)]' : 'text-[var(--color-dark)]'
+            isSelected ? 'text-[var(--color-caramel)]' : 'text-[var(--color-graphite)]'
           )}>
             {filling.name}
           </p>
           {filling.description && (
-            <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 leading-snug">
+            <p className="text-xs text-[var(--color-graphite-light)] mt-0.5 leading-snug">
               {filling.description}
             </p>
           )}
@@ -103,15 +103,15 @@ export function StepFilling() {
 
         {/* Price */}
         <div className="flex-shrink-0 text-right">
-          <p className="text-sm font-semibold text-[var(--color-dark)]">
+          <p className="text-sm font-semibold text-[var(--color-graphite)]">
             {formatPrice(filling.pricePerKg)}
           </p>
-          <p className="text-[10px] text-[var(--color-text-secondary)]">за кг</p>
+          <p className="text-[10px] text-[var(--color-graphite-light)]">за кг</p>
         </div>
 
         {/* Check */}
         {isSelected && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[var(--color-dusty-rose)] flex items-center justify-center shadow-sm">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[var(--color-caramel)] flex items-center justify-center shadow-sm">
             <Check size={11} className="text-white" strokeWidth={3} />
           </div>
         )}
@@ -130,7 +130,7 @@ export function StepFilling() {
 
       {/* Filling cards, grouped by category */}
       <div className="flex flex-col gap-4">
-        <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm uppercase tracking-wide">
+        <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm uppercase tracking-wide">
           Выберите начинку
         </h3>
 
@@ -144,7 +144,7 @@ export function StepFilling() {
           {grouped.map(({ label, items }) => (
             <div key={label || 'all'}>
               {label && (
-                <p className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">
+                <p className="text-xs font-semibold text-[var(--color-graphite-light)] uppercase tracking-wider mb-2">
                   {label}
                 </p>
               )}
@@ -161,10 +161,10 @@ export function StepFilling() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25 }}
-        className="flex items-start gap-2.5 p-3 bg-[var(--color-cream)] rounded-lg border border-[var(--color-soft-peach)]"
+        className="flex items-start gap-2.5 p-3 bg-[var(--color-warm-ivory)] rounded-lg border border-[var(--color-toffee)]/40"
       >
         <span className="text-base leading-none mt-0.5">🍓</span>
-        <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+        <p className="text-xs text-[var(--color-graphite-light)] leading-relaxed">
           Начинка располагается между слоями бисквита. Можно выбрать разные начинки для каждого яруса.
         </p>
       </motion.div>

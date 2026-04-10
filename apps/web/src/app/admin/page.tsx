@@ -163,7 +163,7 @@ export default function AdminDashboardPage() {
           <p className="font-heading text-sm font-bold text-neutral-900">Последние заказы</p>
           <Link
             href="/admin/orders"
-            className="flex items-center gap-1 text-xs font-medium text-[var(--color-dusty-rose)] hover:underline"
+            className="flex items-center gap-1 text-xs font-medium text-[var(--color-caramel)] hover:underline"
           >
             Все заказы
             <ArrowRight size={12} />

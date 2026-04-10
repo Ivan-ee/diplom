@@ -168,7 +168,7 @@ export function StepNavigation() {
         onClick={handleNext}
         disabled={!isValid || isCapturing}
         className={cn(
-          'flex-1 font-semibold rounded-xl transition-all duration-200 bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white',
+          'flex-1 font-semibold rounded-xl transition-all duration-200 bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white',
           isLast && 'gap-2'
         )}
         aria-label={isLast ? 'Добавить в корзину' : 'Далее'}

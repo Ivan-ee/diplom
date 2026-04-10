@@ -19,15 +19,15 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return this.props.fallback ?? (
         <div className="flex flex-col items-center justify-center p-12 text-center">
-          <h2 className="font-heading text-xl font-semibold text-[var(--color-dark)]">
+          <h2 className="font-heading text-xl font-semibold text-[var(--color-graphite)]">
             Что-то пошло не так
           </h2>
-          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          <p className="mt-2 text-sm text-[var(--color-graphite-light)]">
             {'Произошла непредвиденная ошибка'}
           </p>
           <button
             onClick={() => this.setState({ hasError: false, error: undefined })}
-            className="mt-4 rounded-lg bg-[var(--color-dusty-rose)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-dusty-rose-hover)] transition-colors"
+            className="mt-4 rounded-lg bg-[var(--color-caramel)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-caramel-hover)] transition-colors"
           >
             Попробовать снова
           </button>

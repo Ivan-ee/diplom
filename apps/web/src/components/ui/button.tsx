@@ -4,18 +4,18 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-dusty-rose)] disabled:pointer-events-none disabled:opacity-40 select-none cursor-pointer',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-caramel)] disabled:pointer-events-none disabled:opacity-40 select-none cursor-pointer',
   {
     variants: {
       variant: {
         default:
-          'bg-[var(--color-dusty-rose)] text-white hover:bg-[var(--color-dusty-rose-hover)] active:scale-[0.97] shadow-sm hover:shadow-md',
+          'bg-[var(--color-caramel)] text-white hover:bg-[var(--color-caramel-hover)] active:scale-[0.97] shadow-sm hover:shadow-md',
         outline:
-          'border border-[var(--color-dusty-rose)] text-[var(--color-dusty-rose)] bg-transparent hover:bg-[var(--color-dusty-rose)] hover:text-white active:scale-[0.97]',
+          'border border-[var(--color-caramel)] text-[var(--color-caramel)] bg-transparent hover:bg-[var(--color-caramel)] hover:text-white active:scale-[0.97]',
         ghost:
-          'bg-transparent text-[var(--color-dark)] hover:bg-[var(--color-soft-peach)] hover:text-[var(--color-dusty-rose-hover)] active:scale-[0.97]',
+          'bg-transparent text-[var(--color-graphite)] hover:bg-[var(--color-toffee)] hover:text-[var(--color-caramel-hover)] active:scale-[0.97]',
         secondary:
-          'bg-[var(--color-soft-peach)] text-[var(--color-dark)] hover:bg-[var(--color-dusty-rose)] hover:text-white active:scale-[0.97]',
+          'bg-[var(--color-toffee)] text-[var(--color-graphite)] hover:bg-[var(--color-caramel)] hover:text-white active:scale-[0.97]',
         destructive:
           'bg-red-500 text-white hover:bg-red-600 active:scale-[0.97] shadow-sm',
       },

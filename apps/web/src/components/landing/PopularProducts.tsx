@@ -11,13 +11,13 @@ export function PopularProducts({ products }: PopularProductsProps) {
   if (!products.length) return null;
 
   return (
-    <section className="py-24 px-4">
+    <section className="py-20 lg:py-28 px-4">
       {/* Heading */}
-      <div className="text-center mb-16">
-        <h2 className="font-heading font-bold tracking-tight text-4xl lg:text-5xl text-[var(--color-dark)]">
+      <div className="text-center mb-12">
+        <h2 className="font-heading font-bold tracking-tight text-4xl lg:text-5xl text-[var(--color-graphite)]">
           Популярные десерты
         </h2>
-        <p className="text-lg text-neutral-500 mt-4">
+        <p className="text-lg text-[var(--color-graphite-light)] mt-4">
           Самые любимые торты наших клиентов
         </p>
       </div>

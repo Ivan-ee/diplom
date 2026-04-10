@@ -50,7 +50,7 @@ export function StepBase() {
       />
 
       <div>
-        <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
+        <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm mb-3 uppercase tracking-wide">
           Вид бисквита
         </h3>
         <motion.div
@@ -68,10 +68,10 @@ export function StepBase() {
                 variants={itemVariants}
                 onClick={() => setLayerBase(activeTier, base.id)}
                 className={cn(
-                  'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
+                  'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                   isSelected
-                    ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5'
-                    : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-sm'
+                    ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5'
+                    : 'border-[var(--color-champagne)] bg-[var(--color-milk-white)] hover:border-[var(--color-champagne)] hover:shadow-sm'
                 )}
                 whileTap={{ scale: 0.985 }}
               >
@@ -83,26 +83,26 @@ export function StepBase() {
                 <div className="flex-1 min-w-0">
                   <p className={cn(
                     'text-sm font-semibold leading-tight',
-                    isSelected ? 'text-[var(--color-dusty-rose)]' : 'text-[var(--color-dark)]'
+                    isSelected ? 'text-[var(--color-caramel)]' : 'text-[var(--color-graphite)]'
                   )}>
                     {base.name}
                   </p>
                   {base.description && (
-                    <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 leading-snug line-clamp-1">
+                    <p className="text-xs text-[var(--color-graphite-light)] mt-0.5 leading-snug line-clamp-1">
                       {base.description}
                     </p>
                   )}
                 </div>
 
                 <div className="flex-shrink-0 text-right">
-                  <p className="text-sm font-semibold text-[var(--color-dark)]">
+                  <p className="text-sm font-semibold text-[var(--color-graphite)]">
                     {formatPrice(base.pricePerKg)}
                   </p>
-                  <p className="text-[10px] text-[var(--color-text-secondary)]">за кг</p>
+                  <p className="text-[10px] text-[var(--color-graphite-light)]">за кг</p>
                 </div>
 
                 {isSelected && (
-                  <div className="absolute right-3 top-3 w-5 h-5 rounded-full bg-[var(--color-dusty-rose)] flex items-center justify-center shadow-sm">
+                  <div className="absolute right-3 top-3 w-5 h-5 rounded-full bg-[var(--color-caramel)] flex items-center justify-center shadow-sm">
                     <Check size={11} className="text-white" strokeWidth={3} />
                   </div>
                 )}
@@ -113,23 +113,23 @@ export function StepBase() {
       </div>
 
       <div>
-        <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
+        <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm mb-3 uppercase tracking-wide">
           Вес {tierCount > 1 ? `яруса ${activeTier + 1}` : 'торта'}
         </h3>
-        <div className="flex items-center gap-4 p-3 bg-[var(--color-cream)] rounded-xl border border-[var(--color-soft-peach)]">
+        <div className="flex items-center gap-4 p-3 bg-[var(--color-warm-ivory)] rounded-xl border border-[var(--color-toffee)]/40">
           <button
             onClick={() => handleWeightChange(-weightStep)}
             disabled={!layer || layer.weight <= minWeight}
-            className="w-10 h-10 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            className="w-10 h-10 rounded-full bg-[var(--color-champagne)]/40 hover:bg-[var(--color-champagne)] flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
           >
             <Minus size={16} strokeWidth={2.5} />
           </button>
 
           <div className="flex-1 text-center">
-            <p className="text-lg font-semibold text-neutral-900 min-w-[80px] text-center">
+            <p className="text-lg font-semibold text-[var(--color-graphite)] min-w-[80px] text-center">
               {layer ? (layer.weight >= 1000 ? `${layer.weight / 1000} кг` : `${layer.weight} г`) : '—'}
             </p>
-            <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+            <p className="text-xs text-[var(--color-graphite-light)] mt-0.5">
               {minWeight / 1000}–{maxWeight / 1000} кг, шаг {weightStep} г
             </p>
           </div>
@@ -137,7 +137,7 @@ export function StepBase() {
           <button
             onClick={() => handleWeightChange(weightStep)}
             disabled={!layer || layer.weight >= maxWeight}
-            className="w-10 h-10 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            className="w-10 h-10 rounded-full bg-[var(--color-champagne)]/40 hover:bg-[var(--color-champagne)] flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
           >
             <Plus size={16} strokeWidth={2.5} />
           </button>

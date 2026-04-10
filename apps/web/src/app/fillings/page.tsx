@@ -65,10 +65,10 @@ export default async function FillingsPage() {
     <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12">
       {/* Hero */}
       <section className="text-center mb-16">
-        <h1 className="font-heading text-4xl sm:text-5xl font-bold text-dark mb-4">
+        <h1 className="font-heading text-4xl sm:text-5xl font-bold text-graphite mb-4">
           Наши начинки
         </h1>
-        <p className="text-lg text-text-secondary max-w-2xl mx-auto">
+        <p className="text-lg text-graphite-light max-w-2xl mx-auto">
           Каждая начинка готовится из натуральных ингредиентов. Без искусственных
           красителей и консервантов — только проверенные рецепты.
         </p>
@@ -77,7 +77,7 @@ export default async function FillingsPage() {
       {/* Fillings grid */}
       <section className="mb-16">
         {fillings.length === 0 ? (
-          <p className="text-center text-text-secondary py-12">
+          <p className="text-center text-graphite-light py-12">
             Список начинок временно недоступен. Пожалуйста, свяжитесь с нами напрямую.
           </p>
         ) : (
@@ -97,17 +97,17 @@ export default async function FillingsPage() {
                   />
 
                   <div className="flex flex-col gap-3 p-6 flex-1">
-                    <h2 className="font-heading text-xl font-semibold text-dark">
+                    <h2 className="font-heading text-xl font-semibold text-graphite">
                       {filling.name}
                     </h2>
 
                     {filling.description && (
-                      <p className="text-sm text-text-secondary leading-relaxed flex-1">
+                      <p className="text-sm text-graphite-light leading-relaxed flex-1">
                         {filling.description}
                       </p>
                     )}
 
-                    <p className="text-sm font-medium text-[var(--color-dusty-rose)] mt-auto">
+                    <p className="text-sm font-medium text-[var(--color-caramel)] mt-auto">
                       {formatPrice(filling.pricePerKg)} / кг
                     </p>
                   </div>
@@ -119,11 +119,11 @@ export default async function FillingsPage() {
       </section>
 
       {/* Info block */}
-      <section className="bg-cream rounded-2xl p-8 sm:p-12 mb-16">
-        <h2 className="font-heading text-2xl font-semibold text-dark mb-4">
+      <section className="bg-warm-ivory rounded-2xl p-8 sm:p-12 mb-16">
+        <h2 className="font-heading text-2xl font-semibold text-graphite mb-4">
           Как мы готовим начинки
         </h2>
-        <div className="space-y-4 text-text-secondary leading-relaxed">
+        <div className="space-y-4 text-graphite-light leading-relaxed">
           <p>
             Все начинки изготавливаются вручную в день сборки торта. Мы используем только
             свежие сливки, натуральные ягодные пюре и бельгийский шоколад — никаких
@@ -139,12 +139,12 @@ export default async function FillingsPage() {
 
       {/* CTA */}
       <section className="text-center">
-        <p className="text-text-secondary mb-6">
+        <p className="text-graphite-light mb-6">
           Хотите сами собрать торт с любимой начинкой?
         </p>
         <Link
           href="/constructor"
-          className="inline-block rounded-xl bg-[var(--color-dusty-rose)] px-8 py-3 font-heading font-semibold text-white text-base hover:opacity-90 active:scale-[0.98] transition-all duration-200"
+          className="inline-block rounded-xl bg-[var(--color-caramel)] px-8 py-3 font-heading font-semibold text-white text-base hover:opacity-90 active:scale-[0.98] transition-all duration-200"
         >
           Попробуйте в конструкторе
         </Link>

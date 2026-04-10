@@ -16,11 +16,11 @@ export default function CartPage() {
     <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Page header */}
       <div className="mb-8">
-        <h1 className="font-heading font-bold text-4xl lg:text-5xl tracking-tight text-[var(--color-dark)]">
+        <h1 className="font-heading font-bold text-4xl lg:text-5xl tracking-tight text-[var(--color-graphite)]">
           Корзина
         </h1>
         {!isEmpty && (
-          <p className="text-[var(--color-text-secondary)] text-sm mt-2">
+          <p className="text-[var(--color-graphite-light)] text-sm mt-2">
             {items.length}&nbsp;{items.length === 1 ? 'позиция' : items.length >= 2 && items.length <= 4 ? 'позиции' : 'позиций'}
           </p>
         )}
@@ -42,12 +42,12 @@ export default function CartPage() {
               className="text-neutral-300 mb-6"
               strokeWidth={1.25}
             />
-            <h2 className="text-xl font-medium text-neutral-500 mb-6">
+            <h2 className="text-xl font-medium text-[var(--color-graphite-light)] mb-6">
               Корзина пуста
             </h2>
             <Link
               href="/catalog"
-              className="inline-flex items-center justify-center px-6 h-11 rounded-full bg-[var(--color-dusty-rose)] text-white text-sm font-medium hover:bg-[var(--color-dusty-rose-hover)] transition-colors duration-150"
+              className="inline-flex items-center justify-center px-6 h-11 rounded-full bg-[var(--color-caramel)] text-white text-sm font-medium hover:bg-[var(--color-caramel-hover)] transition-colors duration-150"
             >
               В каталог
             </Link>

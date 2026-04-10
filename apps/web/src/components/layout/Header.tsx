@@ -21,13 +21,13 @@ export function Header() {
   const { user, isAuthenticated, openAuth, logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 h-[72px] w-full bg-white/80 backdrop-blur-xl border-b border-black/[0.04]">
+    <header className="sticky top-0 z-50 h-[72px] w-full bg-[var(--color-milk-white)]/85 backdrop-blur-xl border-b border-[var(--color-soft-oat)]/60">
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
         {/* Logo */}
         <Link
           href="/"
-          className="font-heading text-xl font-semibold text-neutral-900 hover:text-[var(--color-dusty-rose)] transition-colors duration-200 shrink-0"
+          className="font-heading text-xl font-semibold tracking-tight text-[var(--color-graphite)] hover:text-[var(--color-caramel)] transition-colors duration-200 shrink-0"
         >
           Виктория Торт
         </Link>
@@ -41,8 +41,8 @@ export function Header() {
                 href={link.href}
                 className={`text-sm font-medium transition-colors duration-200 ${
                   pathname === link.href
-                    ? 'text-black font-semibold'
-                    : 'text-neutral-600 hover:text-black'
+                    ? 'text-[var(--color-graphite)] font-semibold'
+                    : 'text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)]'
                 }`}
               >
                 {link.label}
@@ -68,10 +68,10 @@ export function Header() {
           {/* Cart */}
           <Link
             href="/cart"
-            className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-neutral-100 transition-colors duration-200"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-[var(--color-champagne)]/60 transition-colors duration-200"
             aria-label="Корзина"
           >
-            <ShoppingBag size={21} className="text-neutral-700" />
+            <ShoppingBag size={21} className="text-[var(--color-graphite-light)]" />
             <CartBadge />
           </Link>
 
@@ -108,7 +108,7 @@ function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: User
       <button
         type="button"
         onClick={onLoginClick}
-        className="flex h-10 items-center gap-1.5 rounded-xl px-3 text-sm font-medium text-neutral-600 hover:text-black hover:bg-neutral-100 transition-colors duration-200"
+        className="flex h-10 items-center gap-1.5 rounded-xl px-3 text-sm font-medium text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)] hover:bg-[var(--color-champagne)]/60 transition-colors duration-200"
         aria-label="Войти в аккаунт"
       >
         <User size={18} />
@@ -123,20 +123,20 @@ function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: User
     <PopoverRoot>
       <PopoverTrigger
         aria-label="Меню пользователя"
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-dusty-rose)] text-sm font-semibold text-white shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-caramel)] text-sm font-semibold text-white shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2"
       >
         {initial}
       </PopoverTrigger>
-      <PopoverContent className="z-50 min-w-[220px] rounded-xl border border-neutral-100 bg-white p-0 shadow-xl outline-none">
+      <PopoverContent className="z-50 min-w-[220px] rounded-xl border border-[var(--color-champagne)] bg-white p-0 shadow-xl outline-none">
         <PopoverDialog className="outline-none">
           {/* User info */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-100">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-soft-peach)] text-sm font-semibold text-neutral-800">
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-champagne)]">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-toffee)] text-sm font-semibold text-neutral-800">
               {initial}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-neutral-900">{user.name}</p>
-              <p className="truncate text-xs text-neutral-500">{user.email}</p>
+              <p className="truncate text-sm font-medium text-[var(--color-graphite)]">{user.name}</p>
+              <p className="truncate text-xs text-[var(--color-graphite-light)]">{user.email}</p>
             </div>
           </div>
 
@@ -150,12 +150,12 @@ function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: User
             </PopoverLink>
           </div>
 
-          <div className="my-1 border-t border-neutral-100" />
+          <div className="my-1 border-t border-[var(--color-champagne)]" />
 
           <button
             type="button"
             onClick={onLogout}
-            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-500 transition-colors duration-150 hover:bg-red-50 hover:text-red-600"
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-graphite-light)] transition-colors duration-150 hover:bg-red-50 hover:text-red-600"
           >
             <LogOut size={15} />
             Выйти
@@ -176,9 +176,9 @@ function PopoverLink({ href, icon, children }: PopoverLinkProps) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 transition-colors duration-150 hover:bg-neutral-50 hover:text-neutral-900"
+      className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-graphite-light)] transition-colors duration-150 hover:bg-[var(--color-champagne)]/60 hover:text-[var(--color-graphite)]"
     >
-      <span className="text-neutral-400">{icon}</span>
+      <span className="text-[var(--color-graphite-light)]/60">{icon}</span>
       {children}
     </Link>
   );
@@ -215,9 +215,9 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
     <DrawerRoot isOpen={open} onOpenChange={setOpen}>
       <DrawerTrigger
         aria-label="Открыть меню"
-        className="flex lg:hidden h-10 w-10 items-center justify-center rounded-xl hover:bg-neutral-100 transition-colors duration-200"
+        className="flex lg:hidden h-10 w-10 items-center justify-center rounded-xl hover:bg-[var(--color-champagne)]/60 transition-colors duration-200"
       >
-        <Menu size={21} className="text-neutral-700" />
+        <Menu size={21} className="text-[var(--color-graphite-light)]" />
       </DrawerTrigger>
 
       <DrawerBackdrop isDismissable className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
@@ -225,11 +225,11 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
       <DrawerContent placement="right" className="fixed top-0 right-0 h-full w-72 bg-white shadow-2xl outline-none">
         <DrawerBody className="flex flex-col h-full p-0">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-neutral-100">
-            <span className="font-heading font-semibold text-base text-neutral-900">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-champagne)]">
+            <span className="font-heading font-semibold text-base text-[var(--color-graphite)]">
               Меню
             </span>
-            <DrawerCloseTrigger className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-neutral-100 transition-colors duration-200 text-neutral-500 focus-visible:outline-none">
+            <DrawerCloseTrigger className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-[var(--color-champagne)]/60 transition-colors duration-200 text-[var(--color-graphite-light)] focus-visible:outline-none">
               <X size={18} />
             </DrawerCloseTrigger>
           </div>
@@ -243,8 +243,8 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
                 onClick={handleClose}
                 className={`flex items-center px-3 py-3 rounded-xl text-sm font-medium transition-colors duration-200 ${
                   pathname === link.href
-                    ? 'bg-neutral-100 text-neutral-900 font-semibold'
-                    : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
+                    ? 'bg-[var(--color-champagne)]/60 text-[var(--color-graphite)] font-semibold'
+                    : 'text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)]/60 hover:text-[var(--color-graphite)]'
                 }`}
               >
                 {link.label}
@@ -253,22 +253,22 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
           </nav>
 
           {/* Footer actions */}
-          <div className="px-6 pb-8 pt-4 border-t border-neutral-100 flex flex-col gap-3">
+          <div className="px-6 pb-8 pt-4 border-t border-[var(--color-champagne)] flex flex-col gap-3">
             {isAuthenticated && user ? (
               <>
                 <div className="flex items-center gap-3 py-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-dusty-rose)] text-sm font-semibold text-white">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-caramel)] text-sm font-semibold text-white">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-neutral-900">{user.name}</p>
-                    <p className="truncate text-xs text-neutral-500">{user.email}</p>
+                    <p className="truncate text-sm font-medium text-[var(--color-graphite)]">{user.name}</p>
+                    <p className="truncate text-xs text-[var(--color-graphite-light)]">{user.email}</p>
                   </div>
                 </div>
                 <Link
                   href="/account/orders"
                   onClick={handleClose}
-                  className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors py-1"
+                  className="flex items-center gap-2 text-sm text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)] transition-colors py-1"
                 >
                   <OrdersIcon size={15} />
                   Мои заказы
@@ -276,7 +276,7 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
                 <Link
                   href="/account/favorites"
                   onClick={handleClose}
-                  className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors py-1"
+                  className="flex items-center gap-2 text-sm text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)] transition-colors py-1"
                 >
                   <Heart size={15} />
                   Избранное
@@ -294,7 +294,7 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
               <button
                 type="button"
                 onClick={handleLogin}
-                className="w-full rounded-xl border border-neutral-200 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors duration-200"
+                className="w-full rounded-xl border border-[var(--color-champagne)] py-2.5 text-sm font-medium text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)]/60 transition-colors duration-200"
               >
                 Войти
               </button>

@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <p className="mt-2 text-sm text-neutral-500">
             Эта страница доступна только администраторам
           </p>
-          <Link href="/" className="mt-4 inline-block text-sm text-[var(--color-dusty-rose)] hover:underline">
+          <Link href="/" className="mt-4 inline-block text-sm text-[var(--color-caramel)] hover:underline">
             На главную
           </Link>
         </div>

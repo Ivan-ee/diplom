@@ -47,7 +47,7 @@ export function SettingsPanel() {
   const StepComponent = STEP_COMPONENTS[currentStep];
 
   return (
-    <div className="flex flex-col h-full bg-[var(--color-cream)]">
+    <div className="flex flex-col h-full bg-[var(--color-warm-ivory)]">
       <StepProgressBar />
 
       <div className="flex-1 overflow-y-auto overscroll-contain">
@@ -86,18 +86,18 @@ export function SettingsPanel() {
 function SettingsSkeleton() {
   return (
     <div className="flex flex-col gap-4 animate-pulse">
-      <div className="h-4 w-24 bg-gray-200 rounded-full" />
+      <div className="h-4 w-24 bg-[var(--color-champagne)] rounded-full" />
       <div className="grid grid-cols-3 gap-3">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-24 rounded-xl bg-gray-200" />
+          <div key={i} className="h-24 rounded-xl bg-[var(--color-champagne)]" />
         ))}
       </div>
-      <div className="h-4 w-32 bg-gray-200 rounded-full mt-2" />
-      <div className="h-12 rounded-xl bg-gray-200" />
-      <div className="h-4 w-20 bg-gray-200 rounded-full mt-2" />
+      <div className="h-4 w-32 bg-[var(--color-champagne)] rounded-full mt-2" />
+      <div className="h-12 rounded-xl bg-[var(--color-champagne)]" />
+      <div className="h-4 w-20 bg-[var(--color-champagne)] rounded-full mt-2" />
       <div className="flex flex-col gap-2">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-14 rounded-xl bg-gray-200" />
+          <div key={i} className="h-14 rounded-xl bg-[var(--color-champagne)]" />
         ))}
       </div>
     </div>

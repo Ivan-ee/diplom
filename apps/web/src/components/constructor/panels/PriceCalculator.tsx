@@ -127,14 +127,14 @@ export function PriceCalculator() {
           >
             <div className="px-4 pt-3 pb-1 flex flex-col gap-1.5">
               {breakdown.length === 0 ? (
-                <p className="text-xs text-[var(--color-text-secondary)] text-center py-2">
+                <p className="text-xs text-[var(--color-graphite-light)] text-center py-2">
                   Заполните все шаги для подробного расчёта
                 </p>
               ) : (
                 breakdown.map((row) => (
                   <div key={row.label} className="flex items-center justify-between">
-                    <span className="text-xs text-[var(--color-text-secondary)]">{row.label}</span>
-                    <span className="text-xs font-semibold text-[var(--color-dark)]">
+                    <span className="text-xs text-[var(--color-graphite-light)]">{row.label}</span>
+                    <span className="text-xs font-semibold text-[var(--color-graphite)]">
                       {formatPrice(row.value)}
                     </span>
                   </div>
@@ -149,7 +149,7 @@ export function PriceCalculator() {
       {/* Main price row */}
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-neutral-50 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-inset"
+        className="w-full flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[var(--color-warm-ivory)] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-inset"
       >
         <div className="flex items-center gap-2">
           <span className="text-sm text-neutral-500">Итого</span>
@@ -162,7 +162,7 @@ export function PriceCalculator() {
         </div>
 
         <div className="flex items-baseline gap-1">
-          <span className="font-heading font-bold text-2xl text-[var(--color-dusty-rose)]">
+          <span className="font-heading font-bold text-2xl text-[var(--color-caramel)]">
             {formatPrice(animatedTotal)}
           </span>
         </div>

@@ -10,14 +10,14 @@ import { OrderCard, type Order } from '@/components/account/OrderCard';
 
 function OrderSkeleton() {
   return (
-    <div className="rounded-xl border border-[var(--color-soft-peach)]/60 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-[var(--color-toffee)]/60 bg-white p-5 shadow-sm">
       <div className="flex items-center gap-4">
-        <div className="h-9 w-9 animate-pulse rounded-lg bg-[var(--color-cream)]" />
+        <div className="h-9 w-9 animate-pulse rounded-lg bg-[var(--color-warm-ivory)]" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 w-32 animate-pulse rounded bg-[var(--color-cream)]" />
-          <div className="h-3 w-20 animate-pulse rounded bg-[var(--color-cream)]" />
+          <div className="h-4 w-32 animate-pulse rounded bg-[var(--color-warm-ivory)]" />
+          <div className="h-3 w-20 animate-pulse rounded bg-[var(--color-warm-ivory)]" />
         </div>
-        <div className="h-6 w-20 animate-pulse rounded-full bg-[var(--color-cream)]" />
+        <div className="h-6 w-20 animate-pulse rounded-full bg-[var(--color-warm-ivory)]" />
       </div>
     </div>
   );
@@ -32,7 +32,7 @@ function EmptyOrders() {
       <p className="text-neutral-500 mb-6">У вас пока нет заказов</p>
       <Link
         href="/catalog"
-        className="px-6 py-2.5 rounded-xl bg-[var(--color-dusty-rose)] text-white text-sm font-medium hover:bg-[var(--color-dusty-rose-hover)] transition-colors"
+        className="px-6 py-2.5 rounded-xl bg-[var(--color-caramel)] text-white text-sm font-medium hover:bg-[var(--color-caramel-hover)] transition-colors"
       >
         В каталог
       </Link>
