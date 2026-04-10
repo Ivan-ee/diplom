@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, LogOut } from 'lucide-react';
+import { ShoppingBag, Heart, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
   { href: '/account/orders', label: 'Заказы', icon: ShoppingBag },
+  { href: '/account/favorites', label: 'Избранное', icon: Heart },
 ];
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
@@ -15,15 +16,15 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
   const { logout, user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[var(--color-cream)]">
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="bg-neutral-50 min-h-screen">
+      <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Page heading */}
-        <div className="mb-6">
-          <h1 className="font-heading text-2xl font-bold text-[var(--color-dark)]">
+        <div className="mb-8">
+          <h1 className="font-heading text-3xl font-bold text-[var(--color-dark)]">
             Личный кабинет
           </h1>
           {user?.name && (
-            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+            <p className="mt-1 text-sm text-neutral-500">
               {user.name}
             </p>
           )}
@@ -32,7 +33,10 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
         <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
           {/* Sidebar — desktop */}
           <aside className="hidden lg:flex lg:w-56 lg:shrink-0 lg:flex-col">
-            <nav className="flex flex-col gap-1 rounded-xl bg-white p-3 shadow-sm">
+            <p className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">
+              Аккаунт
+            </p>
+            <nav className="space-y-1">
               {navLinks.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href || pathname.startsWith(href + '/');
                 return (
@@ -40,10 +44,10 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                     key={href}
                     href={href}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150',
+                      'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
                       active
-                        ? 'bg-[var(--color-dusty-rose)]/10 text-[var(--color-dusty-rose)]'
-                        : 'text-[var(--color-dark)] hover:bg-[var(--color-cream)] hover:text-[var(--color-dusty-rose)]'
+                        ? 'bg-white text-neutral-900 shadow-sm'
+                        : 'text-neutral-500 hover:text-neutral-700 hover:bg-white/50'
                     )}
                   >
                     <Icon size={16} className="shrink-0" />
@@ -53,20 +57,18 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
               })}
             </nav>
 
-            <div className="mt-auto pt-4">
-              <button
-                onClick={logout}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
-              >
-                <LogOut size={16} className="shrink-0" />
-                Выйти
-              </button>
-            </div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-400 hover:text-red-500 transition-colors mt-8 pt-4 border-t border-neutral-200 w-full"
+            >
+              <LogOut size={16} className="shrink-0" />
+              Выйти
+            </button>
           </aside>
 
           {/* Top tabs — mobile */}
           <div className="lg:hidden">
-            <div className="flex gap-1 rounded-xl bg-white p-1.5 shadow-sm">
+            <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
               {navLinks.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href || pathname.startsWith(href + '/');
                 return (
@@ -74,22 +76,23 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                     key={href}
                     href={href}
                     className={cn(
-                      'flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150',
+                      'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-2 transition-colors',
                       active
-                        ? 'bg-[var(--color-dusty-rose)]/10 text-[var(--color-dusty-rose)]'
-                        : 'text-[var(--color-dark)] hover:text-[var(--color-dusty-rose)]'
+                        ? 'bg-[var(--color-dusty-rose)] text-white'
+                        : 'bg-white text-neutral-500'
                     )}
                   >
-                    <Icon size={15} className="shrink-0" />
+                    <Icon size={14} className="shrink-0" />
                     {label}
                   </Link>
                 );
               })}
               <button
                 onClick={logout}
-                className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
+                className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-white text-neutral-400 hover:text-red-500 transition-colors flex items-center gap-2"
               >
-                <LogOut size={15} />
+                <LogOut size={14} />
+                Выйти
               </button>
             </div>
           </div>

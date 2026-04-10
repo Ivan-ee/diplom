@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { fetchClient } from '@/lib/api';
 import { useAuthStore, type User } from '@/stores/auth-store';
 import { FieldWrapper, inputClass } from './shared';
@@ -59,6 +58,7 @@ export function LoginForm({ onSuccess, returnPath }: LoginFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+      <h2 className="text-2xl font-bold font-heading text-center mb-6">Вход в аккаунт</h2>
       <FieldWrapper id="login-email" label="Email" error={errors.email?.message}>
         <input
           id="login-email"
@@ -83,7 +83,7 @@ export function LoginForm({ onSuccess, returnPath }: LoginFormProps) {
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-gray-400 hover:text-[var(--color-dark)] transition-colors duration-150"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
             aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -95,9 +95,13 @@ export function LoginForm({ onSuccess, returnPath }: LoginFormProps) {
         <p className="text-sm text-[var(--color-error)]">{serverError}</p>
       )}
 
-      <Button type="submit" className="w-full mt-1" disabled={isSubmitting}>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white rounded-xl h-11 text-sm font-medium mt-4 transition-colors disabled:opacity-60 cursor-pointer"
+      >
         {isSubmitting ? 'Входим...' : 'Войти'}
-      </Button>
+      </button>
     </form>
   );
 }

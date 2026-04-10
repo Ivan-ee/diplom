@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
 import { fetchClient } from '@/lib/api';
 import { OrderCard, type Order } from '@/components/account/OrderCard';
@@ -26,16 +27,15 @@ function OrderSkeleton() {
 
 function EmptyOrders() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl bg-white py-20 shadow-sm">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-cream)]">
-        <ShoppingBag size={28} className="text-[var(--color-dusty-rose)]" />
-      </div>
-      <h2 className="mt-4 font-heading text-lg font-semibold text-[var(--color-dark)]">
-        У вас пока нет заказов
-      </h2>
-      <p className="mt-1.5 max-w-xs text-center text-sm text-[var(--color-text-secondary)]">
-        Оформите первый заказ из каталога или соберите торт в конструкторе
-      </p>
+    <div className="flex flex-col items-center justify-center rounded-2xl bg-white py-20">
+      <ShoppingBag className="w-12 h-12 text-neutral-300 mb-4" />
+      <p className="text-neutral-500 mb-6">У вас пока нет заказов</p>
+      <Link
+        href="/catalog"
+        className="px-6 py-2.5 rounded-xl bg-[var(--color-dusty-rose)] text-white text-sm font-medium hover:bg-[var(--color-dusty-rose-hover)] transition-colors"
+      >
+        В каталог
+      </Link>
     </div>
   );
 }
@@ -59,11 +59,11 @@ export default function OrdersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-lg font-semibold text-[var(--color-dark)]">
+        <h1 className="text-3xl font-bold font-heading mb-8">
           Мои заказы
-        </h2>
+        </h1>
         {!loading && orders.length > 0 && (
-          <span className="text-sm text-[var(--color-text-secondary)]">
+          <span className="text-sm text-neutral-500">
             {orders.length} {orders.length === 1 ? 'заказ' : orders.length < 5 ? 'заказа' : 'заказов'}
           </span>
         )}

@@ -53,7 +53,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login', returnPath }:
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -81,13 +81,8 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login', returnPath }:
                 <X size={20} />
               </button>
 
-              {/* Title */}
-              <h2 className="mb-6 font-heading text-2xl font-semibold text-[var(--color-dark)]">
-                {activeTab === 'login' ? 'Вход в аккаунт' : 'Регистрация'}
-              </h2>
-
               {/* Tabs */}
-              <div className="mb-6 flex gap-2 rounded-xl bg-gray-100 p-1">
+              <div className="mb-8 flex bg-neutral-100 rounded-xl p-1">
                 <TabButton
                   active={activeTab === 'login'}
                   onClick={() => setActiveTab('login')}
@@ -173,10 +168,10 @@ function TabButton({ active, onClick, children }: TabButtonProps) {
       type="button"
       onClick={onClick}
       className={[
-        'flex-1 rounded-lg py-2 text-sm font-medium transition-all duration-200',
+        'flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-center cursor-pointer',
         active
           ? 'bg-[var(--color-dusty-rose)] text-white shadow-sm'
-          : 'text-[var(--color-text-secondary)] hover:text-[var(--color-dark)]',
+          : 'text-neutral-500 hover:text-neutral-700',
       ].join(' ')}
     >
       {children}

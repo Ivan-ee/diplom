@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Package, Cake } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Chip } from '@heroui/react';
 import { cn, formatPrice } from '@/lib/utils';
 
 // ---------- Types ----------
@@ -57,17 +57,19 @@ export interface Order {
 
 // ---------- Status config ----------
 
+type ChipColor = 'accent' | 'danger' | 'default' | 'success' | 'warning';
+
 const STATUS_CONFIG: Record<
   OrderStatus,
-  { label: string; badgeVariant: 'default' | 'secondary' | 'success' | 'warning' | 'error' | 'info' | 'outline'; dotColor: string }
+  { label: string; color: ChipColor }
 > = {
-  created:   { label: 'Новый',         badgeVariant: 'secondary', dotColor: 'bg-gray-400' },
-  accepted:  { label: 'Принят',        badgeVariant: 'info',      dotColor: 'bg-blue-400' },
-  preparing: { label: 'Готовится',     badgeVariant: 'warning',   dotColor: 'bg-orange-400' },
-  ready:     { label: 'Готов',         badgeVariant: 'success',   dotColor: 'bg-emerald-400' },
-  picked_up: { label: 'Забран',        badgeVariant: 'default',   dotColor: 'bg-[var(--color-dusty-rose)]' },
-  completed: { label: 'Завершён',      badgeVariant: 'success',   dotColor: 'bg-emerald-400' },
-  cancelled: { label: 'Отменён',       badgeVariant: 'error',     dotColor: 'bg-red-400' },
+  created:   { label: 'Новый',     color: 'accent' },
+  accepted:  { label: 'Принят',    color: 'accent' },
+  preparing: { label: 'Готовится', color: 'warning' },
+  ready:     { label: 'Готов',     color: 'success' },
+  picked_up: { label: 'Забран',    color: 'default' },
+  completed: { label: 'Завершён',  color: 'success' },
+  cancelled: { label: 'Отменён',   color: 'danger' },
 };
 
 // ---------- Helpers ----------
@@ -91,10 +93,10 @@ const SHAPE_LABELS: Record<string, string> = {
 function ProductItemRow({ item }: { item: OrderItemProduct }) {
   return (
     <div className="flex items-start gap-3 py-2">
-      <Badge variant="secondary" className="mt-0.5 shrink-0 text-xs">Товар</Badge>
+      <Chip size="sm" color="default" variant="secondary" className="mt-0.5 shrink-0">Товар</Chip>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-[var(--color-dark)] leading-snug">{item.name}</p>
-        <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+        <p className="text-xs text-neutral-400 mt-0.5">
           {`${parseFloat(String(item.weight)).toLocaleString('ru-RU')} кг`}
           {item.quantity > 1 && ` × ${item.quantity}`}
         </p>
@@ -110,14 +112,14 @@ function ConstructorItemRow({ item }: { item: OrderItemConstructor }) {
   const cfg = item.cakeConfig;
   return (
     <div className="flex items-start gap-3 py-2">
-      <Badge variant="default" className="mt-0.5 shrink-0 text-xs">Конструктор</Badge>
+      <Chip size="sm" color="accent" variant="secondary" className="mt-0.5 shrink-0">Конструктор</Chip>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <Cake size={13} className="text-[var(--color-dusty-rose)] shrink-0" />
           <p className="text-sm font-medium text-[var(--color-dark)]">Собранный торт</p>
         </div>
         {cfg && (
-          <ul className="mt-1.5 space-y-0.5 text-xs text-[var(--color-text-secondary)]">
+          <ul className="mt-1.5 space-y-0.5 text-xs text-neutral-400">
             {cfg.shape && (
               <li>Форма: {SHAPE_LABELS[cfg.shape] ?? cfg.shape}</li>
             )}
@@ -159,64 +161,40 @@ export function OrderCard({ order }: OrderCardProps) {
   const displayNumber = order.orderNumber ?? order.id.slice(0, 8).toUpperCase();
 
   return (
-    <div className="rounded-xl border border-[var(--color-soft-peach)]/60 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
-      {/* Collapsed header — always visible */}
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center gap-4 px-5 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-inset rounded-xl"
-        aria-expanded={expanded}
-      >
-        {/* Order icon */}
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-cream)]">
-          <Package size={16} className="text-[var(--color-dusty-rose)]" />
-        </div>
-
-        {/* Order meta */}
+    <div className="bg-white rounded-2xl border border-neutral-100 p-5 mb-4">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="font-heading text-sm font-semibold text-[var(--color-dark)]">
-              Заказ #{displayNumber}
-            </span>
-            <span className="text-xs text-[var(--color-text-secondary)]">
-              {formatDate(order.createdAt)}
-            </span>
-          </div>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <span className="text-sm font-bold text-[var(--color-dusty-rose)]">
-              {formatPrice(order.totalPrice)}
-            </span>
-            <span className="text-xs text-[var(--color-text-secondary)]">
-              · {order.items.length} {order.items.length === 1 ? 'позиция' : order.items.length < 5 ? 'позиции' : 'позиций'}
-            </span>
-          </div>
+          <span className="font-semibold text-[var(--color-dark)]">
+            Заказ #{displayNumber}
+          </span>
+          <p className="text-sm text-neutral-500 mt-1">{formatDate(order.createdAt)}</p>
+          <p className="text-lg font-semibold text-[var(--color-dusty-rose)] mt-2">
+            {formatPrice(order.totalPrice)}
+          </p>
         </div>
-
-        {/* Status badge */}
-        <div className="flex shrink-0 items-center gap-3">
-          <Badge variant={statusCfg.badgeVariant} className="hidden sm:inline-flex">
-            <span className={cn('h-1.5 w-1.5 rounded-full', statusCfg.dotColor)} />
-            {statusCfg.label}
-          </Badge>
-          <ChevronDown
-            size={16}
-            className={cn(
-              'text-[var(--color-text-secondary)] transition-transform duration-200',
-              expanded && 'rotate-180'
-            )}
-          />
-        </div>
-      </button>
-
-      {/* Mobile status badge */}
-      <div className="px-5 pb-3 sm:hidden">
-        <Badge variant={statusCfg.badgeVariant}>
-          <span className={cn('h-1.5 w-1.5 rounded-full', statusCfg.dotColor)} />
+        <Chip size="sm" color={statusCfg.color} variant="soft">
           {statusCfg.label}
-        </Badge>
+        </Chip>
       </div>
 
-      {/* Expandable items list */}
+      {/* Expand toggle */}
+      {order.items.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-4 flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-700 transition-colors focus:outline-none"
+          aria-expanded={expanded}
+        >
+          Подробнее
+          <ChevronDown
+            size={15}
+            className={cn('transition-transform duration-200', expanded && 'rotate-180')}
+          />
+        </button>
+      )}
+
+      {/* Expandable items */}
       <AnimatePresence initial={false}>
         {expanded && (
           <motion.div
@@ -227,8 +205,8 @@ export function OrderCard({ order }: OrderCardProps) {
             transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            <div className="border-t border-[var(--color-soft-peach)]/60 px-5 pb-4">
-              <div className="divide-y divide-[var(--color-cream)]">
+            <div className="border-t border-neutral-100 mt-4 pt-2">
+              <div className="divide-y divide-neutral-50">
                 {order.items.map((item, idx) =>
                   item.type === 'product' ? (
                     <ProductItemRow key={idx} item={item as OrderItemProduct} />
@@ -237,8 +215,8 @@ export function OrderCard({ order }: OrderCardProps) {
                   )
                 )}
               </div>
-              <div className="mt-3 flex justify-end border-t border-[var(--color-soft-peach)]/60 pt-3">
-                <span className="text-sm text-[var(--color-text-secondary)]">
+              <div className="mt-3 flex justify-end border-t border-neutral-100 pt-3">
+                <span className="text-sm text-neutral-500">
                   Итого:&nbsp;
                   <span className="font-heading font-bold text-[var(--color-dark)]">
                     {formatPrice(order.totalPrice)}
