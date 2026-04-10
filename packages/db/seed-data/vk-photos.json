@@ -1,0 +1,370 @@
+{
+  "classic": [
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/0.jpg",
+      "width": 2268
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/1.jpg",
+      "width": 1862
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/2.jpg",
+      "width": 1714
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/3.jpg",
+      "width": 1560
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/4.jpg",
+      "width": 1560
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/5.jpg",
+      "width": 1560
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/6.jpg",
+      "width": 1536
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/8.jpg",
+      "width": 1536
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/9.jpg",
+      "width": 1497
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/10.jpg",
+      "width": 1497
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/11.jpg",
+      "width": 1476
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/12.jpg",
+      "width": 1474
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/13.jpg",
+      "width": 1455
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/classic/14.jpg",
+      "width": 1451
+    }
+  ],
+  "wedding": [
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/0.jpg",
+      "width": 1299
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/1.jpg",
+      "width": 1200
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/2.jpg",
+      "width": 1187
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/3.jpg",
+      "width": 1124
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/4.jpg",
+      "width": 1120
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/5.jpg",
+      "width": 1119
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/6.jpg",
+      "width": 1089
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/7.jpg",
+      "width": 1080
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/8.jpg",
+      "width": 1080
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/9.jpg",
+      "width": 1080
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/10.jpg",
+      "width": 1080
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/11.jpg",
+      "width": 1080
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/12.jpg",
+      "width": 1067
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/13.jpg",
+      "width": 1066
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/wedding/14.jpg",
+      "width": 1034
+    }
+  ],
+  "kids": [
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/0.jpg",
+      "width": 1666
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/1.jpg",
+      "width": 1536
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/2.jpg",
+      "width": 1536
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/3.jpg",
+      "width": 1536
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/4.jpg",
+      "width": 1497
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/5.jpg",
+      "width": 1490
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/6.jpg",
+      "width": 1466
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/7.jpg",
+      "width": 1466
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/8.jpg",
+      "width": 1466
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/9.jpg",
+      "width": 1451
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/10.jpg",
+      "width": 1434
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/11.jpg",
+      "width": 1423
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/12.jpg",
+      "width": 1365
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/13.jpg",
+      "width": 1364
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/kids/14.jpg",
+      "width": 1352
+    }
+  ],
+  "bento": [
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/0.jpg",
+      "width": 1920
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/1.jpg",
+      "width": 1920
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/2.jpg",
+      "width": 1886
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/3.jpg",
+      "width": 1798
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/4.jpg",
+      "width": 1700
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/5.jpg",
+      "width": 1677
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/6.jpg",
+      "width": 1591
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/7.jpg",
+      "width": 1573
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/8.jpg",
+      "width": 1506
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/9.jpg",
+      "width": 1506
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/10.jpg",
+      "width": 1506
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/11.jpg",
+      "width": 1506
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/12.jpg",
+      "width": 1506
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/13.jpg",
+      "width": 1506
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/bento/14.jpg",
+      "width": 1506
+    }
+  ],
+  "cupcakes": [
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/0.jpg",
+      "width": 2560
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/1.jpg",
+      "width": 2513
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/2.jpg",
+      "width": 2244
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/3.jpg",
+      "width": 2085
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/4.jpg",
+      "width": 1920
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/5.jpg",
+      "width": 1920
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/6.jpg",
+      "width": 1920
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/7.jpg",
+      "width": 1920
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/8.jpg",
+      "width": 1920
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/9.jpg",
+      "width": 1848
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/10.jpg",
+      "width": 1789
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/11.jpg",
+      "width": 1600
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/12.jpg",
+      "width": 1600
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/13.jpg",
+      "width": 1600
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/cupcakes/14.jpg",
+      "width": 1600
+    }
+  ],
+  "trifles": [
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/0.jpg",
+      "width": 2560
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/1.jpg",
+      "width": 2560
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/2.jpg",
+      "width": 2560
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/3.jpg",
+      "width": 2467
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/4.jpg",
+      "width": 2460
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/5.jpg",
+      "width": 1920
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/6.jpg",
+      "width": 1864
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/7.jpg",
+      "width": 1810
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/8.jpg",
+      "width": 1804
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/9.jpg",
+      "width": 1800
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/10.jpg",
+      "width": 1800
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/11.jpg",
+      "width": 1800
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/12.jpg",
+      "width": 1800
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/13.jpg",
+      "width": 1732
+    },
+    {
+      "minioUrl": "http://localhost:9000/products/vk/trifles/14.jpg",
+      "width": 1722
+    }
+  ]
+}
