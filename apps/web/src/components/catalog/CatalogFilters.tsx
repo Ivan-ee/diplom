@@ -1,9 +1,7 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useCallback, useState } from 'react';
-import { SlidersHorizontal, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useCallback } from 'react';
 
 const categories = [
   { value: '', label: 'Все' },
@@ -25,7 +23,6 @@ export function CatalogFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const currentCategorySlug = searchParams.get('categorySlug') ?? '';
   const currentSort = `${searchParams.get('sort') ?? 'createdAt'}:${searchParams.get('order') ?? 'desc'}`;
@@ -33,7 +30,6 @@ export function CatalogFilters() {
   const updateParam = useCallback(
     (updates: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
-      // Reset to page 1 on filter change
       params.delete('page');
       Object.entries(updates).forEach(([key, value]) => {
         if (value === null || value === '') {
@@ -62,36 +58,37 @@ export function CatalogFilters() {
 
   const hasActiveFilters = currentCategorySlug !== '' || currentSort !== 'createdAt:desc';
 
-  const filtersContent = (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Категория">
+  return (
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 max-w-7xl mx-auto px-4">
+      {/* Category tabs */}
+      <div
+        className="flex flex-wrap items-center gap-1 bg-neutral-100 rounded-xl p-1"
+        role="group"
+        aria-label="Категория"
+      >
         {categories.map((cat) => (
           <button
             key={cat.value}
             onClick={() => handleCategory(cat.value)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border ${
-              currentCategorySlug === cat.value
-                ? 'bg-[var(--color-dusty-rose)] text-white border-[var(--color-dusty-rose)] shadow-sm'
-                : 'bg-white text-[var(--color-dark)] border-gray-200 hover:border-[var(--color-dusty-rose)] hover:text-[var(--color-dusty-rose)]'
-            }`}
             aria-pressed={currentCategorySlug === cat.value}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              currentCategorySlug === cat.value
+                ? 'bg-white text-neutral-900 shadow-sm'
+                : 'text-neutral-500 hover:text-neutral-700'
+            }`}
           >
             {cat.label}
           </button>
         ))}
       </div>
 
-      <span className="h-6 w-px bg-gray-200 hidden sm:block" aria-hidden="true" />
-
-      <div className="flex items-center gap-2">
-        <label htmlFor="sort-select" className="text-sm text-[var(--color-text-secondary)] whitespace-nowrap">
-          Сортировка:
-        </label>
+      {/* Right side: sort + reset */}
+      <div className="flex items-center gap-3">
         <select
-          id="sort-select"
           value={currentSort}
           onChange={(e) => handleSort(e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[var(--color-dark)] bg-white focus:outline-none focus:border-[var(--color-dusty-rose)] focus:ring-1 focus:ring-[var(--color-dusty-rose)] cursor-pointer transition-colors duration-200"
+          aria-label="Сортировка"
+          className="text-sm border border-neutral-200 rounded-xl px-3 py-2 bg-white text-neutral-700 focus:outline-none focus:border-[var(--color-dusty-rose)] focus:ring-1 focus:ring-[var(--color-dusty-rose)] cursor-pointer transition-colors duration-200"
         >
           {sortOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -99,55 +96,15 @@ export function CatalogFilters() {
             </option>
           ))}
         </select>
-      </div>
 
-      {hasActiveFilters && (
-        <button
-          onClick={handleReset}
-          className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200"
-          aria-label="Сбросить фильтры"
-        >
-          <X size={14} />
-          Сбросить
-        </button>
-      )}
-    </div>
-  );
-
-  return (
-    <div className="w-full">
-      <div className="hidden sm:block">{filtersContent}</div>
-
-      <div className="sm:hidden flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setMobileOpen((v) => !v)}
-            className="flex items-center gap-2"
+        {hasActiveFilters && (
+          <button
+            onClick={handleReset}
+            className="text-sm text-neutral-400 hover:text-neutral-600 transition-colors duration-200 whitespace-nowrap"
+            aria-label="Сбросить фильтры"
           >
-            <SlidersHorizontal size={16} />
-            Фильтры
-            {hasActiveFilters && (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-dusty-rose)] text-white text-[10px] font-bold">
-                !
-              </span>
-            )}
-          </Button>
-          {hasActiveFilters && (
-            <button
-              onClick={handleReset}
-              className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-dusty-rose)] transition-colors duration-200"
-            >
-              Сбросить
-            </button>
-          )}
-        </div>
-
-        {mobileOpen && (
-          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-            {filtersContent}
-          </div>
+            Сбросить
+          </button>
         )}
       </div>
     </div>

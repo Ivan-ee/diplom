@@ -3,7 +3,6 @@
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface PaginationProps {
   currentPage: number;
@@ -31,7 +30,6 @@ export function Pagination({ currentPage, totalPages, totalItems }: PaginationPr
 
   if (totalPages <= 1) return null;
 
-  // Build visible page numbers with ellipsis
   function getPageNumbers(): (number | '...')[] {
     const delta = 1;
     const range: number[] = [];
@@ -65,35 +63,32 @@ export function Pagination({ currentPage, totalPages, totalItems }: PaginationPr
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex flex-col items-center gap-4 py-6">
-      {/* Page info */}
-      <p className="text-sm text-[var(--color-text-secondary)]">
-        Страница <span className="font-semibold text-[var(--color-dark)]">{currentPage}</span>{' '}
-        из <span className="font-semibold text-[var(--color-dark)]">{totalPages}</span>
-        {totalItems > 0 && (
-          <> &mdash; {totalItems} товаров</>
-        )}
-      </p>
+    <div className="flex flex-col items-center gap-3 mt-12">
+      {totalItems > 0 && (
+        <p className="text-sm text-neutral-400">
+          Страница <span className="text-neutral-700 font-medium">{currentPage}</span> из{' '}
+          <span className="text-neutral-700 font-medium">{totalPages}</span>
+          {' '}&mdash; {totalItems} товаров
+        </p>
+      )}
 
-      {/* Controls */}
-      <div className="flex items-center gap-1" role="navigation" aria-label="Навигация по страницам">
+      <div className="flex items-center justify-center gap-2" role="navigation" aria-label="Навигация по страницам">
         {/* Prev */}
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
           onClick={() => goToPage(currentPage - 1)}
           disabled={currentPage <= 1}
           aria-label="Предыдущая страница"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-neutral-100 text-neutral-600 hover:bg-neutral-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200"
         >
-          <ChevronLeft size={18} />
-        </Button>
+          <ChevronLeft size={16} />
+        </button>
 
         {/* Page numbers */}
         {pageNumbers.map((page, idx) =>
           page === '...' ? (
             <span
               key={`ellipsis-${idx}`}
-              className="w-9 text-center text-sm text-[var(--color-text-secondary)] select-none"
+              className="w-10 text-center text-sm text-neutral-400 select-none"
             >
               …
             </span>
@@ -102,10 +97,10 @@ export function Pagination({ currentPage, totalPages, totalItems }: PaginationPr
               key={page}
               onClick={() => goToPage(page)}
               aria-current={page === currentPage ? 'page' : undefined}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`w-10 h-10 rounded-full text-sm font-medium transition-all duration-200 ${
                 page === currentPage
                   ? 'bg-[var(--color-dusty-rose)] text-white shadow-sm'
-                  : 'text-[var(--color-dark)] hover:bg-[var(--color-cream)] hover:text-[var(--color-dusty-rose)]'
+                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
               }`}
             >
               {page}
@@ -114,15 +109,14 @@ export function Pagination({ currentPage, totalPages, totalItems }: PaginationPr
         )}
 
         {/* Next */}
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
           onClick={() => goToPage(currentPage + 1)}
           disabled={currentPage >= totalPages}
           aria-label="Следующая страница"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-neutral-100 text-neutral-600 hover:bg-neutral-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200"
         >
-          <ChevronRight size={18} />
-        </Button>
+          <ChevronRight size={16} />
+        </button>
       </div>
     </div>
   );

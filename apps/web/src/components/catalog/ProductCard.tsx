@@ -3,10 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import { ShoppingCart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import { Chip, Button } from '@heroui/react';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart-store';
 
@@ -54,25 +52,41 @@ const categoryLabels: Record<string, string> = {
   cupcake: 'Капкейк',
   macaron: 'Макарон',
   pastry: 'Выпечка',
+  classic: 'Классические',
+  wedding: 'Свадебные',
+  kids: 'Детские',
+  bento: 'Бенто',
+  cupcakes: 'Капкейки',
+  trifles: 'Трайфлы',
 };
 
 export function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
   const [added, setAdded] = useState(false);
 
-  const minWeight = product.weightMin ?? (product.weightOptions?.[0] ?? (product.minWeight ? Math.round(parseFloat(product.minWeight) * 1000) : 1000));
-  const categoryName = typeof product.category === 'object' && product.category !== null
-    ? product.category.name
-    : (product.category ?? '');
-  const categorySlug = typeof product.category === 'object' && product.category !== null
-    ? product.category.slug
-    : (product.type ?? product.category ?? '');
+  const minWeight =
+    product.weightMin ??
+    (product.weightOptions?.[0] ??
+      (product.minWeight ? Math.round(parseFloat(product.minWeight) * 1000) : 1000));
+
+  const categoryName =
+    typeof product.category === 'object' && product.category !== null
+      ? product.category.name
+      : (product.category ?? '');
+
+  const categorySlug =
+    typeof product.category === 'object' && product.category !== null
+      ? product.category.slug
+      : (product.type ?? product.category ?? '');
+
   const categoryLabel = categoryLabels[categorySlug] ?? categoryName;
 
   const isPerUnit = product.priceType === 'per_unit';
   const displayPrice = isPerUnit
     ? (product.pricePerUnit ?? 0)
     : (product.pricePerKg ?? product.priceMin ?? 0);
+
+  const imageUrl = product.imageUrl ?? product.images?.[0];
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
@@ -81,7 +95,7 @@ export function ProductCard({ product }: ProductCardProps) {
       type: 'product',
       productId: product.id,
       name: product.name,
-      imageUrl: product.imageUrl ?? product.images?.[0] ?? '',
+      imageUrl: imageUrl ?? '',
       weight: isPerUnit ? 0 : minWeight,
       price: displayPrice,
     });
@@ -91,88 +105,73 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/catalog/${product.slug}`} className="group block focus:outline-none">
-      <Card className="overflow-hidden transition-all duration-200 ease-out group-hover:-translate-y-0.5 group-hover:shadow-lg group-focus-visible:ring-2 group-focus-visible:ring-[var(--color-dusty-rose)] group-focus-visible:ring-offset-2">
+      <div className="rounded-2xl overflow-hidden bg-white border border-neutral-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-[var(--color-dusty-rose)] focus-within:ring-offset-2">
         {/* Image area */}
-        <div className="relative h-48 bg-[var(--color-cream)] overflow-hidden">
-          {product.imageUrl || product.images?.[0] ? (
+        <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-cream)]">
+          {imageUrl ? (
             <Image
-              src={product.imageUrl ?? product.images![0]}
+              src={imageUrl}
               alt={product.name}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <span className="text-6xl select-none" aria-hidden="true">🎂</span>
+            <div className="flex h-full w-full items-center justify-center bg-[var(--color-cream)]">
+              <span className="text-5xl text-neutral-300 font-light select-none" aria-hidden="true">
+                ~
+              </span>
             </div>
           )}
 
-          {/* Category badge overlay */}
+          {/* Category badge */}
           {categoryLabel && (
-            <div className="absolute top-3 left-3">
-              <Badge variant="secondary" className="shadow-sm">
+            <div className="absolute top-3 left-3 z-10">
+              <Chip size="sm" variant="soft" className="bg-white/85 backdrop-blur-sm text-neutral-700 text-xs font-medium">
                 {categoryLabel}
-              </Badge>
+              </Chip>
             </div>
           )}
 
           {/* Unavailable overlay */}
           {product.isAvailable === false && (
-            <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-              <Badge variant="warning">Нет в наличии</Badge>
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center z-10">
+              <span className="text-sm font-medium text-neutral-500 bg-white/90 px-3 py-1.5 rounded-full">
+                Нет в наличии
+              </span>
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className="p-4 flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <h3 className="font-heading font-semibold text-[var(--color-dark)] text-base leading-tight line-clamp-2 group-hover:text-[var(--color-dusty-rose)] transition-colors duration-200">
-              {product.name}
-            </h3>
-            {product.weightMin != null && (
-              <p className="text-xs text-[var(--color-text-secondary)]">
-                от {product.weightMin / 1000} кг
-                {product.weightMax != null && product.weightMax !== product.weightMin
-                  ? ` до ${product.weightMax / 1000} кг`
-                  : ''}
-              </p>
-            )}
-          </div>
+        <div className="p-4">
+          <h3 className="text-base font-medium text-neutral-900 line-clamp-2 leading-snug">
+            {product.name}
+          </h3>
 
-          <div className="flex items-center justify-between gap-2 mt-auto">
-            <div>
-              <span className="font-heading font-bold text-lg text-[var(--color-dusty-rose)]">
-                {isPerUnit
-                  ? formatPrice(product.pricePerUnit ?? 0)
-                  : `от ${formatPrice(product.pricePerKg ?? product.priceMin ?? 0)}`}
-              </span>
-              <span className="text-xs text-[var(--color-text-secondary)] ml-1">
-                {isPerUnit ? '/шт' : '/кг'}
-              </span>
-            </div>
+          <p className="text-lg font-semibold text-[var(--color-dusty-rose)] mt-1">
+            {isPerUnit
+              ? `${formatPrice(product.pricePerUnit ?? 0)} ₽`
+              : `от ${formatPrice(product.pricePerKg ?? product.priceMin ?? 0)} ₽/кг`}
+          </p>
 
+          <motion.div whileTap={{ scale: 0.98 }} className="mt-3">
             <Button
-              size="sm"
-              variant={added ? 'secondary' : 'default'}
+              fullWidth
               onClick={handleAddToCart}
-              disabled={product.isAvailable === false}
-              className="shrink-0 transition-all duration-200"
+              isDisabled={product.isAvailable === false}
               aria-label={`Добавить ${product.name} в корзину`}
+              className={`w-full rounded-xl text-sm font-medium transition-colors duration-200 ${
+                added
+                  ? 'bg-neutral-100 text-neutral-600'
+                  : 'bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white'
+              }`}
             >
-              {added ? (
-                '✓ Добавлено'
-              ) : (
-                <>
-                  <ShoppingCart size={14} />
-                  В корзину
-                </>
-              )}
+              {added ? '✓ Добавлено' : 'В корзину'}
             </Button>
-          </div>
+          </motion.div>
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }

@@ -7,8 +7,10 @@ export const metadata: Metadata = {
   title: `Каталог — ${shopConfig.name}`,
   description: 'Свадебные, детские, классические торты, бенто, капкейки и трайфлы на заказ в Арзамасе.',
 };
+
 import { type Product } from '@/components/catalog/ProductCard';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
+import { ProductGridSkeleton } from '@/components/catalog/ProductGridSkeleton';
 import { CatalogFilters } from '@/components/catalog/CatalogFilters';
 import { Pagination } from '@/components/catalog/Pagination';
 
@@ -83,34 +85,30 @@ export default async function CatalogPage({
   const params = await searchParams;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+    <div className="pb-16">
       {/* Page header */}
-      <div className="mb-8 flex flex-col gap-2">
-        <h1 className="font-heading font-bold text-4xl text-[var(--color-dark)]">Каталог</h1>
-        <p className="text-[var(--color-text-secondary)]">
-          Авторские торты, капкейки и трайфлы ручной работы
+      <div className="pt-12 pb-8 px-4 max-w-7xl mx-auto">
+        <h1 className="text-5xl lg:text-6xl font-bold tracking-tight font-heading text-neutral-900">
+          Каталог
+        </h1>
+        <p className="text-lg text-neutral-500 mt-3">
+          Торты, капкейки и десерты ручной работы
         </p>
       </div>
 
-      {/* Filters — wrapped in Suspense because CatalogFilters uses useSearchParams */}
+      {/* Filters */}
       <div className="mb-8">
-        <Suspense fallback={<div className="h-10 animate-pulse rounded-lg bg-gray-100" />}>
+        <Suspense fallback={<div className="h-10 animate-pulse rounded-xl bg-neutral-100 max-w-7xl mx-auto px-4" />}>
           <CatalogFilters />
         </Suspense>
       </div>
 
       {/* Product grid + pagination */}
-      <Suspense
-        fallback={
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: LIMIT }).map((_, i) => (
-              <div key={i} className="h-72 animate-pulse rounded-xl bg-gray-100" />
-            ))}
-          </div>
-        }
-      >
-        <CatalogContent searchParams={params} />
-      </Suspense>
+      <div className="max-w-7xl mx-auto px-4">
+        <Suspense fallback={<ProductGridSkeleton />}>
+          <CatalogContent searchParams={params} />
+        </Suspense>
+      </div>
     </div>
   );
 }
