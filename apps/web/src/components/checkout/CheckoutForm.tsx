@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { MapPin, Clock, MessageSquare, Loader2, AlertCircle, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/stores/cart-store';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
@@ -16,13 +15,6 @@ import type { CartItem } from '@/stores/cart-store';
 
 // ── cakeConfig → API DTO adapter ─────────────────────────────────────────────
 
-/**
- * Maps the FE cart CakeConfigData shape to the API CalculatePriceDto shape:
- * - layers → tiers
- * - tier weights from grams → integer tenths of kg (1500 g → 15)
- * - coating.coatingId → coatingId (top-level)
- * - flat placed decorations grouped by decorationId with counts
- */
 function cakeConfigToDto(cakeConfig: NonNullable<CartItem['cakeConfig']>) {
   const decorationCounts: Record<string, number> = {};
   for (const d of cakeConfig.decorations) {
@@ -38,7 +30,6 @@ function cakeConfigToDto(cakeConfig: NonNullable<CartItem['cakeConfig']>) {
     tiers: cakeConfig.layers.map((l) => ({
       baseId: l.baseId,
       fillingId: l.fillingId,
-      // Grams → int tenths of kg (e.g. 1500 g → 15 = 1.5 kg)
       weight: Math.round(l.weight / 100),
     })),
     coatingId: cakeConfig.coating.coatingId,
@@ -66,7 +57,6 @@ const checkoutSchema = z.object({
       return selected > today;
     }, 'Дата должна быть не раньше завтрашнего дня')
     .refine((val) => {
-      // 0 = Sunday
       return new Date(val).getDay() !== 0;
     }, 'Мы не работаем по воскресеньям'),
   timeSlot: z.enum(['morning', 'day', 'evening'], {
@@ -98,6 +88,17 @@ const TIME_SLOTS: { id: CheckoutFormData['timeSlot']; label: string; sub: string
   { id: 'evening', label: 'Вечер', sub: '16:00 — 19:00' },
 ];
 
+// ── Shared input className ───────────────────────────────────────────────────
+
+const inputClass = (hasError: boolean) =>
+  cn(
+    'w-full border rounded-xl px-4 py-3 text-sm text-[var(--color-dark)] bg-white outline-none transition-colors duration-150',
+    'focus:ring-1',
+    hasError
+      ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
+      : 'border-neutral-200 focus:border-[var(--color-dusty-rose)] focus:ring-[var(--color-dusty-rose)]/30'
+  );
+
 // ── OrderSummary component ───────────────────────────────────────────────────
 
 interface OrderSummaryProps {
@@ -105,7 +106,6 @@ interface OrderSummaryProps {
   totalPrice: number;
   isSubmitting: boolean;
   submitError: string | null;
-  onSubmit?: () => void;
 }
 
 function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSummaryProps) {
@@ -118,7 +118,7 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
         : 'товаров';
 
   return (
-    <div className="bg-[var(--color-cream)] rounded-2xl border border-[var(--color-soft-peach)] p-6">
+    <div className="sticky lg:top-24 bg-neutral-50 rounded-2xl border border-neutral-100 p-6">
       <h2 className="font-heading font-semibold text-[var(--color-dark)] text-base mb-4 flex items-center gap-2">
         <ShoppingBag size={17} className="text-[var(--color-dusty-rose)]" />
         Ваш заказ ({totalItems}&nbsp;{itemWord})
@@ -127,18 +127,18 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
       <div className="flex flex-col gap-3 mb-5">
         {items.map((item) => (
           <div key={item.id} className="flex items-center gap-3">
-            <div className="relative shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-white border border-[var(--color-soft-peach)]">
+            <div className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-white border border-neutral-100">
               {item.imageUrl ? (
                 <Image
                   src={item.imageUrl}
                   alt={item.name}
                   fill
                   className="object-cover"
-                  sizes="44px"
+                  sizes="48px"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <span className="text-lg select-none" aria-hidden="true">🎂</span>
+                <div className="flex h-full w-full items-center justify-center text-neutral-300 text-lg" aria-hidden="true">
+                  &#9728;
                 </div>
               )}
             </div>
@@ -147,7 +147,7 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
               <p className="text-xs font-medium text-[var(--color-dark)] line-clamp-1 leading-tight">
                 {item.name}
               </p>
-              <p className="text-[11px] text-[var(--color-text-secondary)]">
+              <p className="text-[11px] text-neutral-400">
                 × {item.quantity}
               </p>
             </div>
@@ -159,15 +159,13 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
         ))}
       </div>
 
-      <div className="h-px bg-[var(--color-soft-peach)] mb-4" />
-
-      <div className="flex items-baseline justify-between mb-6">
-        <span className="font-heading font-semibold text-[var(--color-dark)] text-sm">
-          Итого
-        </span>
-        <span className="font-heading font-bold text-2xl text-[var(--color-dusty-rose)] tabular-nums">
-          {formatPrice(totalPrice)}
-        </span>
+      <div className="flex flex-col">
+        <div className="flex justify-between py-3 border-b border-neutral-100">
+          <span className="text-sm text-neutral-500">Итого</span>
+          <span className="font-heading font-bold text-2xl text-[var(--color-dusty-rose)] tabular-nums">
+            {formatPrice(totalPrice)}
+          </span>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -177,7 +175,7 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            className="mb-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600"
+            className="mt-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600"
           >
             <AlertCircle size={13} className="shrink-0 mt-0.5" />
             <span>{submitError}</span>
@@ -185,12 +183,10 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
         )}
       </AnimatePresence>
 
-      <Button
+      <button
         type="submit"
-        size="lg"
-        variant="default"
         disabled={isSubmitting}
-        className="w-full"
+        className="w-full flex items-center justify-center gap-2 bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] disabled:opacity-60 text-white rounded-xl h-12 text-base font-medium mt-6 transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
           <>
@@ -200,9 +196,9 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
         ) : (
           'Оформить заказ'
         )}
-      </Button>
+      </button>
 
-      <p className="mt-3 text-center text-xs text-[var(--color-text-secondary)]">
+      <p className="mt-3 text-center text-xs text-neutral-400">
         Оплата при получении
       </p>
     </div>
@@ -240,7 +236,6 @@ export function CheckoutForm() {
     try {
       const payload = {
         pickupDate: data.pickupDate,
-        // DTO field is pickupTimeSlot; timeSlot from the form maps to it.
         pickupTimeSlot: data.timeSlot,
         comment: data.comment ?? '',
         items: items.map((item) => ({
@@ -249,21 +244,13 @@ export function CheckoutForm() {
           ...(item.type === 'constructor' && item.cakeConfig
             ? { cakeConfig: cakeConfigToDto(item.cakeConfig) }
             : {}),
-          // Grams → int tenths of kg (e.g. 1500 g → 15 = 1.5 kg).
-          // API DTO expects @IsInt() @Min(5) where 10 = 1.0 kg.
           weight: Math.round(item.weight / 100),
           quantity: item.quantity,
           ...(item.inscription ? { inscription: item.inscription } : {}),
-          // Send MinIO screenshot URL only when it is an absolute http URL.
-          // The fallback /images/custom-cake.jpg must not be sent.
           ...(item.type === 'constructor' && item.imageUrl && item.imageUrl.startsWith('http')
             ? { screenshotUrl: item.imageUrl }
             : {}),
-          // name, imageUrl, price are NOT in CreateOrderItemDto and will be
-          // rejected by forbidNonWhitelisted: true — intentionally omitted.
         })),
-        // totalPrice omitted — API recomputes server-side and forbidNonWhitelisted
-        // would reject it since it is not in CreateOrderDto.
       };
 
       const res = await fetchClient<OrderCreatedResponse>('/orders', {
@@ -289,34 +276,38 @@ export function CheckoutForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-12 items-start">
 
-        <div className="flex flex-col gap-6">
+        {/* Left column: form sections */}
+        <div className="flex flex-col">
 
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="font-heading font-semibold text-[var(--color-dark)] text-base mb-4 flex items-center gap-2">
+          {/* Section: Address */}
+          <section className="bg-white rounded-2xl border border-neutral-100 p-6 mb-6">
+            <h2 className="text-lg font-semibold text-[var(--color-dark)] mb-4 flex items-center gap-2">
               <MapPin size={17} className="text-[var(--color-dusty-rose)]" />
               Адрес получения
             </h2>
-            <div className="flex items-start gap-3 p-4 bg-[var(--color-cream)] rounded-xl border border-[var(--color-soft-peach)]">
+            <div className="flex items-start gap-3 p-4 bg-neutral-50 rounded-xl border border-neutral-100">
               <MapPin size={16} className="shrink-0 mt-0.5 text-[var(--color-dusty-rose)]" />
               <div>
                 <p className="text-sm font-semibold text-[var(--color-dark)]">
                   г. Арзамас, ул. Ленина, д. 15
                 </p>
-                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                <p className="text-xs text-neutral-400 mt-0.5">
                   Пн — Сб: 10:00 — 19:00 · Вс: выходной
                 </p>
               </div>
             </div>
           </section>
 
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="font-heading font-semibold text-[var(--color-dark)] text-base mb-5 flex items-center gap-2">
+          {/* Section: Date & time */}
+          <section className="bg-white rounded-2xl border border-neutral-100 p-6 mb-6">
+            <h2 className="text-lg font-semibold text-[var(--color-dark)] mb-4 flex items-center gap-2">
               <Clock size={17} className="text-[var(--color-dusty-rose)]" />
               Дата и время получения
             </h2>
 
+            {/* Date */}
             <div className="mb-5">
               <label
                 htmlFor="pickupDate"
@@ -329,13 +320,7 @@ export function CheckoutForm() {
                 type="date"
                 min={getTomorrow()}
                 {...register('pickupDate')}
-                className={cn(
-                  'w-full h-11 rounded-lg border px-3 text-sm text-[var(--color-dark)] bg-white',
-                  'transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-0',
-                  errors.pickupDate
-                    ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
-                    : 'border-gray-300 focus:border-[var(--color-dusty-rose)] focus:ring-[var(--color-dusty-rose)]/20'
-                )}
+                className={inputClass(!!errors.pickupDate)}
               />
               <AnimatePresence>
                 {errors.pickupDate && (
@@ -344,7 +329,7 @@ export function CheckoutForm() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.15 }}
-                    className="mt-1.5 text-xs text-red-500 flex items-center gap-1"
+                    className="mt-1 text-red-500 text-xs flex items-center gap-1"
                   >
                     <AlertCircle size={11} />
                     {errors.pickupDate.message}
@@ -353,6 +338,7 @@ export function CheckoutForm() {
               </AnimatePresence>
             </div>
 
+            {/* Time slots */}
             <div>
               <p className="text-sm font-medium text-[var(--color-dark)] mb-2.5">
                 Время <span className="text-red-400">*</span>
@@ -370,11 +356,11 @@ export function CheckoutForm() {
                           type="button"
                           onClick={() => field.onChange(id)}
                           className={cn(
-                            'relative flex flex-col items-center gap-1 py-3 px-2 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer',
+                            'relative flex flex-col items-center gap-1 p-3 rounded-xl border text-center cursor-pointer transition-all duration-200 ease-out',
                             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
                             isSelected
-                              ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5 shadow-sm shadow-[var(--color-dusty-rose)]/15'
-                              : 'border-gray-200 bg-white hover:border-[var(--color-soft-peach)] hover:bg-[var(--color-cream)] hover:shadow-sm'
+                              ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5'
+                              : 'border-neutral-200 bg-white hover:border-neutral-300'
                           )}
                         >
                           {isSelected && (
@@ -387,14 +373,12 @@ export function CheckoutForm() {
                           <span
                             className={cn(
                               'relative z-10 text-sm font-semibold leading-tight',
-                              isSelected
-                                ? 'text-[var(--color-dusty-rose)]'
-                                : 'text-[var(--color-dark)]'
+                              isSelected ? 'text-[var(--color-dusty-rose)]' : 'text-[var(--color-dark)]'
                             )}
                           >
                             {label}
                           </span>
-                          <span className="relative z-10 text-[10px] text-[var(--color-text-secondary)] leading-tight">
+                          <span className="relative z-10 text-[10px] text-neutral-400 leading-tight">
                             {sub}
                           </span>
                         </button>
@@ -410,7 +394,7 @@ export function CheckoutForm() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.15 }}
-                    className="mt-2 text-xs text-red-500 flex items-center gap-1"
+                    className="mt-2 text-red-500 text-xs flex items-center gap-1"
                   >
                     <AlertCircle size={11} />
                     {errors.timeSlot.message}
@@ -420,8 +404,9 @@ export function CheckoutForm() {
             </div>
           </section>
 
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="font-heading font-semibold text-[var(--color-dark)] text-base mb-4 flex items-center gap-2">
+          {/* Section: Comment */}
+          <section className="bg-white rounded-2xl border border-neutral-100 p-6">
+            <h2 className="text-lg font-semibold text-[var(--color-dark)] mb-4 flex items-center gap-2">
               <MessageSquare size={17} className="text-[var(--color-dusty-rose)]" />
               Комментарий к заказу
             </h2>
@@ -432,21 +417,18 @@ export function CheckoutForm() {
                 placeholder="Пожелания по упаковке, аллергии, особые требования..."
                 {...register('comment')}
                 className={cn(
-                  'w-full rounded-lg border px-3 py-2.5 text-sm text-[var(--color-dark)] bg-white resize-none leading-relaxed',
-                  'placeholder:text-gray-400 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-0',
-                  errors.comment
-                    ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
-                    : 'border-gray-300 focus:border-[var(--color-dusty-rose)] focus:ring-[var(--color-dusty-rose)]/20'
+                  inputClass(!!errors.comment),
+                  'resize-none min-h-[100px] leading-relaxed placeholder:text-neutral-300'
                 )}
               />
               <p
                 className={cn(
-                  'absolute bottom-2.5 right-3 text-[11px] tabular-nums pointer-events-none transition-colors duration-150',
+                  'absolute bottom-3 right-3 text-[11px] tabular-nums pointer-events-none transition-colors duration-150',
                   commentValue.length > 450
                     ? commentValue.length > 490
                       ? 'text-red-400'
                       : 'text-orange-400'
-                    : 'text-gray-300'
+                    : 'text-neutral-300'
                 )}
               >
                 {commentValue.length}/500
@@ -459,7 +441,7 @@ export function CheckoutForm() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.15 }}
-                  className="mt-1.5 text-xs text-red-500 flex items-center gap-1"
+                  className="mt-1 text-red-500 text-xs flex items-center gap-1"
                 >
                   <AlertCircle size={11} />
                   {errors.comment.message}
@@ -469,7 +451,8 @@ export function CheckoutForm() {
           </section>
         </div>
 
-        <div className="lg:sticky lg:top-24 flex flex-col gap-4">
+        {/* Right column: order summary */}
+        <div>
           <OrderSummary
             items={items}
             totalPrice={totalPrice}

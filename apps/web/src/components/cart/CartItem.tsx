@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Chip } from '@heroui/react';
 import { useCartStore, type CartItem as CartItemType } from '@/stores/cart-store';
 import { formatPrice, cn } from '@/lib/utils';
 
@@ -42,7 +41,7 @@ function ConstructorConfigSummary({ config }: { config: unknown }) {
   if (parts.length === 0) return null;
 
   return (
-    <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed mt-1 line-clamp-2">
+    <p className="text-sm text-neutral-500 mt-1 line-clamp-2">
       {parts.join(' · ')}
     </p>
   );
@@ -67,7 +66,6 @@ export function CartItem({ item }: CartItemProps) {
   function handleDeleteClick() {
     if (isConstructor && !confirmDelete) {
       setConfirmDelete(true);
-      // Auto-cancel confirmation after 3 s
       setTimeout(() => setConfirmDelete(false), 3000);
       return;
     }
@@ -85,44 +83,51 @@ export function CartItem({ item }: CartItemProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -24, transition: { duration: 0.2 } }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="group"
+      className="bg-white rounded-2xl border border-neutral-100 p-4 lg:p-6"
     >
-      <div className="flex items-start gap-4 py-5">
+      <div className="flex items-start gap-4">
         {/* Image */}
-        <div className="relative shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-[var(--color-cream)] border border-[var(--color-soft-peach)]">
+        <div className="relative shrink-0 w-20 h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden bg-[var(--color-cream)] flex-shrink-0">
           {item.imageUrl ? (
             <Image
               src={item.imageUrl}
               alt={item.name}
               fill
               className="object-cover"
-              sizes="80px"
+              sizes="(min-width: 1024px) 96px, 80px"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
-              <span className="text-3xl select-none" aria-hidden="true">🎂</span>
+              <span className="text-3xl select-none text-neutral-300" aria-hidden="true">
+                &#9728;
+              </span>
             </div>
           )}
         </div>
 
         {/* Info + controls */}
-        <div className="flex-1 min-w-0 flex flex-col gap-2">
-          {/* Top row: name + delete */}
+        <div className="flex-1 min-w-0 flex flex-col gap-3">
+          {/* Top: name + badge + delete */}
           <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm leading-tight line-clamp-2">
+                <h3 className="text-base font-medium text-neutral-900 leading-tight line-clamp-2">
                   {item.name}
                 </h3>
                 {isConstructor && (
-                  <Badge variant="default" className="shrink-0 text-[10px] px-2 py-0.5">
+                  <Chip
+                    size="sm"
+                    color="accent"
+                    variant="soft"
+                    className="text-[10px] font-medium"
+                  >
                     Собранный торт
-                  </Badge>
+                  </Chip>
                 )}
               </div>
 
               {/* Weight */}
-              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+              <p className="text-sm text-neutral-500 mt-1">
                 {item.weight >= 1000
                   ? `${(item.weight / 1000).toLocaleString('ru-RU')} кг`
                   : `${item.weight} г`}
@@ -147,7 +152,7 @@ export function CartItem({ item }: CartItemProps) {
                   >
                     <button
                       onClick={handleCancelDelete}
-                      className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-dark)] px-2 py-1 rounded-md transition-colors duration-150 cursor-pointer"
+                      className="text-xs text-neutral-400 hover:text-neutral-700 px-2 py-1 rounded-md transition-colors duration-150 cursor-pointer"
                     >
                       Отмена
                     </button>
@@ -166,11 +171,7 @@ export function CartItem({ item }: CartItemProps) {
                     exit={{ opacity: 0 }}
                     onClick={handleDeleteClick}
                     aria-label="Удалить из корзины"
-                    className={cn(
-                      'p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-all duration-150 cursor-pointer',
-                      'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300'
-                    )}
+                    className="p-1.5 rounded-lg text-neutral-300 hover:text-red-400 transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
                   >
                     <Trash2 size={15} />
                   </motion.button>
@@ -179,31 +180,30 @@ export function CartItem({ item }: CartItemProps) {
             </div>
           </div>
 
-          {/* Bottom row: quantity + price */}
+          {/* Bottom: quantity stepper + price */}
           <div className="flex items-center justify-between gap-4">
-            {/* Quantity controls */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+            {/* Quantity stepper */}
+            <div className="flex items-center gap-3 bg-neutral-100 rounded-full p-1">
               <button
                 onClick={handleDecrement}
                 aria-label="Уменьшить количество"
                 className={cn(
-                  'w-7 h-7 flex items-center justify-center rounded-md transition-all duration-150 cursor-pointer',
-                  'text-[var(--color-dark)] hover:bg-white hover:shadow-sm active:scale-95',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1',
-                  item.quantity <= 1 && 'text-gray-300 hover:text-gray-300 hover:bg-transparent hover:shadow-none'
+                  'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150 cursor-pointer',
+                  'hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1',
+                  item.quantity <= 1 ? 'text-neutral-300' : 'text-neutral-700'
                 )}
               >
                 <Minus size={13} />
               </button>
 
-              <span className="w-7 text-center text-sm font-semibold text-[var(--color-dark)] select-none tabular-nums">
+              <span className="text-sm font-medium w-6 text-center select-none tabular-nums text-neutral-900">
                 {item.quantity}
               </span>
 
               <button
                 onClick={handleIncrement}
                 aria-label="Увеличить количество"
-                className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--color-dark)] hover:bg-white hover:shadow-sm active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-700 hover:bg-neutral-200 transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1"
               >
                 <Plus size={13} />
               </button>
@@ -211,11 +211,11 @@ export function CartItem({ item }: CartItemProps) {
 
             {/* Price */}
             <div className="text-right">
-              <p className="font-heading font-bold text-base text-[var(--color-dusty-rose)] tabular-nums">
+              <p className="text-lg font-semibold text-[var(--color-dusty-rose)] tabular-nums">
                 {formatPrice(itemTotal)}
               </p>
               {item.quantity > 1 && (
-                <p className="text-[11px] text-[var(--color-text-secondary)] tabular-nums">
+                <p className="text-xs text-neutral-400 tabular-nums">
                   {formatPrice(item.price)} × {item.quantity}
                 </p>
               )}
@@ -223,9 +223,6 @@ export function CartItem({ item }: CartItemProps) {
           </div>
         </div>
       </div>
-
-      {/* Divider — rendered by parent via CSS sibling, but we include it here for self-containment */}
-      <div className="h-px bg-gray-100" />
     </motion.div>
   );
 }

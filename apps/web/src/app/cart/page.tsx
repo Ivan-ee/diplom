@@ -1,13 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { CakeSlice, ArrowLeft } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { buttonVariants } from '@/components/ui/button';
 import { CartItem } from '@/components/cart/CartItem';
 import { CartSummary } from '@/components/cart/CartSummary';
 import { useCartStore } from '@/stores/cart-store';
-import { cn } from '@/lib/utils';
 
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
@@ -15,21 +13,14 @@ export default function CartPage() {
   const isEmpty = items.length === 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Page header */}
-      <div className="mb-8 flex flex-col gap-1">
-        <div className="flex items-center gap-3 mb-1">
-          <Link
-            href="/catalog"
-            className="inline-flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-dusty-rose)] transition-colors duration-150"
-          >
-            <ArrowLeft size={14} />
-            Каталог
-          </Link>
-        </div>
-        <h1 className="font-heading font-bold text-4xl text-[var(--color-dark)]">Корзина</h1>
+      <div className="mb-8">
+        <h1 className="font-heading font-bold text-4xl lg:text-5xl tracking-tight text-[var(--color-dark)]">
+          Корзина
+        </h1>
         {!isEmpty && (
-          <p className="text-[var(--color-text-secondary)] text-sm">
+          <p className="text-[var(--color-text-secondary)] text-sm mt-2">
             {items.length}&nbsp;{items.length === 1 ? 'позиция' : items.length >= 2 && items.length <= 4 ? 'позиции' : 'позиций'}
           </p>
         )}
@@ -44,29 +35,22 @@ export default function CartPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="flex flex-col items-center justify-center py-24 text-center"
+            className="flex flex-col items-center justify-center py-32 text-center"
           >
-            <div className="mb-6 flex items-center justify-center w-24 h-24 rounded-full bg-[var(--color-cream)] border-2 border-[var(--color-soft-peach)]">
-              <CakeSlice
-                size={44}
-                className="text-[var(--color-dusty-rose)] opacity-60"
-                strokeWidth={1.5}
-              />
-            </div>
-            <h2 className="font-heading font-semibold text-2xl text-[var(--color-dark)] mb-2">
+            <ShoppingBag
+              size={64}
+              className="text-neutral-300 mb-6"
+              strokeWidth={1.25}
+            />
+            <h2 className="text-xl font-medium text-neutral-500 mb-6">
               Корзина пуста
             </h2>
-            <p className="text-[var(--color-text-secondary)] text-sm max-w-xs mb-8 leading-relaxed">
-              Добавьте торты или соберите свой уникальный торт в конструкторе
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link href="/catalog" className={cn(buttonVariants({ size: 'lg', variant: 'default' }))}>
-                Перейти в каталог
-              </Link>
-              <Link href="/constructor" className={cn(buttonVariants({ size: 'lg', variant: 'outline' }))}>
-                Создать торт
-              </Link>
-            </div>
+            <Link
+              href="/catalog"
+              className="inline-flex items-center justify-center px-6 h-11 rounded-full bg-[var(--color-dusty-rose)] text-white text-sm font-medium hover:bg-[var(--color-dusty-rose-hover)] transition-colors duration-150"
+            >
+              В каталог
+            </Link>
           </motion.div>
         ) : (
           /* ── Items + summary ── */
@@ -76,26 +60,23 @@ export default function CartPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start"
+            className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-12 items-start"
           >
             {/* Left column: item list */}
             <div>
-              {/* Items card */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <AnimatePresence initial={false}>
+              <AnimatePresence initial={false}>
+                <div className="flex flex-col gap-4">
                   {items.map((item) => (
-                    <div key={item.id} className="px-4 sm:px-6 last:[&>div.h-px]:hidden">
-                      <CartItem item={item} />
-                    </div>
+                    <CartItem key={item.id} item={item} />
                   ))}
-                </AnimatePresence>
-              </div>
+                </div>
+              </AnimatePresence>
 
               {/* Clear cart */}
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={clearCart}
-                  className="text-xs text-[var(--color-text-secondary)] hover:text-red-400 transition-colors duration-150 underline underline-offset-2 hover:no-underline cursor-pointer"
+                  className="text-xs text-neutral-400 hover:text-red-400 transition-colors duration-150 underline underline-offset-2 hover:no-underline cursor-pointer"
                 >
                   Очистить корзину
                 </button>
