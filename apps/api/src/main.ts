@@ -51,10 +51,26 @@ async function bootstrap() {
     }
   }
 
+  app.enableShutdownHooks();
+
   const port = process.env.PORT || 4000;
   await app.listen(port);
   logger.log(`API running on http://localhost:${port}`);
   logger.log(`Swagger docs at http://localhost:${port}/api/docs`);
+
+  const shutdown = async (signal: string) => {
+    logger.log(`Received ${signal}, shutting down...`);
+    try {
+      await app.close();
+      logger.log('Application closed gracefully');
+    } catch (err) {
+      logger.error('Error during shutdown', err);
+    }
+    process.exit(0);
+  };
+
+  process.on('SIGINT', () => void shutdown('SIGINT'));
+  process.on('SIGTERM', () => void shutdown('SIGTERM'));
 }
 
 bootstrap().catch((err) => {
