@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Package, Cake } from 'lucide-react';
+import { ChevronDown, Cake, RefreshCw } from 'lucide-react';
 import { Chip } from '@heroui/react';
+import { toast } from 'sonner';
 import { cn, formatPrice } from '@/lib/utils';
+import { useCartStore } from '@/stores/cart-store';
 
 // ---------- Types ----------
 
@@ -156,9 +158,36 @@ interface OrderCardProps {
 
 export function OrderCard({ order }: OrderCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const addItem = useCartStore((s) => s.addItem);
 
   const statusCfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.created;
   const displayNumber = order.orderNumber ?? order.id.slice(0, 8).toUpperCase();
+
+  function handleReorder() {
+    const catalogItems = order.items.filter(
+      (item): item is OrderItemProduct => item.type === 'product'
+    );
+
+    if (catalogItems.length === 0) {
+      toast('Собранные торты нельзя повторить — соберите заново в конструкторе');
+      return;
+    }
+
+    catalogItems.forEach((item) => {
+      addItem({
+        type: 'product',
+        productId: item.productId,
+        name: item.name,
+        imageUrl: item.imageUrl ?? '',
+        weight: item.weight,
+        price: item.price,
+        quantity: item.quantity,
+      });
+    });
+
+    const count = catalogItems.length;
+    toast(count === 1 ? 'Товар добавлен в корзину' : 'Товары добавлены в корзину');
+  }
 
   return (
     <div className="bg-white rounded-2xl border border-neutral-100 p-5 mb-4">
@@ -178,20 +207,31 @@ export function OrderCard({ order }: OrderCardProps) {
         </Chip>
       </div>
 
-      {/* Expand toggle */}
+      {/* Expand toggle + Reorder */}
       {order.items.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-4 flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-700 transition-colors focus:outline-none"
-          aria-expanded={expanded}
-        >
-          Подробнее
-          <ChevronDown
-            size={15}
-            className={cn('transition-transform duration-200', expanded && 'rotate-180')}
-          />
-        </button>
+        <div className="mt-4 flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-700 transition-colors focus:outline-none"
+            aria-expanded={expanded}
+          >
+            Подробнее
+            <ChevronDown
+              size={15}
+              className={cn('transition-transform duration-200', expanded && 'rotate-180')}
+            />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleReorder}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-caramel)] hover:text-[var(--color-caramel-hover)] transition-colors focus:outline-none"
+          >
+            <RefreshCw size={14} />
+            Заказать снова
+          </button>
+        </div>
       )}
 
       {/* Expandable items */}

@@ -79,6 +79,12 @@ export class CreateOrderDto {
   @IsEnum(PickupTimeSlot)
   pickupTimeSlot!: PickupTimeSlot;
 
+  @ApiPropertyOptional({ maxLength: 20, example: '+79001234567' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  phone?: string;
+
   @ApiPropertyOptional({ maxLength: 500 })
   @IsOptional()
   @IsString()

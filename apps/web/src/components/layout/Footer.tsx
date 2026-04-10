@@ -73,7 +73,7 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-[var(--color-champagne)] mt-8 pt-6">
-          <p className="text-xs text-[var(--color-graphite-light)]/60 text-center">
+          <p className="text-xs text-[var(--color-graphite-light)] text-center">
             © 2026 {shopConfig.name}. Все права защищены.
           </p>
         </div>

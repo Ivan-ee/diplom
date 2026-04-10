@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useTransition } from 'react';
 
 const categories = [
   { value: '', label: 'Все' },
@@ -23,6 +23,7 @@ export function CatalogFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
   const currentCategorySlug = searchParams.get('categorySlug') ?? '';
   const currentSort = `${searchParams.get('sort') ?? 'createdAt'}:${searchParams.get('order') ?? 'desc'}`;
@@ -38,13 +39,18 @@ export function CatalogFilters() {
           params.set(key, value);
         }
       });
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      startTransition(() => {
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      });
     },
     [router, pathname, searchParams],
   );
 
   function handleCategory(value: string) {
     updateParam({ categorySlug: value || null });
+    setTimeout(() => {
+      document.getElementById('product-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   }
 
   function handleSort(value: string) {
@@ -53,13 +59,17 @@ export function CatalogFilters() {
   }
 
   function handleReset() {
-    router.push(pathname, { scroll: false });
+    startTransition(() => {
+      router.push(pathname, { scroll: false });
+    });
   }
 
   const hasActiveFilters = currentCategorySlug !== '' || currentSort !== 'createdAt:desc';
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 max-w-7xl mx-auto px-4">
+    <div
+      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 max-w-7xl mx-auto px-4 transition-opacity duration-200 ${isPending ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}
+    >
       {/* Category tabs */}
       <div
         className="flex flex-wrap items-center gap-1 bg-[var(--color-champagne)]/40 rounded-xl p-1"

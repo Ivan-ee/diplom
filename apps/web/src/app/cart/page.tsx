@@ -1,16 +1,56 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ShoppingBag } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CartItem } from '@/components/cart/CartItem';
 import { CartSummary } from '@/components/cart/CartSummary';
+import { CartCrossSell } from '@/components/cart/CartCrossSell';
 import { useCartStore } from '@/stores/cart-store';
 
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clearCart);
   const isEmpty = items.length === 0;
+
+  const [unavailableIds, setUnavailableIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    async function validateItems() {
+      // Только товары из каталога (тип 'product') с productId
+      const productIds = [
+        ...new Set(
+          items
+            .filter((i) => i.type === 'product' && i.productId)
+            .map((i) => i.productId as string),
+        ),
+      ];
+      if (productIds.length === 0) return;
+
+      try {
+        // findAll на бэке фильтрует isAvailable=true и isDeleted=false,
+        // поэтому id, отсутствующие в ответе — недоступны или удалены.
+        const res = await fetch(`/api/products?limit=200&page=1`);
+        if (!res.ok) return; // На ошибке не блокируем пользователя
+
+        const json = await res.json();
+        const availableData: Array<{ id: string }> = json?.data ?? [];
+        const availableSet = new Set(availableData.map((p) => p.id));
+
+        const unavailable = new Set(
+          productIds.filter((id) => !availableSet.has(id)),
+        );
+        setUnavailableIds(unavailable);
+      } catch {
+        // Silent fail — не блокируем при сетевых ошибках
+      }
+    }
+
+    validateItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.length]);
+
+  const hasUnavailable = unavailableIds.size > 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -37,20 +77,24 @@ export default function CartPage() {
             transition={{ duration: 0.3, ease: 'easeOut' }}
             className="flex flex-col items-center justify-center py-32 text-center"
           >
-            <ShoppingBag
-              size={64}
-              className="text-neutral-300 mb-6"
-              strokeWidth={1.25}
-            />
+            <span className="text-5xl mb-6" aria-hidden="true">🎂</span>
             <h2 className="text-xl font-medium text-[var(--color-graphite-light)] mb-6">
               Корзина пуста
             </h2>
-            <Link
-              href="/catalog"
-              className="inline-flex items-center justify-center px-6 h-11 rounded-full bg-[var(--color-caramel)] text-white text-sm font-medium hover:bg-[var(--color-caramel-hover)] transition-colors duration-150"
-            >
-              В каталог
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/catalog"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--color-caramel)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--color-caramel-hover)]"
+              >
+                В каталог
+              </Link>
+              <Link
+                href="/constructor"
+                className="inline-flex items-center justify-center rounded-full border border-[var(--color-champagne)] px-6 py-3 text-sm font-medium text-[var(--color-graphite)] transition-colors hover:bg-[var(--color-champagne)]/40"
+              >
+                Собрать торт в 3D
+              </Link>
+            </div>
           </motion.div>
         ) : (
           /* ── Items + summary ── */
@@ -67,7 +111,15 @@ export default function CartPage() {
               <AnimatePresence initial={false}>
                 <div className="flex flex-col gap-4">
                   {items.map((item) => (
-                    <CartItem key={item.id} item={item} />
+                    <CartItem
+                      key={item.id}
+                      item={item}
+                      isUnavailable={
+                        item.productId
+                          ? unavailableIds.has(item.productId)
+                          : false
+                      }
+                    />
                   ))}
                 </div>
               </AnimatePresence>
@@ -81,11 +133,13 @@ export default function CartPage() {
                   Очистить корзину
                 </button>
               </div>
+
+              <CartCrossSell />
             </div>
 
             {/* Right column: summary — sticky on desktop */}
             <div className="lg:sticky lg:top-24">
-              <CartSummary />
+              <CartSummary hasUnavailable={hasUnavailable} />
             </div>
           </motion.div>
         )}

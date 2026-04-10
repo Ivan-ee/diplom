@@ -69,10 +69,33 @@ function ConstructorPageSkeleton() {
 
 export default function ConstructorPage() {
   const loadIngredients = useConstructorStore((s) => s.loadIngredients);
+  const currentStep = useConstructorStore((s) => s.currentStep);
+  const layers = useConstructorStore((s) => s.layers);
+  const decorations = useConstructorStore((s) => s.decorations);
+  const inscription = useConstructorStore((s) => s.inscription);
+
+  // Config is considered dirty when the user has progressed beyond step 1,
+  // selected any layer ingredient, added decorations, or typed an inscription.
+  const isDirty =
+    currentStep > 1 ||
+    layers.some((l) => l.baseId !== '' || l.fillingId !== '') ||
+    decorations.length > 0 ||
+    inscription.trim() !== '';
 
   useEffect(() => {
     loadIngredients();
   }, [loadIngredients]);
+
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (isDirty) {
+        e.preventDefault();
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
 
   return (
     <main className="overflow-hidden">

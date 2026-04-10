@@ -48,6 +48,7 @@ export class OrdersService {
           totalPrice,
           pickupDate: dto.pickupDate,
           pickupTimeSlot: dto.pickupTimeSlot,
+          phone: dto.phone ?? null,
           comment: dto.comment ?? null,
         })
         .returning();
