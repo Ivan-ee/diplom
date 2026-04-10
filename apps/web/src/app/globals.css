@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@heroui/styles';
 
 @theme {
   --color-cream: #FDF9F3;
@@ -12,6 +13,14 @@
 
   --font-heading: var(--font-montserrat);
   --font-body: var(--font-open-sans);
+}
+
+/* HeroUI semantic palette — mapped to current brand colors */
+:root {
+  --accent: oklch(0.72 0.08 55);          /* dusty-rose #C4A08A */
+  --accent-foreground: oklch(1 0 0);       /* white text on accent */
+  --secondary: oklch(0.90 0.04 60);        /* soft-peach #F0C9B0 */
+  --secondary-foreground: oklch(0.25 0 0); /* dark text on secondary */
 }
 
 body {

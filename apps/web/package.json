@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@bakery/shared-types": "workspace:*",
+    "@heroui/react": "^3.0.2",
+    "@heroui/styles": "^3.0.2",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-slot": "^1.2.4",
     "@react-spring/core": "^10.0.3",
