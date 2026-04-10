@@ -149,13 +149,13 @@ export function StepNavigation() {
   };
 
   return (
-    <div className="px-4 py-3 bg-white border-t border-gray-100 flex items-center gap-3">
+    <div className="px-4 py-3 bg-white border-t border-neutral-200 flex items-center gap-3">
       <Button
         variant="ghost"
         size="default"
         onClick={handleBack}
         disabled={isFirst}
-        className={cn('flex-shrink-0', isFirst && 'opacity-0 pointer-events-none')}
+        className={cn('flex-shrink-0 text-neutral-500', isFirst && 'opacity-0 pointer-events-none')}
         aria-label="Назад"
       >
         <ArrowLeft size={16} strokeWidth={2} />
@@ -168,8 +168,8 @@ export function StepNavigation() {
         onClick={handleNext}
         disabled={!isValid || isCapturing}
         className={cn(
-          'flex-1 font-semibold transition-all duration-200',
-          isLast && 'bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] gap-2'
+          'flex-1 font-semibold rounded-xl transition-all duration-200 bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white',
+          isLast && 'gap-2'
         )}
         aria-label={isLast ? 'Добавить в корзину' : 'Далее'}
       >

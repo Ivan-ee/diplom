@@ -36,7 +36,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
         onClick={() => onChange(!checked)}
         className={cn(
           'relative w-11 h-6 rounded-full transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2 cursor-pointer',
-          checked ? 'bg-[var(--color-dusty-rose)]' : 'bg-gray-200'
+          checked ? 'bg-[var(--color-dusty-rose)]' : 'bg-neutral-200'
         )}
       >
         <motion.div
@@ -92,7 +92,7 @@ export function StepCoating() {
         <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
           Вид покрытия
         </h3>
-        <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+        <div className="flex gap-1 p-1 bg-neutral-100 rounded-xl">
           {coatingTypes.map(({ id, label }) => {
             const isActive = coating.type === id;
             return (
@@ -100,10 +100,10 @@ export function StepCoating() {
                 key={id}
                 onClick={() => handleTypeSelect(id)}
                 className={cn(
-                  'relative flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)]',
+                  'relative flex-1 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)]',
                   isActive
-                    ? 'text-[var(--color-dusty-rose)]'
-                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-dark)]'
+                    ? 'text-neutral-900'
+                    : 'text-neutral-500 hover:text-neutral-700'
                 )}
               >
                 {isActive && (
@@ -124,7 +124,7 @@ export function StepCoating() {
         <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
           Цвет покрытия
         </h3>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {PRESET_COLORS.map(({ hex, label }) => {
             const isSelected = coating.color === hex;
             return (
@@ -133,10 +133,10 @@ export function StepCoating() {
                 onClick={() => setCoatingColor(hex)}
                 title={label}
                 className={cn(
-                  'relative aspect-square rounded-xl border-2 transition-all duration-150 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2 shadow-sm hover:scale-105',
+                  'w-full aspect-square rounded-xl border-2 cursor-pointer transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
                   isSelected
-                    ? 'border-[var(--color-dusty-rose)] scale-105 shadow-md'
-                    : 'border-transparent hover:border-[var(--color-soft-peach)]'
+                    ? 'border-[var(--color-dusty-rose)] scale-105 shadow-sm'
+                    : 'border-transparent hover:border-neutral-300 hover:scale-105'
                 )}
                 style={{ backgroundColor: hex }}
               >
@@ -160,9 +160,9 @@ export function StepCoating() {
               onChange={(e) => setCoatingColor(e.target.value)}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-dashed border-gray-300 group-hover:border-[var(--color-dusty-rose)] transition-colors duration-150">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-dashed border-neutral-300 group-hover:border-[var(--color-dusty-rose)] transition-colors duration-150">
               <div
-                className="w-6 h-6 rounded-lg border border-gray-200 shadow-sm flex-shrink-0"
+                className="w-6 h-6 rounded-lg border border-neutral-200 shadow-sm flex-shrink-0"
                 style={{ backgroundColor: coating.color }}
               />
               <span className="text-xs font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-dark)] transition-colors">
@@ -173,7 +173,7 @@ export function StepCoating() {
         </div>
       </div>
 
-      <div className="p-3 bg-white rounded-xl border border-gray-200 flex flex-col gap-3">
+      <div className="p-3 bg-white rounded-xl border border-neutral-200 flex flex-col gap-3">
         <Toggle
           checked={!!coating.gradient?.enabled}
           onChange={handleGradientToggle}
@@ -232,7 +232,7 @@ export function StepCoating() {
                             'flex-1 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all duration-150 cursor-pointer',
                             isActive
                               ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5 text-[var(--color-dusty-rose)]'
-                              : 'border-gray-200 text-[var(--color-text-secondary)] hover:border-[var(--color-soft-peach)]'
+                              : 'border-neutral-200 text-neutral-500 hover:border-neutral-300'
                           )}
                         >
                           {dir === 'vertical' ? 'Вертикально' : 'Горизонтально'}
@@ -247,7 +247,7 @@ export function StepCoating() {
         </AnimatePresence>
       </div>
 
-      <div className="p-3 bg-white rounded-xl border border-gray-200 flex flex-col gap-3">
+      <div className="p-3 bg-white rounded-xl border border-neutral-200 flex flex-col gap-3">
         <Toggle
           checked={!!coating.drips?.enabled}
           onChange={handleDripsToggle}
@@ -280,7 +280,7 @@ export function StepCoating() {
                           }
                           className={cn(
                             'w-9 h-9 rounded-lg border-2 transition-all duration-150 cursor-pointer hover:scale-110',
-                            isSelected ? 'border-[var(--color-dusty-rose)] scale-110 shadow-md' : 'border-gray-200'
+                            isSelected ? 'border-[var(--color-dusty-rose)] scale-110 shadow-md' : 'border-neutral-200'
                           )}
                           style={{ backgroundColor: hex }}
                         />

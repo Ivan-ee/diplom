@@ -73,10 +73,10 @@ export function StepFilling() {
         variants={itemVariants}
         onClick={() => setLayerFilling(activeTier, filling.id)}
         className={cn(
-          'relative flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
+          'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
           isSelected
-            ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5 shadow-sm'
-            : 'border-gray-200 bg-white hover:border-[var(--color-soft-peach)] hover:bg-[var(--color-cream)]'
+            ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5'
+            : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-sm'
         )}
         whileTap={{ scale: 0.985 }}
       >

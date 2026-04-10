@@ -59,10 +59,10 @@ export function StepShape() {
                 variants={itemVariants}
                 onClick={() => setShape(id)}
                 className={cn(
-                  'relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
+                  'relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
                   isSelected
-                    ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5 shadow-md shadow-[var(--color-dusty-rose)]/15'
-                    : 'border-gray-200 bg-white hover:border-[var(--color-soft-peach)] hover:bg-[var(--color-cream)] hover:shadow-sm'
+                    ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5 shadow-sm'
+                    : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-sm'
                 )}
                 whileTap={{ scale: 0.97 }}
               >
@@ -95,7 +95,7 @@ export function StepShape() {
         <h3 className="font-heading font-semibold text-[var(--color-dark)] text-sm mb-3 uppercase tracking-wide">
           Количество ярусов
         </h3>
-        <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+        <div className="flex gap-1 p-1 bg-neutral-100 rounded-xl">
           {TIERS.map((t) => {
             const isActive = tierCount === t;
             return (
@@ -103,10 +103,10 @@ export function StepShape() {
                 key={t}
                 onClick={() => setTierCount(t)}
                 className={cn(
-                  'relative flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1 cursor-pointer',
+                  'relative flex-1 py-2 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1 cursor-pointer',
                   isActive
-                    ? 'bg-white text-[var(--color-dusty-rose)] shadow-sm'
-                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-dark)]'
+                    ? 'bg-white shadow-sm text-neutral-900'
+                    : 'text-neutral-500 hover:text-neutral-700'
                 )}
               >
                 {isActive && (

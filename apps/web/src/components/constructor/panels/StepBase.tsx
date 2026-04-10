@@ -68,10 +68,10 @@ export function StepBase() {
                 variants={itemVariants}
                 onClick={() => setLayerBase(activeTier, base.id)}
                 className={cn(
-                  'relative flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
+                  'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-2',
                   isSelected
-                    ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5 shadow-sm'
-                    : 'border-gray-200 bg-white hover:border-[var(--color-soft-peach)] hover:bg-[var(--color-cream)]'
+                    ? 'border-[var(--color-dusty-rose)] bg-[var(--color-dusty-rose)]/5'
+                    : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-sm'
                 )}
                 whileTap={{ scale: 0.985 }}
               >
@@ -120,13 +120,13 @@ export function StepBase() {
           <button
             onClick={() => handleWeightChange(-weightStep)}
             disabled={!layer || layer.weight <= minWeight}
-            className="w-9 h-9 rounded-lg border-2 border-[var(--color-dusty-rose)] text-[var(--color-dusty-rose)] flex items-center justify-center transition-all duration-150 hover:bg-[var(--color-dusty-rose)] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            className="w-10 h-10 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
           >
             <Minus size={16} strokeWidth={2.5} />
           </button>
 
           <div className="flex-1 text-center">
-            <p className="font-heading font-bold text-xl text-[var(--color-dark)]">
+            <p className="text-lg font-semibold text-neutral-900 min-w-[80px] text-center">
               {layer ? (layer.weight >= 1000 ? `${layer.weight / 1000} кг` : `${layer.weight} г`) : '—'}
             </p>
             <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
@@ -137,7 +137,7 @@ export function StepBase() {
           <button
             onClick={() => handleWeightChange(weightStep)}
             disabled={!layer || layer.weight >= maxWeight}
-            className="w-9 h-9 rounded-lg border-2 border-[var(--color-dusty-rose)] text-[var(--color-dusty-rose)] flex items-center justify-center transition-all duration-150 hover:bg-[var(--color-dusty-rose)] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            className="w-10 h-10 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
           >
             <Plus size={16} strokeWidth={2.5} />
           </button>

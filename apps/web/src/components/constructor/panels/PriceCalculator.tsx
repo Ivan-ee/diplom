@@ -114,7 +114,7 @@ export function PriceCalculator() {
   }
 
   return (
-    <div className="border-t border-gray-100 bg-white">
+    <div className="border-t border-neutral-200 bg-white">
       {/* Expandable breakdown */}
       <AnimatePresence>
         {expanded && (
@@ -149,20 +149,20 @@ export function PriceCalculator() {
       {/* Main price row */}
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-inset"
+        className="w-full flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-neutral-50 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-inset"
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm text-[var(--color-text-secondary)]">Итого</span>
+          <span className="text-sm text-neutral-500">Итого</span>
           <motion.div
             animate={{ rotate: expanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown size={15} className="text-[var(--color-text-secondary)]" />
+            <ChevronDown size={15} className="text-neutral-500" />
           </motion.div>
         </div>
 
         <div className="flex items-baseline gap-1">
-          <span className="font-heading font-bold text-2xl text-[var(--color-dark)]">
+          <span className="font-heading font-bold text-2xl text-[var(--color-dusty-rose)]">
             {formatPrice(animatedTotal)}
           </span>
         </div>

@@ -136,7 +136,7 @@ export function StepDecor() {
                 'relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] flex-shrink-0',
                 isActive
                   ? 'text-white shadow-md'
-                  : 'bg-gray-100 text-[var(--color-text-secondary)] hover:bg-gray-200'
+                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
               )}
               style={isActive ? { backgroundColor: color } : {}}
             >
@@ -166,7 +166,7 @@ export function StepDecor() {
                 'flex flex-col gap-2 p-3 rounded-xl bg-white border transition-all duration-150',
                 isBeingPlaced
                   ? 'border-[var(--color-dusty-rose)] shadow-sm shadow-[var(--color-dusty-rose)]/20 ring-1 ring-[var(--color-dusty-rose)]/30'
-                  : 'border-gray-200 hover:border-[var(--color-soft-peach)] hover:shadow-sm'
+                  : 'border-neutral-200 hover:border-neutral-300 hover:shadow-sm'
               )}
             >
               {/* Color indicator */}
@@ -189,7 +189,7 @@ export function StepDecor() {
                   {count > 0 && (
                     <button
                       onClick={() => handleRemoveLast(decor.id)}
-                      className="w-6 h-6 rounded-md bg-gray-100 hover:bg-red-100 text-[var(--color-text-secondary)] hover:text-red-500 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+                      className="w-6 h-6 rounded-md bg-neutral-100 hover:bg-red-100 text-neutral-500 hover:text-red-500 flex items-center justify-center transition-colors duration-150 cursor-pointer"
                       title="Убрать последнюю"
                     >
                       <X size={10} strokeWidth={2.5} />
@@ -211,7 +211,7 @@ export function StepDecor() {
                         ? 'bg-[var(--color-dusty-rose)] text-white ring-2 ring-[var(--color-dusty-rose)]/40 scale-110'
                         : canAddMore
                         ? 'bg-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose-hover)] text-white'
-                        : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                        : 'bg-neutral-100 text-neutral-300 cursor-not-allowed'
                     )}
                   >
                     {isBeingPlaced
@@ -234,7 +234,7 @@ export function StepDecor() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="border-t border-gray-100 pt-4 flex flex-col gap-2">
+            <div className="border-t border-neutral-100 pt-4 flex flex-col gap-2">
               <h4 className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide">
                 На торте
               </h4>
@@ -302,16 +302,16 @@ export function StepDecor() {
             placeholder="Например: «С Днём Рождения, Аня!»"
             maxLength={maxInscription}
             className={cn(
-              'w-full px-4 py-3 rounded-xl border-2 text-sm text-[var(--color-dark)] placeholder:text-gray-300 bg-white transition-all duration-200 ease-out outline-none',
-              'border-gray-200 focus:border-[var(--color-dusty-rose)] focus:shadow-sm focus:shadow-[var(--color-dusty-rose)]/15'
+              'w-full px-4 py-3 rounded-xl border text-sm text-[var(--color-dark)] placeholder:text-neutral-300 bg-white transition-colors outline-none',
+              'border-neutral-200 focus:border-[var(--color-dusty-rose)] focus:ring-1 focus:ring-[var(--color-dusty-rose)]/30'
             )}
           />
           {inscription.length > 0 && (
             <button
               onClick={() => setInscription('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-neutral-200 hover:bg-neutral-300 flex items-center justify-center transition-colors cursor-pointer"
             >
-              <X size={10} className="text-gray-500" />
+              <X size={10} className="text-neutral-500" />
             </button>
           )}
         </div>
