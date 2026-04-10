@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { RefreshCw, Check, X } from 'lucide-react';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import type {
   IngredientBase,
   IngredientFilling,
@@ -64,13 +63,13 @@ function AvailabilityToggle({ id, available, onToggle }: AvailabilityToggleProps
       onClick={handleChange}
       disabled={loading}
       className={cn(
-        'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1 disabled:opacity-50',
-        available ? 'bg-[var(--color-dusty-rose)]' : 'bg-gray-200'
+        'relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1 disabled:opacity-50',
+        available ? 'bg-[var(--color-dusty-rose)]' : 'bg-neutral-200'
       )}
     >
       <span
         className={cn(
-          'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200',
+          'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200',
           available ? 'translate-x-4' : 'translate-x-0'
         )}
       />
@@ -129,12 +128,12 @@ function PriceEditor({ id, price, priceKey, onSaved }: PriceEditorProps) {
       <button
         onClick={startEdit}
         title="Нажмите для редактирования"
-        className="group flex items-center gap-1.5 rounded px-1.5 py-0.5 transition-colors hover:bg-[var(--color-cream)]"
+        className="group flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 transition-colors hover:bg-neutral-100"
       >
-        <span className="font-heading text-sm font-bold text-[var(--color-dusty-rose)]">
+        <span className="font-heading text-sm font-bold text-neutral-900">
           {formatPrice(price)}
         </span>
-        <span className="text-xs text-[var(--color-text-secondary)] opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="text-xs text-neutral-400 opacity-0 transition-opacity group-hover:opacity-100">
           ✎
         </span>
       </button>
@@ -153,7 +152,7 @@ function PriceEditor({ id, price, priceKey, onSaved }: PriceEditorProps) {
           if (e.key === 'Enter') void save();
           if (e.key === 'Escape') cancel();
         }}
-        className="w-24 rounded-md border border-[var(--color-dusty-rose)] bg-white px-2 py-1 text-sm font-medium text-[var(--color-dark)] focus:outline-none focus:ring-1 focus:ring-[var(--color-dusty-rose)]"
+        className="border border-neutral-200 rounded-lg px-2 py-1 w-24 text-sm text-neutral-900 focus:outline-none focus:border-[var(--color-dusty-rose)]"
         disabled={saving}
       />
       <button
@@ -166,7 +165,7 @@ function PriceEditor({ id, price, priceKey, onSaved }: PriceEditorProps) {
       </button>
       <button
         onClick={cancel}
-        className="flex h-6 w-6 items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-cream)]"
+        className="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100"
         aria-label="Отмена"
       >
         <X size={13} />
@@ -181,10 +180,10 @@ function TableSkeleton({ cols }: { cols: number }) {
   return (
     <>
       {Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className={i % 2 === 1 ? 'bg-[var(--color-cream)]/20' : ''}>
+        <tr key={i} className="border-b border-neutral-100 last:border-0">
           {Array.from({ length: cols }).map((_, j) => (
             <td key={j} className="px-4 py-3">
-              <div className="h-4 animate-pulse rounded bg-[var(--color-cream)]" />
+              <div className="h-4 animate-pulse rounded-lg bg-neutral-100" />
             </td>
           ))}
         </tr>
@@ -220,26 +219,26 @@ function IngredientTable<T extends AnyIngredient>({
   const colCount = 3 + extraColumns.length;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--color-soft-peach)]/60 bg-white shadow-sm">
+    <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[500px] border-collapse text-sm">
           <thead>
-            <tr className="border-b border-[var(--color-soft-peach)]/60 bg-[var(--color-cream)]/60">
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+            <tr className="bg-neutral-50">
+              <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                 Название
               </th>
               {extraColumns.map((col) => (
                 <th
                   key={col.header}
-                  className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]"
+                  className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium"
                 >
                   {col.header}
                 </th>
               ))}
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+              <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                 {priceLabel}
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+              <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                 Доступно
               </th>
             </tr>
@@ -251,25 +250,22 @@ function IngredientTable<T extends AnyIngredient>({
               <tr>
                 <td
                   colSpan={colCount}
-                  className="px-4 py-10 text-center text-sm text-[var(--color-text-secondary)]"
+                  className="px-4 py-10 text-center text-sm text-neutral-400"
                 >
                   Нет данных
                 </td>
               </tr>
             ) : (
-              rows.map((row, idx) => (
+              rows.map((row) => (
                 <tr
                   key={row.id}
-                  className={cn(
-                    'border-b border-[var(--color-soft-peach)]/40 transition-colors duration-100 hover:bg-[var(--color-dusty-rose)]/5',
-                    idx % 2 === 1 && 'bg-[var(--color-cream)]/20'
-                  )}
+                  className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors"
                 >
                   {/* Name */}
                   <td className="px-4 py-3">
-                    <p className="font-medium text-[var(--color-dark)]">{row.name}</p>
+                    <p className="font-medium text-neutral-900">{row.name}</p>
                     {'description' in row && typeof row.description === 'string' && row.description && (
-                      <p className="mt-0.5 max-w-xs truncate text-xs text-[var(--color-text-secondary)]">
+                      <p className="mt-0.5 max-w-xs truncate text-xs text-neutral-500">
                         {row.description}
                       </p>
                     )}
@@ -277,7 +273,7 @@ function IngredientTable<T extends AnyIngredient>({
 
                   {/* Extra columns */}
                   {extraColumns.map((col) => (
-                    <td key={col.header} className="px-4 py-3 text-sm text-[var(--color-dark)]">
+                    <td key={col.header} className="px-4 py-3 text-sm text-neutral-700">
                       {col.render(row)}
                     </td>
                   ))}
@@ -300,7 +296,7 @@ function IngredientTable<T extends AnyIngredient>({
                         available={row.available}
                         onToggle={onAvailabilityToggle}
                       />
-                      <span className="text-xs text-[var(--color-text-secondary)]">
+                      <span className="text-xs text-neutral-500">
                         {row.available ? 'Да' : 'Нет'}
                       </span>
                     </div>
@@ -359,40 +355,37 @@ export default function AdminConstructorPage() {
     ingredients?.[section].length ?? 0;
 
   return (
-    <div className="space-y-5">
+    <div>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-xl font-bold text-[var(--color-dark)]">
-            Конструктор
-          </h1>
-          <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">
-            Управление ингредиентами и ценами
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold font-heading text-neutral-900">Ингредиенты</h1>
+        <button
+          onClick={load}
+          disabled={loading}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+        >
           <RefreshCw size={14} className={cn(loading && 'animate-spin')} />
           Обновить
-        </Button>
+        </button>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 mb-4">
           {error}
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-xl bg-white p-1.5 shadow-sm w-fit">
+      <div className="flex bg-neutral-100 rounded-xl p-1 gap-1 mb-6">
         {TABS.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
             className={cn(
-              'rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-150',
+              'flex-1 py-2 text-sm font-medium rounded-lg text-center transition-colors',
               activeTab === key
-                ? 'bg-[var(--color-dusty-rose)]/10 text-[var(--color-dusty-rose)]'
-                : 'text-[var(--color-dark)] hover:text-[var(--color-dusty-rose)]'
+                ? 'bg-white shadow-sm text-neutral-900'
+                : 'text-neutral-500 hover:text-neutral-700'
             )}
           >
             {label}
@@ -438,7 +431,7 @@ export default function AdminConstructorPage() {
             {
               header: 'Тип',
               render: (row) => (
-                <span className="text-xs font-medium text-[var(--color-text-secondary)]">
+                <span className="text-xs font-medium text-neutral-500">
                   {row.type === 'cream' ? 'Крем' : 'Мастика'}
                 </span>
               ),
@@ -459,7 +452,7 @@ export default function AdminConstructorPage() {
             {
               header: 'Категория',
               render: (row) => (
-                <span className="text-xs font-medium text-[var(--color-text-secondary)]">
+                <span className="text-xs font-medium text-neutral-500">
                   {row.category}
                 </span>
               ),

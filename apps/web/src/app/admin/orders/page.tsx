@@ -5,23 +5,21 @@ import { ChevronDown, ChevronUp, Cake, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import type { Order, OrderStatus, OrderItem, OrderItemConstructor } from '@/components/account/OrderCard';
 
 // ---------- Status config ----------
 
 const STATUS_CONFIG: Record<
   OrderStatus,
-  { label: string; badgeVariant: 'default' | 'secondary' | 'success' | 'warning' | 'error' | 'info' | 'outline' }
+  { label: string; color: string }
 > = {
-  created:   { label: 'Новый',     badgeVariant: 'secondary' },
-  accepted:  { label: 'Принят',    badgeVariant: 'info'      },
-  preparing: { label: 'Готовится', badgeVariant: 'warning'   },
-  ready:     { label: 'Готов',     badgeVariant: 'success'   },
-  picked_up: { label: 'Забран',    badgeVariant: 'default'   },
-  completed: { label: 'Завершён',  badgeVariant: 'success'   },
-  cancelled: { label: 'Отменён',   badgeVariant: 'error'     },
+  created:   { label: 'Новый',     color: 'bg-neutral-100 text-neutral-600' },
+  accepted:  { label: 'Принят',    color: 'bg-blue-100 text-blue-700'       },
+  preparing: { label: 'Готовится', color: 'bg-amber-100 text-amber-700'     },
+  ready:     { label: 'Готов',     color: 'bg-emerald-100 text-emerald-700' },
+  picked_up: { label: 'Забран',    color: 'bg-neutral-100 text-neutral-600' },
+  completed: { label: 'Завершён',  color: 'bg-emerald-100 text-emerald-700' },
+  cancelled: { label: 'Отменён',   color: 'bg-red-100 text-red-600'         },
 };
 
 const ALL_STATUSES = Object.entries(STATUS_CONFIG) as [OrderStatus, (typeof STATUS_CONFIG)[OrderStatus]][];
@@ -56,35 +54,39 @@ function formatDate(iso: string): string {
 
 function ExpandedOrderRow({ order }: { order: Order }) {
   return (
-    <tr className="bg-[var(--color-cream)]/60">
-      <td colSpan={6} className="px-4 py-4">
+    <tr>
+      <td colSpan={6} className="bg-neutral-50 px-4 py-3">
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
             Состав заказа
           </p>
           <div className="space-y-2">
             {order.items.map((item: OrderItem, idx: number) => (
               <div
                 key={idx}
-                className="flex items-start gap-3 rounded-lg border border-[var(--color-soft-peach)]/60 bg-white p-3"
+                className="flex items-start gap-3 rounded-xl border border-neutral-100 bg-white p-3"
               >
-                <Badge
-                  variant={item.type === 'constructor' ? 'default' : 'secondary'}
-                  className="mt-0.5 shrink-0 text-xs"
+                <span
+                  className={cn(
+                    'mt-0.5 shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                    item.type === 'constructor'
+                      ? 'bg-neutral-100 text-neutral-700'
+                      : 'bg-neutral-100 text-neutral-500'
+                  )}
                 >
                   {item.type === 'constructor' ? 'Конструктор' : 'Товар'}
-                </Badge>
+                </span>
                 <div className="min-w-0 flex-1">
                   {item.type === 'constructor' ? (
                     <>
                       <div className="flex items-center gap-1.5">
                         <Cake size={13} className="text-[var(--color-dusty-rose)]" />
-                        <span className="text-sm font-medium text-[var(--color-dark)]">
+                        <span className="text-sm font-medium text-neutral-900">
                           Собранный торт
                         </span>
                       </div>
                       {(item as OrderItemConstructor).cakeConfig && (
-                        <ul className="mt-1.5 space-y-0.5 text-xs text-[var(--color-text-secondary)]">
+                        <ul className="mt-1.5 space-y-0.5 text-xs text-neutral-500">
                           {(item as OrderItemConstructor).cakeConfig?.shape && (
                             <li>
                               Форма:{' '}
@@ -121,15 +123,15 @@ function ExpandedOrderRow({ order }: { order: Order }) {
                     </>
                   ) : (
                     <>
-                      <p className="text-sm font-medium text-[var(--color-dark)]">{item.name}</p>
-                      <p className="text-xs text-[var(--color-text-secondary)]">
+                      <p className="text-sm font-medium text-neutral-900">{item.name}</p>
+                      <p className="text-xs text-neutral-500">
                         {`${parseFloat(String(item.weight)).toLocaleString('ru-RU')} кг`}
                         {'quantity' in item && item.quantity > 1 ? ` × ${item.quantity}` : ''}
                       </p>
                     </>
                   )}
                 </div>
-                <span className="shrink-0 text-sm font-semibold text-[var(--color-dusty-rose)]">
+                <span className="shrink-0 text-sm font-semibold text-neutral-900">
                   {formatPrice(item.price)}
                 </span>
               </div>
@@ -177,7 +179,7 @@ function StatusCell({ order, onUpdated }: StatusCellProps) {
       <select
         value={selected}
         onChange={(e) => setSelected(e.target.value as OrderStatus)}
-        className="rounded-md border border-[var(--color-soft-peach)] bg-white px-2 py-1.5 text-xs font-medium text-[var(--color-dark)] focus:border-[var(--color-dusty-rose)] focus:outline-none focus:ring-1 focus:ring-[var(--color-dusty-rose)]"
+        className="border border-neutral-200 rounded-lg px-2 py-1 text-sm bg-white text-neutral-700 focus:border-[var(--color-dusty-rose)] focus:outline-none"
       >
         {ALL_STATUSES.map(([value, cfg]) => (
           <option key={value} value={value}>
@@ -189,16 +191,16 @@ function StatusCell({ order, onUpdated }: StatusCellProps) {
         onClick={handleUpdate}
         disabled={saving || selected === order.status}
         className={cn(
-          'rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors duration-150',
+          'text-sm font-medium transition-colors',
           saved
-            ? 'bg-emerald-100 text-emerald-700'
+            ? 'text-emerald-600'
             : selected === order.status
-            ? 'cursor-default bg-[var(--color-cream)] text-[var(--color-text-secondary)]'
-            : 'bg-[var(--color-dusty-rose)] text-white hover:bg-[var(--color-dusty-rose-hover)] disabled:opacity-50'
+            ? 'text-neutral-300 cursor-default'
+            : 'text-[var(--color-dusty-rose)] hover:underline disabled:opacity-50'
         )}
       >
         {saving ? (
-          <RefreshCw size={11} className="animate-spin" />
+          <RefreshCw size={13} className="animate-spin" />
         ) : saved ? (
           'Сохранено'
         ) : (
@@ -215,10 +217,10 @@ function TableSkeleton() {
   return (
     <>
       {Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className={i % 2 === 1 ? 'bg-[var(--color-cream)]/30' : ''}>
+        <tr key={i} className="border-b border-neutral-100 last:border-0">
           {Array.from({ length: 6 }).map((_, j) => (
             <td key={j} className="px-4 py-3">
-              <div className="h-4 animate-pulse rounded bg-[var(--color-cream)]" />
+              <div className="h-4 animate-pulse rounded-lg bg-neutral-100" />
             </td>
           ))}
         </tr>
@@ -261,37 +263,36 @@ export default function AdminOrdersPage() {
     : orders;
 
   return (
-    <div className="space-y-5">
+    <div>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-xl font-bold text-[var(--color-dark)]">Заказы</h1>
-          <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">
-            {loading ? 'Загрузка...' : `${orders.length} заказов всего`}
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold font-heading text-neutral-900">Заказы</h1>
+        <button
+          onClick={load}
+          disabled={loading}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+        >
           <RefreshCw size={14} className={cn(loading && 'animate-spin')} />
           Обновить
-        </Button>
+        </button>
       </div>
 
       {/* Filter pills */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
         {FILTER_GROUPS.map((group, idx) => (
           <button
             key={idx}
             onClick={() => setActiveFilter(idx)}
             className={cn(
-              'rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150',
+              'px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap',
               activeFilter === idx
                 ? 'bg-[var(--color-dusty-rose)] text-white'
-                : 'bg-white text-[var(--color-dark)] border border-[var(--color-soft-peach)] hover:border-[var(--color-dusty-rose)] hover:text-[var(--color-dusty-rose)]'
+                : 'bg-white border border-neutral-200 text-neutral-600 hover:border-neutral-300'
             )}
           >
             {group.label}
             {!loading && (
-              <span className="ml-1.5 opacity-70">
+              <span className={cn('ml-1.5', activeFilter === idx ? 'text-white/70' : 'text-neutral-400')}>
                 {group.statuses
                   ? orders.filter((o) => group.statuses!.includes(o.status)).length
                   : orders.length}
@@ -302,33 +303,33 @@ export default function AdminOrdersPage() {
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 mb-4">
           {error}
         </div>
       )}
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-[var(--color-soft-peach)]/60 bg-white shadow-sm">
+      <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-[var(--color-soft-peach)]/60 bg-[var(--color-cream)]/60">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+              <tr className="bg-neutral-50">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   #
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Дата
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Клиент
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Сумма
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Статус
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Действия
                 </th>
               </tr>
@@ -340,13 +341,13 @@ export default function AdminOrdersPage() {
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-4 py-12 text-center text-sm text-[var(--color-text-secondary)]"
+                    className="px-4 py-12 text-center text-sm text-neutral-400"
                   >
                     Заказов нет
                   </td>
                 </tr>
               ) : (
-                filtered.map((order, idx) => {
+                filtered.map((order) => {
                   const isExpanded = expandedId === order.id;
                   const statusCfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.created;
                   const displayNumber =
@@ -354,51 +355,43 @@ export default function AdminOrdersPage() {
 
                   return (
                     <React.Fragment key={order.id}>
-                      <tr
-                        className={cn(
-                          'border-b border-[var(--color-soft-peach)]/40 transition-colors duration-100',
-                          idx % 2 === 1 && 'bg-[var(--color-cream)]/20',
-                          'hover:bg-[var(--color-dusty-rose)]/5'
-                        )}
-                      >
-                        <td className="px-4 py-3 font-mono text-xs font-medium text-[var(--color-text-secondary)]">
+                      <tr className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors">
+                        <td className="px-4 py-3 font-mono text-xs font-medium text-neutral-500">
                           {displayNumber}
                         </td>
-                        <td className="px-4 py-3 text-xs text-[var(--color-dark)]">
+                        <td className="px-4 py-3 text-xs text-neutral-700">
                           {formatDate(order.createdAt)}
                         </td>
                         <td className="px-4 py-3">
                           {order.customerName ? (
                             <div>
-                              <p className="text-sm font-medium text-[var(--color-dark)]">
+                              <p className="text-sm font-medium text-neutral-900">
                                 {order.customerName}
                               </p>
                               {order.customerPhone && (
-                                <p className="text-xs text-[var(--color-text-secondary)]">
+                                <p className="text-xs text-neutral-500">
                                   {order.customerPhone}
                                 </p>
                               )}
                             </div>
                           ) : (
-                            <span className="text-xs text-[var(--color-text-secondary)]">—</span>
+                            <span className="text-xs text-neutral-400">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 font-heading text-sm font-bold text-[var(--color-dusty-rose)]">
+                        <td className="px-4 py-3 font-heading text-sm font-bold text-neutral-900">
                           {formatPrice(order.totalPrice)}
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant={statusCfg.badgeVariant}>
+                          <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', statusCfg.color)}>
                             {statusCfg.label}
-                          </Badge>
+                          </span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <StatusCell order={order} onUpdated={handleStatusUpdated} />
                             <button
-                              onClick={() =>
-                                setExpandedId(isExpanded ? null : order.id)
-                              }
-                              className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-cream)] hover:text-[var(--color-dark)]"
+                              onClick={() => setExpandedId(isExpanded ? null : order.id)}
+                              className="flex items-center gap-1 text-xs font-medium text-neutral-400 hover:text-neutral-700 transition-colors"
                               aria-expanded={isExpanded}
                             >
                               {isExpanded ? (

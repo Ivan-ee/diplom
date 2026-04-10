@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { ShoppingBag, Clock, TrendingUp, RefreshCw, ArrowRight } from 'lucide-react';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 // ---------- Types ----------
 
@@ -29,15 +27,15 @@ type DashboardStats = {
 
 const STATUS_CONFIG: Record<
   RecentOrder['status'],
-  { label: string; badgeVariant: 'default' | 'secondary' | 'success' | 'warning' | 'error' | 'info' | 'outline' }
+  { label: string; color: string }
 > = {
-  created:   { label: 'Новый',     badgeVariant: 'secondary' },
-  accepted:  { label: 'Принят',    badgeVariant: 'info'      },
-  preparing: { label: 'Готовится', badgeVariant: 'warning'   },
-  ready:     { label: 'Готов',     badgeVariant: 'success'   },
-  picked_up: { label: 'Забран',    badgeVariant: 'default'   },
-  completed: { label: 'Завершён',  badgeVariant: 'success'   },
-  cancelled: { label: 'Отменён',   badgeVariant: 'error'     },
+  created:   { label: 'Новый',     color: 'bg-neutral-100 text-neutral-600' },
+  accepted:  { label: 'Принят',    color: 'bg-blue-100 text-blue-700'       },
+  preparing: { label: 'Готовится', color: 'bg-amber-100 text-amber-700'     },
+  ready:     { label: 'Готов',     color: 'bg-emerald-100 text-emerald-700' },
+  picked_up: { label: 'Забран',    color: 'bg-neutral-100 text-neutral-600' },
+  completed: { label: 'Завершён',  color: 'bg-emerald-100 text-emerald-700' },
+  cancelled: { label: 'Отменён',   color: 'bg-red-100 text-red-600'         },
 };
 
 // ---------- Helpers ----------
@@ -62,20 +60,16 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon: Icon, loading }: StatCardProps) {
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-[var(--color-soft-peach)]/60 bg-white px-5 py-4 shadow-sm">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[var(--color-dusty-rose)]/10">
-        <Icon size={20} className="text-[var(--color-dusty-rose)]" />
+    <div className="bg-white rounded-2xl border border-neutral-100 p-5">
+      <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-600 mb-3">
+        <Icon size={18} />
       </div>
-      <div className="min-w-0">
-        <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">
-          {label}
-        </p>
-        {loading ? (
-          <div className="mt-1 h-6 w-20 animate-pulse rounded bg-[var(--color-cream)]" />
-        ) : (
-          <p className="font-heading text-xl font-bold text-[var(--color-dark)]">{value}</p>
-        )}
-      </div>
+      <p className="text-sm text-neutral-500">{label}</p>
+      {loading ? (
+        <div className="mt-1 h-7 w-24 animate-pulse rounded-lg bg-neutral-100" />
+      ) : (
+        <p className="text-2xl font-bold font-heading text-neutral-900">{value}</p>
+      )}
     </div>
   );
 }
@@ -86,10 +80,10 @@ function RecentOrdersSkeleton() {
   return (
     <>
       {Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className={i % 2 === 1 ? 'bg-[var(--color-cream)]/30' : ''}>
+        <tr key={i} className="border-b border-neutral-100 last:border-0">
           {Array.from({ length: 4 }).map((_, j) => (
             <td key={j} className="px-4 py-3">
-              <div className="h-4 animate-pulse rounded bg-[var(--color-cream)]" />
+              <div className="h-4 animate-pulse rounded-lg bg-neutral-100" />
             </td>
           ))}
         </tr>
@@ -121,29 +115,28 @@ export default function AdminDashboardPage() {
   }, [load]);
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-xl font-bold text-[var(--color-dark)]">Дашборд</h1>
-          <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">
-            Сводка за сегодня
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold font-heading text-neutral-900">Дашборд</h1>
+        <button
+          onClick={load}
+          disabled={loading}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+        >
           <RefreshCw size={14} className={cn(loading && 'animate-spin')} />
           Обновить
-        </Button>
+        </button>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 mb-6">
           {error}
         </div>
       )}
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <StatCard
           label="Новые заказы"
           value={stats?.newOrdersToday ?? 0}
@@ -165,11 +158,9 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Recent orders */}
-      <div className="overflow-hidden rounded-xl border border-[var(--color-soft-peach)]/60 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-[var(--color-soft-peach)]/60 px-5 py-3.5">
-          <p className="font-heading text-sm font-bold text-[var(--color-dark)]">
-            Последние заказы
-          </p>
+      <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden mt-6">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100">
+          <p className="font-heading text-sm font-bold text-neutral-900">Последние заказы</p>
           <Link
             href="/admin/orders"
             className="flex items-center gap-1 text-xs font-medium text-[var(--color-dusty-rose)] hover:underline"
@@ -182,17 +173,17 @@ export default function AdminDashboardPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[480px] border-collapse text-sm">
             <thead>
-              <tr className="bg-[var(--color-cream)]/60">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+              <tr className="bg-neutral-50">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   #
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Дата
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Сумма
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Статус
                 </th>
               </tr>
@@ -204,33 +195,32 @@ export default function AdminDashboardPage() {
                 <tr>
                   <td
                     colSpan={4}
-                    className="px-4 py-10 text-center text-sm text-[var(--color-text-secondary)]"
+                    className="px-4 py-10 text-center text-sm text-neutral-400"
                   >
                     Заказов пока нет
                   </td>
                 </tr>
               ) : (
-                stats.recentOrders.map((order, idx) => {
+                stats.recentOrders.map((order) => {
                   const statusCfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.created;
                   return (
                     <tr
                       key={order.id}
-                      className={cn(
-                        'border-t border-[var(--color-soft-peach)]/40 transition-colors duration-100 hover:bg-[var(--color-dusty-rose)]/5',
-                        idx % 2 === 1 && 'bg-[var(--color-cream)]/20',
-                      )}
+                      className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors"
                     >
-                      <td className="px-4 py-3 font-mono text-xs font-medium text-[var(--color-text-secondary)]">
+                      <td className="px-4 py-3 font-mono text-xs font-medium text-neutral-500">
                         {order.orderNumber}
                       </td>
-                      <td className="px-4 py-3 text-xs text-[var(--color-dark)]">
+                      <td className="px-4 py-3 text-xs text-neutral-700">
                         {formatDate(order.createdAt)}
                       </td>
-                      <td className="px-4 py-3 font-heading text-sm font-bold text-[var(--color-dusty-rose)]">
+                      <td className="px-4 py-3 font-heading text-sm font-bold text-neutral-900">
                         {formatPrice(order.totalPrice)}
                       </td>
                       <td className="px-4 py-3">
-                        <Badge variant={statusCfg.badgeVariant}>{statusCfg.label}</Badge>
+                        <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', statusCfg.color)}>
+                          {statusCfg.label}
+                        </span>
                       </td>
                     </tr>
                   );

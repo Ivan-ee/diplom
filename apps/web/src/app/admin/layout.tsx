@@ -2,16 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Package, Layers, LogOut, ChefHat, LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Palette, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/stores/auth-store';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
   { href: '/admin',             label: 'Дашборд',      icon: LayoutDashboard, exact: true },
-  { href: '/admin/orders',      label: 'Заказы',       icon: ShoppingBag },
-  { href: '/admin/products',    label: 'Товары',        icon: Package },
-  { href: '/admin/constructor', label: 'Конструктор',   icon: Layers },
+  { href: '/admin/orders',      label: 'Заказы',        icon: ShoppingCart },
+  { href: '/admin/products',    label: 'Товары',         icon: Package },
+  { href: '/admin/constructor', label: 'Конструктор',    icon: Palette },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -25,10 +25,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!isAuthenticated || user?.role !== 'admin') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--color-cream)]">
+      <div className="flex min-h-screen items-center justify-center bg-neutral-50">
         <div className="text-center">
-          <h1 className="font-heading text-2xl font-bold text-[var(--color-dark)]">Нет доступа</h1>
-          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          <h1 className="font-heading text-2xl font-bold text-neutral-900">Нет доступа</h1>
+          <p className="mt-2 text-sm text-neutral-500">
             Эта страница доступна только администраторам
           </p>
           <Link href="/" className="mt-4 inline-block text-sm text-[var(--color-dusty-rose)] hover:underline">
@@ -40,21 +40,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-cream)]">
-      {/* Sidebar */}
-      <aside className="hidden w-56 shrink-0 flex-col border-r border-[var(--color-soft-peach)]/60 bg-white lg:flex">
+    <div className="flex min-h-screen bg-neutral-50">
+      {/* Sidebar — desktop only */}
+      <aside className="hidden lg:flex w-60 flex-shrink-0 flex-col bg-white border-r border-neutral-200 p-6">
         {/* Brand */}
-        <div className="flex h-14 items-center gap-2.5 border-b border-[var(--color-soft-peach)]/60 px-5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-dusty-rose)]">
-            <ChefHat size={14} className="text-white" />
-          </div>
-          <span className="font-heading text-sm font-bold text-[var(--color-dark)]">
-            Админ-панель
-          </span>
-        </div>
+        <span className="text-lg font-semibold font-heading text-neutral-900">
+          Админ-панель
+        </span>
 
         {/* Nav */}
-        <nav className="flex flex-1 flex-col gap-1 p-3">
+        <nav className="mt-8 space-y-1">
           {navLinks.map(({ href, label, icon: Icon, exact }) => {
             const active = exact
               ? pathname === href
@@ -64,10 +59,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 key={href}
                 href={href}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
                   active
-                    ? 'bg-[var(--color-dusty-rose)]/10 text-[var(--color-dusty-rose)]'
-                    : 'text-[var(--color-dark)] hover:bg-[var(--color-cream)] hover:text-[var(--color-dusty-rose)]'
+                    ? 'bg-neutral-100 text-neutral-900'
+                    : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50'
                 )}
               >
                 <Icon size={16} className="shrink-0" />
@@ -78,66 +73,50 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* Logout */}
-        <div className="border-t border-[var(--color-soft-peach)]/60 p-3">
-          <button
-            onClick={logout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
-          >
-            <LogOut size={16} className="shrink-0" />
-            Выйти
-          </button>
-        </div>
+        <button
+          onClick={logout}
+          className="mt-auto flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-400 hover:text-red-500 transition-colors"
+        >
+          <LogOut size={16} className="shrink-0" />
+          Выйти
+        </button>
       </aside>
 
-      {/* Content area */}
+      {/* Main content */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Top header */}
-        <header className="flex h-14 items-center gap-4 border-b border-[var(--color-soft-peach)]/60 bg-white px-5">
-          {/* Mobile nav pills */}
-          <div className="flex items-center gap-1 lg:hidden">
-            {navLinks.map(({ href, label, icon: Icon, exact }) => {
-              const active = exact
-                ? pathname === href
-                : pathname === href || pathname.startsWith(href + '/');
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={cn(
-                    'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors duration-150',
-                    active
-                      ? 'bg-[var(--color-dusty-rose)]/10 text-[var(--color-dusty-rose)]'
-                      : 'text-[var(--color-dark)] hover:text-[var(--color-dusty-rose)]'
-                  )}
-                >
-                  <Icon size={13} />
-                  {label}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Desktop title */}
-          <span className="hidden font-heading text-sm font-bold text-[var(--color-dark)] lg:block">
-            {navLinks.find(({ href, exact }) =>
-              exact ? pathname === href : pathname === href || pathname.startsWith(href + '/'),
-            )?.label ?? 'Админ-панель'}
-          </span>
-
-          {/* Spacer + mobile logout */}
-          <div className="ml-auto flex items-center gap-2">
-            <button
-              onClick={logout}
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-red-50 hover:text-red-500 lg:hidden"
-            >
-              <LogOut size={13} />
-              Выйти
-            </button>
-          </div>
+        {/* Mobile top bar */}
+        <header className="lg:hidden h-14 flex items-center gap-1 px-4 bg-white border-b border-neutral-200 overflow-x-auto">
+          {navLinks.map(({ href, label, icon: Icon, exact }) => {
+            const active = exact
+              ? pathname === href
+              : pathname === href || pathname.startsWith(href + '/');
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
+                  active
+                    ? 'bg-neutral-100 text-neutral-900'
+                    : 'text-neutral-500 hover:text-neutral-700'
+                )}
+              >
+                <Icon size={13} />
+                {label}
+              </Link>
+            );
+          })}
+          <button
+            onClick={logout}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-neutral-400 hover:text-red-500 whitespace-nowrap transition-colors"
+          >
+            <LogOut size={13} />
+            Выйти
+          </button>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-5 lg:p-7">
+        <main className="flex-1 overflow-auto p-6 lg:p-8">
           {children}
         </main>
       </div>

@@ -6,8 +6,6 @@ import { Plus, RefreshCw, Pencil, Check, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import type { Product } from '@/components/catalog/ProductCard';
 
 // ---------- Category labels ----------
@@ -70,20 +68,23 @@ function AddProductModal({ onClose, onCreated }: AddProductModalProps) {
   };
 
   const fieldClass =
-    'w-full rounded-lg border border-[var(--color-soft-peach)] bg-white px-3 py-2 text-sm text-[var(--color-dark)] focus:border-[var(--color-dusty-rose)] focus:outline-none focus:ring-1 focus:ring-[var(--color-dusty-rose)]';
+    'w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-[var(--color-dusty-rose)] focus:outline-none focus:ring-1 focus:ring-[var(--color-dusty-rose)]';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4"
+      onClick={onClose}
+    >
       <div
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-heading text-lg font-bold text-[var(--color-dark)]">Добавить товар</h2>
+          <h2 className="font-heading text-lg font-bold text-neutral-900">Добавить товар</h2>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-cream)] hover:text-[var(--color-dark)]"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
             aria-label="Закрыть"
           >
             <X size={16} />
@@ -91,8 +92,8 @@ function AddProductModal({ onClose, onCreated }: AddProductModalProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-[var(--color-text-secondary)]" htmlFor="ap-name">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-name">
               Название
             </label>
             <input
@@ -106,8 +107,8 @@ function AddProductModal({ onClose, onCreated }: AddProductModalProps) {
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-[var(--color-text-secondary)]" htmlFor="ap-desc">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-desc">
               Описание
             </label>
             <textarea
@@ -120,8 +121,8 @@ function AddProductModal({ onClose, onCreated }: AddProductModalProps) {
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-[var(--color-text-secondary)]" htmlFor="ap-price">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-price">
               Цена за кг (руб.)
             </label>
             <input
@@ -137,8 +138,8 @@ function AddProductModal({ onClose, onCreated }: AddProductModalProps) {
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-[var(--color-text-secondary)]" htmlFor="ap-category">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-category">
               Категория
             </label>
             <select
@@ -159,21 +160,30 @@ function AddProductModal({ onClose, onCreated }: AddProductModalProps) {
               type="checkbox"
               checked={isAvailable}
               onChange={(e) => setIsAvailable(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--color-soft-peach)] accent-[var(--color-dusty-rose)]"
+              className="h-4 w-4 rounded border-neutral-200 accent-[var(--color-dusty-rose)]"
             />
-            <label htmlFor="ap-available" className="text-sm text-[var(--color-dark)]">
+            <label htmlFor="ap-available" className="text-sm text-neutral-700">
               Доступен для заказа
             </label>
           </div>
 
-          <div className="flex gap-2 pt-1">
-            <Button type="button" variant="outline" size="sm" className="flex-1" onClick={onClose} disabled={saving}>
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="flex-1 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+            >
               Отмена
-            </Button>
-            <Button type="submit" size="sm" className="flex-1" disabled={saving}>
-              {saving ? <RefreshCw size={13} className="animate-spin" /> : null}
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[var(--color-dusty-rose)] px-4 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-dusty-rose-hover)] transition-colors disabled:opacity-50"
+            >
+              {saving && <RefreshCw size={13} className="animate-spin" />}
               {saving ? 'Сохранение...' : 'Создать'}
-            </Button>
+            </button>
           </div>
         </form>
       </div>
@@ -216,13 +226,13 @@ function AvailabilityToggle({ productId, available, onToggle }: AvailabilityTogg
       onClick={handleChange}
       disabled={loading}
       className={cn(
-        'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1 disabled:opacity-50',
-        available ? 'bg-[var(--color-dusty-rose)]' : 'bg-gray-200'
+        'relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dusty-rose)] focus-visible:ring-offset-1 disabled:opacity-50',
+        available ? 'bg-[var(--color-dusty-rose)]' : 'bg-neutral-200'
       )}
     >
       <span
         className={cn(
-          'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200',
+          'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200',
           available ? 'translate-x-4' : 'translate-x-0'
         )}
       />
@@ -280,14 +290,14 @@ function PriceEditor({ productId, price, onSaved }: PriceEditorProps) {
     return (
       <button
         onClick={startEdit}
-        className="group flex items-center gap-1.5 rounded px-1.5 py-0.5 transition-colors hover:bg-[var(--color-cream)]"
+        className="group flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 transition-colors hover:bg-neutral-100"
       >
-        <span className="font-heading text-sm font-bold text-[var(--color-dusty-rose)]">
+        <span className="font-heading text-sm font-bold text-neutral-900">
           {formatPrice(price)}
         </span>
         <Pencil
           size={11}
-          className="text-[var(--color-text-secondary)] opacity-0 transition-opacity group-hover:opacity-100"
+          className="text-neutral-400 opacity-0 transition-opacity group-hover:opacity-100"
         />
       </button>
     );
@@ -305,7 +315,7 @@ function PriceEditor({ productId, price, onSaved }: PriceEditorProps) {
           if (e.key === 'Enter') void save();
           if (e.key === 'Escape') cancel();
         }}
-        className="w-24 rounded-md border border-[var(--color-dusty-rose)] bg-white px-2 py-1 text-sm font-medium text-[var(--color-dark)] focus:outline-none focus:ring-1 focus:ring-[var(--color-dusty-rose)]"
+        className="border border-neutral-200 rounded-lg px-2 py-1 w-24 text-sm text-neutral-900 focus:outline-none focus:border-[var(--color-dusty-rose)]"
         disabled={saving}
       />
       <button
@@ -317,7 +327,7 @@ function PriceEditor({ productId, price, onSaved }: PriceEditorProps) {
       </button>
       <button
         onClick={cancel}
-        className="flex h-6 w-6 items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-cream)]"
+        className="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100"
       >
         <X size={13} />
       </button>
@@ -363,7 +373,7 @@ function DeleteButton({ productId, onDeleted }: DeleteButtonProps) {
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="flex h-6 w-6 items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-cream)]"
+          className="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100"
           title="Отмена"
         >
           <X size={13} />
@@ -373,15 +383,13 @@ function DeleteButton({ productId, onDeleted }: DeleteButtonProps) {
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="icon-sm"
+    <button
       onClick={() => setConfirming(true)}
       title="Удалить товар"
-      className="text-red-400 hover:text-red-600 hover:bg-red-50"
+      className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-300 hover:text-red-400 hover:bg-red-50 transition-colors"
     >
-      <Trash2 size={13} />
-    </Button>
+      <Trash2 size={14} />
+    </button>
   );
 }
 
@@ -391,12 +399,12 @@ function TableSkeleton() {
   return (
     <>
       {Array.from({ length: 6 }).map((_, i) => (
-        <tr key={i} className={i % 2 === 1 ? 'bg-[var(--color-cream)]/20' : ''}>
+        <tr key={i} className="border-b border-neutral-100 last:border-0">
           {Array.from({ length: 6 }).map((_, j) => (
             <td key={j} className="px-4 py-3">
               <div
                 className={cn(
-                  'animate-pulse rounded bg-[var(--color-cream)]',
+                  'animate-pulse rounded-lg bg-neutral-100',
                   j === 0 ? 'h-10 w-10' : 'h-4'
                 )}
               />
@@ -446,55 +454,57 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <div className="space-y-5">
+    <div>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-xl font-bold text-[var(--color-dark)]">Товары</h1>
-          <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">
-            {loading ? 'Загрузка...' : `${products.length} товаров`}
-          </p>
-        </div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold font-heading text-neutral-900">Товары</h1>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+          <button
+            onClick={load}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+          >
             <RefreshCw size={14} className={cn(loading && 'animate-spin')} />
             Обновить
-          </Button>
-          <Button size="sm" onClick={() => setShowAddModal(true)}>
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 bg-[var(--color-dusty-rose)] text-white rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-dusty-rose-hover)] transition-colors"
+          >
             <Plus size={14} />
             Добавить товар
-          </Button>
+          </button>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 mb-4">
           {error}
         </div>
       )}
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-[var(--color-soft-peach)]/60 bg-white shadow-sm">
+      <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-[var(--color-soft-peach)]/60 bg-[var(--color-cream)]/60">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+              <tr className="bg-neutral-50">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Фото
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Название
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Цена
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Категория
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Доступность
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Действия
                 </th>
               </tr>
@@ -506,13 +516,13 @@ export default function AdminProductsPage() {
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-4 py-12 text-center text-sm text-[var(--color-text-secondary)]"
+                    className="px-4 py-12 text-center text-sm text-neutral-400"
                   >
                     Товаров нет
                   </td>
                 </tr>
               ) : (
-                products.map((product, idx) => {
+                products.map((product) => {
                   const imageUrl = product.imageUrl ?? product.images?.[0];
                   const categoryRaw = product.type ?? product.category;
                   const category = typeof categoryRaw === 'string' ? categoryRaw : categoryRaw?.slug ?? '';
@@ -521,14 +531,11 @@ export default function AdminProductsPage() {
                   return (
                     <tr
                       key={product.id}
-                      className={cn(
-                        'border-b border-[var(--color-soft-peach)]/40 transition-colors duration-100 hover:bg-[var(--color-dusty-rose)]/5',
-                        idx % 2 === 1 && 'bg-[var(--color-cream)]/20'
-                      )}
+                      className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors"
                     >
                       {/* Photo */}
                       <td className="px-4 py-3">
-                        <div className="relative h-10 w-10 overflow-hidden rounded-lg bg-[var(--color-cream)]">
+                        <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-neutral-100">
                           {imageUrl ? (
                             <Image
                               src={imageUrl}
@@ -547,11 +554,11 @@ export default function AdminProductsPage() {
 
                       {/* Name */}
                       <td className="px-4 py-3">
-                        <p className="max-w-[200px] truncate text-sm font-medium text-[var(--color-dark)]">
+                        <p className="max-w-[200px] truncate text-sm font-medium text-neutral-900">
                           {product.name}
                         </p>
                         {product.weightMin != null && (
-                          <p className="text-xs text-[var(--color-text-secondary)]">
+                          <p className="text-xs text-neutral-500">
                             от {product.weightMin / 1000} кг
                           </p>
                         )}
@@ -569,11 +576,11 @@ export default function AdminProductsPage() {
                       {/* Category */}
                       <td className="px-4 py-3">
                         {categoryLabel ? (
-                          <Badge variant="secondary" className="text-xs">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600">
                             {categoryLabel}
-                          </Badge>
+                          </span>
                         ) : (
-                          <span className="text-xs text-[var(--color-text-secondary)]">—</span>
+                          <span className="text-xs text-neutral-400">—</span>
                         )}
                       </td>
 
@@ -585,7 +592,7 @@ export default function AdminProductsPage() {
                             available={product.isAvailable !== false}
                             onToggle={handleToggleAvailability}
                           />
-                          <span className="text-xs text-[var(--color-text-secondary)]">
+                          <span className="text-xs text-neutral-500">
                             {product.isAvailable !== false ? 'Доступен' : 'Скрыт'}
                           </span>
                         </div>
