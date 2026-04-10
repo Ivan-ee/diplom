@@ -45,11 +45,11 @@ export class CreateOrderItemDto {
   cakeConfig?: CalculatePriceDto;
 
   @ApiProperty({
-    description: 'Weight in integer tenths of kg (e.g. 20 = 2.0 kg)',
+    description: 'Weight in integer tenths of kg (e.g. 20 = 2.0 kg). 0 for per-unit products.',
     example: 20,
   })
   @IsInt()
-  @Min(5)
+  @Min(0)
   weight!: number;
 
   @ApiProperty({ description: 'Number of items', default: 1 })

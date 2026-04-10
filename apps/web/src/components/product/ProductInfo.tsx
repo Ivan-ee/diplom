@@ -82,7 +82,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       productId: product.id,
       name: product.name,
       imageUrl: product.imageUrl ?? product.images?.[0] ?? '',
-      weight: isPerUnit ? 0 : selectedWeight,
+      weight: isPerUnit ? Math.round(parseFloat(product.minWeight ?? '0') * 1000) : selectedWeight,
       price,
       inscription: inscription.trim() || undefined,
     });

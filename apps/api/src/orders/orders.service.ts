@@ -172,6 +172,11 @@ export class OrdersService {
             `Product "${product.name}" is per_kg but has no pricePerKg`,
           );
         }
+        if (item.weight < 5) {
+          throw new BadRequestException(
+            `Weight for "${product.name}" must be at least 0.5 kg`,
+          );
+        }
         const weightKg = item.weight / 10;
         price = Math.round(product.pricePerKg * weightKg);
       }
