@@ -87,7 +87,37 @@ export const reviewSchema = z.object({
 });
 export type ReviewSeed = z.infer<typeof reviewSchema>;
 
-// Full seed dataset (products is handled in Unit 4, not part of this file set)
+// Product
+export const priceTypeSchema = z.enum(['per_kg', 'per_unit']);
+
+export const productSchema = z.object({
+  slug: z.string().min(1).max(255),
+  name: z.string().min(1).max(255),
+  description: z.string().min(1),
+  composition: z.string().min(1),
+  categorySlug: z.string().min(1), // resolved to categoryId at seed time
+  occasionSlugs: z.array(z.string()).default([]),
+  priceType: priceTypeSchema,
+  pricePerKg: z.number().int().positive().nullable(), // kopecks; null for per_unit
+  pricePerUnit: z.number().int().positive().nullable(), // kopecks; null for per_kg
+  minWeight: z.string().regex(/^\d+(\.\d)?$/), // numeric(4,1) as string, e.g. "1.0", "2.5"
+  maxWeight: z.string().regex(/^\d+(\.\d)?$/),
+  weightStep: z.string().regex(/^\d+(\.\d)?$/),
+  imageKey: z.string().min(1), // links to vk-photos.json key (wedding/kids/bento/cupcakes/trifles/classic)
+  imageIndex: z.number().int().nonnegative(),
+  isAvailable: z.boolean().default(true),
+}).refine(
+  (p) => {
+    if (p.priceType === 'per_kg') return p.pricePerKg !== null && p.pricePerUnit === null;
+    if (p.priceType === 'per_unit') return p.pricePerUnit !== null && p.pricePerKg === null;
+    return false;
+  },
+  { message: 'price type must match populated price field' }
+);
+
+export type ProductSeed = z.infer<typeof productSchema>;
+
+// Full seed dataset
 export const seedDatasetSchema = z.object({
   categories: z.array(categorySchema),
   occasions: z.array(occasionSchema),
@@ -96,5 +126,6 @@ export const seedDatasetSchema = z.object({
   coatings: z.array(constructorCoatingSchema),
   decorations: z.array(constructorDecorationSchema),
   reviews: z.array(reviewSchema),
+  products: z.array(productSchema),
 });
 export type SeedDataset = z.infer<typeof seedDatasetSchema>;
