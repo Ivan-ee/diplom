@@ -109,11 +109,11 @@ function formatPhone(value: string): string {
 
 const inputClass = (hasError: boolean) =>
   cn(
-    'w-full border rounded-xl px-4 py-3 text-sm text-[var(--color-graphite)] bg-white outline-none transition-colors duration-150',
+    'w-full border rounded-[var(--radius-control)] px-4 py-3 text-sm text-[var(--color-graphite)] bg-[var(--surface-elevated)] outline-none transition-colors duration-150',
     'focus:ring-1',
     hasError
       ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
-      : 'border-neutral-200 focus:border-[var(--color-caramel)] focus:ring-[var(--color-caramel)]/30'
+      : 'border-[var(--border-default)] focus:border-[var(--color-caramel)] focus:ring-[var(--color-caramel)]/30'
   );
 
 // ── CalendarPicker ───────────────────────────────────────────────────────────
@@ -214,25 +214,25 @@ function CalendarPicker({ value, onChange, minDate, isDateDisabled, error }: Cal
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+    <div className="bg-[var(--surface-elevated)] rounded-[var(--radius-card)] border border-[var(--border-default)] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-default)]">
         <button
           type="button"
           onClick={handlePrev}
           disabled={isPrevDisabled}
           aria-label="Предыдущий месяц"
           className={cn(
-            'w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 transition-colors duration-150',
+            'w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-graphite-light)] transition-colors duration-150',
             isPrevDisabled
               ? 'opacity-30 cursor-not-allowed'
-              : 'hover:bg-neutral-100 cursor-pointer'
+              : 'hover:bg-[var(--color-champagne)] cursor-pointer'
           )}
         >
           <ChevronLeft size={16} />
         </button>
 
-        <span className="text-sm font-semibold text-neutral-900 capitalize select-none">
+        <span className="text-sm font-semibold text-[var(--color-graphite)] capitalize select-none">
           {MONTH_NAMES[viewMonth]} {viewYear}
         </span>
 
@@ -240,7 +240,7 @@ function CalendarPicker({ value, onChange, minDate, isDateDisabled, error }: Cal
           type="button"
           onClick={handleNext}
           aria-label="Следующий месяц"
-          className="w-8 h-8 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-500 transition-colors duration-150 cursor-pointer"
+          className="w-8 h-8 rounded-full hover:bg-[var(--color-champagne)] flex items-center justify-center text-[var(--color-graphite-light)] transition-colors duration-150 cursor-pointer"
         >
           <ChevronRight size={16} />
         </button>
@@ -249,7 +249,7 @@ function CalendarPicker({ value, onChange, minDate, isDateDisabled, error }: Cal
       {/* Weekday labels */}
       <div className="grid grid-cols-7 px-2 pt-2">
         {WEEKDAY_LABELS.map((label) => (
-          <div key={label} className="text-center text-xs font-medium text-neutral-400 py-2">
+          <div key={label} className="text-center text-xs font-medium text-[var(--color-graphite-light)] py-2">
             {label}
           </div>
         ))}
@@ -281,9 +281,9 @@ function CalendarPicker({ value, onChange, minDate, isDateDisabled, error }: Cal
                   : disabled
                     ? cn(
                         'cursor-not-allowed hover:bg-transparent',
-                        todayCell ? 'text-neutral-400 font-medium' : 'text-neutral-300'
+                        todayCell ? 'text-[var(--color-graphite-light)] font-medium' : 'text-[var(--color-soft-oat)]'
                       )
-                    : 'text-neutral-700 hover:bg-[var(--color-caramel)]/10 cursor-pointer'
+                    : 'text-[var(--color-graphite)] hover:bg-[var(--color-caramel)]/10 cursor-pointer'
               )}
             >
               {day}
@@ -330,7 +330,7 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
         : 'товаров';
 
   return (
-    <div className="sticky lg:top-24 bg-neutral-50 rounded-2xl border border-neutral-100 p-6">
+    <div className="sticky lg:top-24 bg-[var(--surface-secondary)] rounded-[var(--radius-card)] border border-[var(--border-default)] p-6">
       <h2 className="font-heading font-semibold text-[var(--color-graphite)] text-base mb-4 flex items-center gap-2">
         <ShoppingBag size={17} className="text-[var(--color-caramel)]" />
         Ваш заказ ({totalItems}&nbsp;{itemWord})
@@ -339,7 +339,7 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
       <div className="flex flex-col gap-3 mb-5">
         {items.map((item) => (
           <div key={item.id} className="flex items-center gap-3">
-            <div className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-white border border-neutral-100">
+            <div className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-[var(--surface-elevated)] border border-[var(--border-default)]">
               {item.imageUrl ? (
                 <Image
                   src={item.imageUrl}
@@ -349,7 +349,7 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
                   sizes="48px"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-neutral-300 text-lg" aria-hidden="true">
+                <div className="flex h-full w-full items-center justify-center text-[var(--color-soft-oat)] text-lg" aria-hidden="true">
                   &#9728;
                 </div>
               )}
@@ -359,7 +359,7 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
               <p className="text-xs font-medium text-[var(--color-graphite)] line-clamp-1 leading-tight">
                 {item.name}
               </p>
-              <p className="text-[11px] text-neutral-400">
+              <p className="text-[11px] text-[var(--color-graphite-light)]">
                 × {item.quantity}
               </p>
             </div>
@@ -372,8 +372,8 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
       </div>
 
       <div className="flex flex-col">
-        <div className="flex justify-between py-3 border-b border-neutral-100">
-          <span className="text-sm text-neutral-500">Итого</span>
+        <div className="flex justify-between py-3 border-b border-[var(--border-default)]">
+          <span className="text-sm text-[var(--color-graphite-light)]">Итого</span>
           <span className="font-heading font-bold text-2xl text-[var(--color-caramel)] tabular-nums">
             {formatPrice(totalPrice)}
           </span>
@@ -398,7 +398,7 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full flex items-center justify-center gap-2 bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] disabled:opacity-60 text-white rounded-xl h-12 text-base font-medium mt-6 transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] disabled:opacity-60 text-white rounded-[var(--radius-control)] h-14 text-base font-semibold mt-6 transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
           <>
@@ -410,7 +410,7 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
         )}
       </button>
 
-      <p className="mt-3 text-center text-xs text-neutral-400">
+      <p className="mt-3 text-center text-xs text-[var(--color-graphite-light)]">
         Оплата при получении
       </p>
     </div>
@@ -497,7 +497,7 @@ export function CheckoutForm() {
         <div className="flex flex-col">
 
           {/* Section: Contact */}
-          <section className="bg-white rounded-2xl border border-neutral-100 p-6 mb-6">
+          <section className="bg-[var(--surface-elevated)] rounded-[var(--radius-card)] border border-[var(--border-default)] p-6 mb-6">
             <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4 flex items-center gap-2">
               <Phone size={17} className="text-[var(--color-caramel)]" />
               Контактная информация
@@ -537,18 +537,18 @@ export function CheckoutForm() {
           </section>
 
           {/* Section: Address */}
-          <section className="bg-white rounded-2xl border border-neutral-100 p-6 mb-6">
+          <section className="bg-[var(--surface-elevated)] rounded-[var(--radius-card)] border border-[var(--border-default)] p-6 mb-6">
             <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4 flex items-center gap-2">
               <MapPin size={17} className="text-[var(--color-caramel)]" />
               Адрес получения
             </h2>
-            <div className="flex items-start gap-3 p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+            <div className="flex items-start gap-3 p-4 bg-[var(--surface-secondary)] rounded-[var(--radius-control)] border border-[var(--border-default)]">
               <MapPin size={16} className="shrink-0 mt-0.5 text-[var(--color-caramel)]" />
               <div>
                 <p className="text-sm font-semibold text-[var(--color-graphite)]">
                   г. Арзамас, ул. Ленина, д. 15
                 </p>
-                <p className="text-xs text-neutral-400 mt-0.5">
+                <p className="text-xs text-[var(--color-graphite-light)] mt-0.5">
                   Пн — Сб: 10:00 — 19:00 · Вс: выходной
                 </p>
               </div>
@@ -556,7 +556,7 @@ export function CheckoutForm() {
           </section>
 
           {/* Section: Date & time */}
-          <section className="bg-white rounded-2xl border border-neutral-100 p-6 mb-6">
+          <section className="bg-[var(--surface-elevated)] rounded-[var(--radius-card)] border border-[var(--border-default)] p-6 mb-6">
             <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4 flex items-center gap-2">
               <Clock size={17} className="text-[var(--color-caramel)]" />
               Дата и время получения
@@ -589,7 +589,7 @@ export function CheckoutForm() {
                   Время <span className="text-red-400">*</span>
                 </p>
                 {!pickupDateValue && (
-                  <span className="text-xs text-neutral-400">Сначала выберите дату</span>
+                  <span className="text-xs text-[var(--color-graphite-light)]">Сначала выберите дату</span>
                 )}
               </div>
               <Controller
@@ -608,11 +608,11 @@ export function CheckoutForm() {
                           type="button"
                           onClick={() => field.onChange(id)}
                           className={cn(
-                            'relative flex flex-col items-center gap-1 p-3 rounded-xl border text-center cursor-pointer transition-all duration-200 ease-out',
+                            'relative flex flex-col items-center gap-1 p-3 rounded-[var(--radius-control)] border text-center cursor-pointer transition-all duration-200 ease-out',
                             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                             isSelected
                               ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5'
-                              : 'border-neutral-200 bg-white hover:border-neutral-300'
+                              : 'border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-toffee)]'
                           )}
                         >
                           {isSelected && (
@@ -630,7 +630,7 @@ export function CheckoutForm() {
                           >
                             {label}
                           </span>
-                          <span className="relative z-10 text-[10px] text-neutral-400 leading-tight">
+                          <span className="relative z-10 text-[10px] text-[var(--color-graphite-light)] leading-tight">
                             {sub}
                           </span>
                         </button>
@@ -657,7 +657,7 @@ export function CheckoutForm() {
           </section>
 
           {/* Section: Comment */}
-          <section className="bg-white rounded-2xl border border-neutral-100 p-6">
+          <section className="bg-[var(--surface-elevated)] rounded-[var(--radius-card)] border border-[var(--border-default)] p-6">
             <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4 flex items-center gap-2">
               <MessageSquare size={17} className="text-[var(--color-caramel)]" />
               Комментарий к заказу
@@ -674,7 +674,7 @@ export function CheckoutForm() {
                     {...field}
                     className={cn(
                       inputClass(!!errors.comment),
-                      'resize-none min-h-[100px] leading-relaxed placeholder:text-neutral-300'
+                      'resize-none min-h-[100px] leading-relaxed placeholder:text-[var(--color-soft-oat)]'
                     )}
                   />
                 )}
@@ -686,7 +686,7 @@ export function CheckoutForm() {
                     ? commentValue.length > 490
                       ? 'text-red-400'
                       : 'text-orange-400'
-                    : 'text-neutral-300'
+                    : 'text-[var(--color-soft-oat)]'
                 )}
               >
                 {commentValue.length}/500

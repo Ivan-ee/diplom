@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 
 interface ProductGalleryProps {
   images: string[];
@@ -52,18 +52,23 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
     >
       {/* Main image */}
       <div
-        className={`relative aspect-[4/5] lg:aspect-square w-full rounded-2xl overflow-hidden bg-[var(--color-warm-ivory)] ${hasImages ? 'cursor-zoom-in' : ''}`}
+        className={`group relative aspect-[4/5] lg:aspect-square w-full rounded-[var(--radius-hero)] overflow-hidden bg-[var(--color-warm-ivory)] shadow-[var(--shadow-card)] ${hasImages ? 'cursor-zoom-in' : ''}`}
         onClick={() => hasImages && setLightboxOpen(true)}
       >
         {hasImages ? (
-          <Image
-            src={images[activeIndex]}
-            alt={`${name} — фото ${activeIndex + 1}`}
-            fill
-            className="object-contain"
-            sizes="(max-width: 768px) 100vw, 55vw"
-            priority
-          />
+          <>
+            <Image
+              src={images[activeIndex]}
+              alt={`${name} — фото ${activeIndex + 1}`}
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 55vw"
+              priority
+            />
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/5 rounded-[var(--radius-hero)]">
+              <ZoomIn size={24} className="text-white drop-shadow-md" />
+            </div>
+          </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-[120px] select-none" aria-hidden="true">🎂</span>
@@ -80,7 +85,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
               onClick={() => setActiveIndex(idx)}
               aria-label={`Фото ${idx + 1} из ${images.length}`}
               aria-pressed={idx === activeIndex}
-              className={`relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+              className={`relative shrink-0 w-20 h-20 rounded-[var(--radius-control)] overflow-hidden border-2 transition-all duration-200 ${
                 idx === activeIndex
                   ? 'border-[var(--color-caramel)]'
                   : 'border-transparent hover:border-[var(--color-champagne)]'
@@ -91,7 +96,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
                 alt={`${name} — миниатюра ${idx + 1}`}
                 fill
                 className="object-cover"
-                sizes="64px"
+                sizes="80px"
               />
             </button>
           ))}

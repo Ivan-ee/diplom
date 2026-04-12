@@ -163,10 +163,10 @@ export function StepDecor() {
             <div
               key={decor.id}
               className={cn(
-                'flex flex-col gap-2 p-3 rounded-xl bg-white border transition-all duration-150',
+                'flex flex-col gap-2 p-3 rounded-[var(--radius-control)] bg-[var(--surface-elevated)] border transition-all duration-150',
                 isBeingPlaced
                   ? 'border-[var(--color-caramel)] shadow-sm shadow-[var(--color-caramel)]/20 ring-1 ring-[var(--color-caramel)]/30'
-                  : 'border-[var(--color-champagne)] hover:border-[var(--color-champagne)] hover:shadow-sm'
+                  : 'border-[var(--border-default)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
               )}
             >
               {/* Color indicator */}
@@ -189,7 +189,7 @@ export function StepDecor() {
                   {count > 0 && (
                     <button
                       onClick={() => handleRemoveLast(decor.id)}
-                      className="w-6 h-6 rounded-md bg-neutral-100 hover:bg-red-100 text-neutral-500 hover:text-red-500 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+                      className="w-6 h-6 rounded-md bg-[var(--surface-secondary)] hover:bg-red-100 text-[var(--color-graphite-light)] hover:text-red-500 flex items-center justify-center transition-colors duration-150 cursor-pointer"
                       title="Убрать последнюю"
                     >
                       <X size={10} strokeWidth={2.5} />
@@ -211,7 +211,7 @@ export function StepDecor() {
                         ? 'bg-[var(--color-caramel)] text-white ring-2 ring-[var(--color-caramel)]/40 scale-110'
                         : canAddMore
                         ? 'bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white'
-                        : 'bg-neutral-100 text-neutral-300 cursor-not-allowed'
+                        : 'bg-[var(--surface-secondary)] text-[var(--color-graphite-light)]/40 cursor-not-allowed'
                     )}
                   >
                     {isBeingPlaced
@@ -309,9 +309,9 @@ export function StepDecor() {
           {inscription.length > 0 && (
             <button
               onClick={() => setInscription('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-neutral-200 hover:bg-neutral-300 flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[var(--surface-secondary)] hover:bg-[var(--border-default)] flex items-center justify-center transition-colors cursor-pointer"
             >
-              <X size={10} className="text-neutral-500" />
+              <X size={10} className="text-[var(--color-graphite-light)]" />
             </button>
           )}
         </div>

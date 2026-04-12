@@ -1,50 +1,34 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
-
-// Set to true once /public/images/hero-cake.jpg is added to the project
-const HAS_HERO_IMAGE = false;
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden px-4">
-      <div className="grid lg:grid-cols-2 items-center gap-12 max-w-7xl mx-auto w-full py-24 lg:py-0">
-        {/* Left column — text */}
-        <RevealOnScroll delay={0} className="flex flex-col gap-6">
-          <h1 className="font-[family-name:var(--font-editorial)] font-medium tracking-tight leading-[0.95] text-5xl lg:text-6xl xl:text-7xl text-[var(--color-graphite)]">
-            Торты ручной работы
+    <section className="relative min-h-[60vh] lg:min-h-[70vh] flex items-center justify-center overflow-hidden px-4">
+      <div className="max-w-3xl mx-auto w-full py-20 lg:py-0">
+        <RevealOnScroll delay={0} className="flex flex-col items-center text-center gap-6">
+          <h1 className="text-4xl text-[length:var(--text-display)] leading-[var(--leading-display)] font-heading font-semibold tracking-tight text-[var(--color-graphite)]">
+            <span className="font-[family-name:var(--font-editorial)] italic">
+              Торты ручной работы
+            </span>
           </h1>
 
-          <p className="text-lg lg:text-xl text-[var(--color-graphite-light)] max-w-lg leading-relaxed">
+          <p className="text-[length:var(--text-body)] lg:text-lg text-[var(--color-graphite-light)] max-w-xl mx-auto leading-[var(--leading-body)]">
             Авторские торты, капкейки и десерты в Арзамасе. Каждый торт — произведение искусства.
           </p>
 
-          <div className="pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Link
               href="/catalog"
-              className="inline-flex items-center justify-center rounded-full px-8 py-3 text-base font-medium bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white transition-colors duration-200"
+              className="inline-flex items-center justify-center bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white rounded-full px-8 py-3.5 text-base font-medium transition-colors duration-200"
             >
               Выбрать торт
             </Link>
-          </div>
-        </RevealOnScroll>
-
-        {/* Right column — photo */}
-        <RevealOnScroll delay={0.2}>
-          <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-[var(--color-warm-ivory)] shadow-xl">
-            {HAS_HERO_IMAGE ? (
-              <Image
-                src="/images/hero-cake.jpg"
-                alt="Авторский торт"
-                fill
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[var(--color-toffee)]/30 to-[var(--color-warm-ivory)]">
-                <span className="text-sm text-neutral-400 tracking-wide">Фото торта</span>
-              </div>
-            )}
+            <Link
+              href="/constructor"
+              className="inline-flex items-center justify-center border border-[var(--border-default)] text-[var(--color-graphite)] hover:bg-[var(--surface-secondary)] rounded-full px-8 py-3.5 text-base font-medium transition-colors duration-200"
+            >
+              Собрать в 3D
+            </Link>
           </div>
         </RevealOnScroll>
       </div>

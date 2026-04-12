@@ -213,13 +213,13 @@ export function StepNavigation() {
       configSummary={successData.summary}
       totalPrice={successData.price}
     />
-    <div className="px-4 py-3 bg-white border-t border-neutral-200 flex items-center gap-3">
+    <div className="px-4 py-3 bg-[var(--surface-elevated)] border-t border-[var(--border-default)] flex items-center gap-3">
       <Button
         variant="ghost"
         size="default"
         onClick={handleBack}
         disabled={isFirst}
-        className={cn('flex-shrink-0 text-neutral-500', isFirst && 'opacity-0 pointer-events-none')}
+        className={cn('flex-shrink-0 text-[var(--color-graphite-light)]', isFirst && 'opacity-0 pointer-events-none')}
         aria-label="Назад"
       >
         <ArrowLeft size={16} strokeWidth={2} />

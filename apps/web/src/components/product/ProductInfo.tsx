@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Check, ShoppingCart, CreditCard, Clock, Leaf } from 'lucide-react';
+import { ChevronDown, Check, ShoppingCart, CreditCard, Clock, MapPin } from 'lucide-react';
 import { Chip, Button, Disclosure } from '@heroui/react';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart-store';
@@ -115,7 +115,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       )}
 
       {/* Name */}
-      <h1 className="text-3xl lg:text-4xl font-bold tracking-tight font-heading text-[var(--color-graphite)] leading-tight">
+      <h1 className="text-[length:var(--text-h2)] lg:text-[length:var(--text-h1)] font-bold tracking-tight font-heading text-[var(--color-graphite)] leading-[var(--leading-heading)]">
         {product.name}
       </h1>
 
@@ -155,10 +155,10 @@ export function ProductInfo({ product }: ProductInfoProps) {
                   key={w}
                   onClick={() => setSelectedWeight(w)}
                   aria-pressed={w === selectedWeight}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                  className={`px-4 h-11 rounded-[var(--radius-control)] text-sm font-medium border transition-all duration-200 ${
                     w === selectedWeight
                       ? 'bg-[var(--color-caramel)] text-white border-[var(--color-caramel)] shadow-sm'
-                      : 'bg-white text-[var(--color-graphite)] border-[var(--color-champagne)] hover:border-[var(--color-caramel)] hover:text-[var(--color-caramel)]'
+                      : 'bg-white text-[var(--color-graphite)] border-[var(--border-default)] hover:border-[var(--color-caramel)] hover:text-[var(--color-caramel)]'
                   }`}
                 >
                   {(w / 1000).toLocaleString('ru-RU')} кг
@@ -185,7 +185,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
               onChange={(e) => setInscription(e.target.value.slice(0, 50))}
               placeholder="Например: С днём рождения, Аня!"
               maxLength={50}
-              className="w-full rounded-xl border border-[var(--color-champagne)] px-4 py-3 text-sm text-[var(--color-graphite)] placeholder:text-[var(--color-graphite-light)]/60 focus:outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)] transition-colors duration-200 pr-14"
+              className="w-full rounded-[var(--radius-control)] border border-[var(--border-default)] px-4 py-3 text-sm text-[var(--color-graphite)] placeholder:text-[var(--color-graphite-light)]/60 focus:outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)] transition-colors duration-200 pr-14"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-graphite-light)]/60 select-none pointer-events-none">
               {inscription.length}/50
@@ -197,7 +197,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <Button
           onPress={handleAddToCart}
           isDisabled={product.isAvailable === false}
-          className={`w-full rounded-xl h-12 text-base font-medium text-white transition-all duration-300 cursor-pointer ${
+          className={`w-full rounded-[var(--radius-control)] h-14 text-base font-semibold text-white transition-all duration-300 cursor-pointer ${
             added
               ? 'bg-emerald-500 hover:bg-emerald-500'
               : 'bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)]'
@@ -230,6 +230,22 @@ export function ProductInfo({ product }: ProductInfoProps) {
             Уже в корзине → Перейти
           </Link>
         )}
+
+        {/* Trust cues */}
+        <div className="flex items-center gap-4 mt-4 pt-4 border-t border-[var(--border-default)]">
+          <div className="flex items-center gap-1.5 text-[length:var(--text-caption)] text-[var(--color-graphite-light)]">
+            <MapPin size={14} className="text-[var(--color-caramel)]" />
+            <span>Самовывоз: г. Арзамас</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[length:var(--text-caption)] text-[var(--color-graphite-light)]">
+            <Clock size={14} className="text-[var(--color-caramel)]" />
+            <span>Под заказ</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[length:var(--text-caption)] text-[var(--color-graphite-light)]">
+            <CreditCard size={14} className="text-[var(--color-caramel)]" />
+            <span>Оплата при получении</span>
+          </div>
+        </div>
       </div>
 
       {/* Details disclosure — shown when product has both description and weight */}

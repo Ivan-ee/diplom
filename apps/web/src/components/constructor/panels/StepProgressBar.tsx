@@ -25,7 +25,7 @@ export function StepProgressBar() {
           {STEPS.slice(0, -1).map((_, i) => {
             const isCompleted = currentStep > i + 1;
             return (
-              <div key={i} className="flex-1 relative mx-1 h-0.5 bg-[var(--color-champagne)] overflow-hidden rounded-full">
+              <div key={i} className="flex-1 relative mx-1 h-0.5 bg-[var(--border-default)] overflow-hidden rounded-full">
                 <motion.div
                   className="absolute inset-0 bg-[var(--color-caramel)] rounded-full origin-left"
                   initial={false}
@@ -56,20 +56,12 @@ export function StepProgressBar() {
                 disabled={isFuture}
                 className={cn(
                   'relative flex items-center justify-center rounded-full transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
-                  isCompleted && 'w-8 h-8 bg-[var(--color-caramel)] cursor-pointer hover:bg-[var(--color-caramel-hover)]',
-                  isActive && 'w-9 h-9 bg-[var(--color-caramel)] shadow-lg shadow-[var(--color-caramel)]/30',
-                  isFuture && 'w-8 h-8 bg-[var(--color-milk-white)] border-2 border-[var(--color-champagne)] cursor-default'
+                  isCompleted && 'w-7 h-7 bg-[var(--color-caramel)] cursor-pointer hover:bg-[var(--color-caramel-hover)]',
+                  isActive && 'w-8 h-8 bg-[var(--color-caramel)] shadow-md shadow-[var(--color-caramel)]/20',
+                  isFuture && 'w-7 h-7 bg-[var(--surface-secondary)] border border-[var(--border-default)] cursor-default'
                 )}
               >
                 {/* Active ring */}
-                {isActive && (
-                  <motion.div
-                    className="absolute inset-0 rounded-full border-2 border-[var(--color-caramel)]"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1.35, opacity: 0 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'easeOut' }}
-                  />
-                )}
 
                 {isCompleted ? (
                   <Check size={14} className="text-white" strokeWidth={2.5} />
@@ -88,7 +80,7 @@ export function StepProgressBar() {
 
               <span
                 className={cn(
-                  'text-[10px] leading-none whitespace-nowrap transition-colors duration-200 text-[var(--color-graphite-light)]/60',
+                  'text-[length:var(--text-micro)] leading-none whitespace-nowrap transition-colors duration-200 text-[var(--color-graphite-light)]/60',
                   isActive && 'text-[var(--color-caramel)] font-medium',
                   isCompleted && 'text-[var(--color-caramel-hover)]',
                 )}

@@ -10,13 +10,24 @@ const navLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-[var(--color-warm-ivory)] border-t border-[var(--color-champagne)]">
+    <footer className="bg-[var(--surface-secondary)] border-t border-[var(--border-default)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] gap-8 lg:gap-12">
 
-          {/* Column 1 — Navigation */}
+          {/* Column 1 — Brand */}
+          <div className="flex flex-col">
+            <div className="flex items-baseline gap-0.5">
+              <span className="font-[family-name:var(--font-editorial)] text-2xl font-medium italic text-[var(--color-graphite)]">Виктория</span>
+              <span className="font-heading text-lg font-semibold tracking-tight text-[var(--color-graphite)]"> Торт</span>
+            </div>
+            <p className="mt-3 text-sm italic text-[var(--color-graphite-light)]">
+              {shopConfig.tagline}
+            </p>
+          </div>
+
+          {/* Column 2 — Navigation */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold text-[var(--color-graphite)] uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-medium text-[var(--color-graphite)] mb-4">
               Навигация
             </h3>
             <nav className="flex flex-col space-y-2">
@@ -32,9 +43,9 @@ export function Footer() {
             </nav>
           </div>
 
-          {/* Column 2 — Contacts */}
+          {/* Column 3 — Contacts */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold text-[var(--color-graphite)] uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-medium text-[var(--color-graphite)] mb-4">
               Контакты
             </h3>
             <div className="flex flex-col space-y-2">
@@ -50,12 +61,15 @@ export function Footer() {
               <p className="text-sm text-[var(--color-graphite-light)]">
                 г. {shopConfig.city}
               </p>
+              <p className="text-sm text-[var(--color-graphite-light)]">
+                Пн–Сб: 9:00–20:00
+              </p>
             </div>
           </div>
 
-          {/* Column 3 — Socials */}
+          {/* Column 4 — Socials */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold text-[var(--color-graphite)] uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-medium text-[var(--color-graphite)] mb-4">
               Соцсети
             </h3>
             <div className="flex flex-col space-y-2">
@@ -72,7 +86,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-[var(--color-champagne)] mt-8 pt-6">
+        <div className="border-t border-[var(--border-default)] mt-8 pt-6">
           <p className="text-xs text-[var(--color-graphite-light)] text-center">
             © 2026 {shopConfig.name}. Все права защищены.
           </p>

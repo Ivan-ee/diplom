@@ -17,6 +17,46 @@
   --font-heading: var(--font-manrope);
   --font-body: var(--font-manrope);
   --font-editorial: var(--font-cormorant);
+
+  /* Typography scale */
+  --text-display: 3.5rem;
+  --text-h1: 2.75rem;
+  --text-h2: 2rem;
+  --text-h3: 1.25rem;
+  --text-body: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-caption: 0.75rem;
+  --text-micro: 0.6875rem;
+
+  /* Line heights */
+  --leading-display: 1.05;
+  --leading-heading: 1.15;
+  --leading-body: 1.6;
+
+  /* Section spacing */
+  --spacing-section-desktop: 96px;
+  --spacing-section-mobile: 56px;
+  --spacing-content: 48px;
+  --spacing-component: 24px;
+  --spacing-element: 12px;
+
+  /* Surfaces */
+  --surface-primary: #FEFDFB;
+  --surface-secondary: #FAF7F2;
+  --surface-elevated: #FFFFFF;
+  --border-default: #F0EBE3;
+  --border-subtle: oklch(0.93 0.01 80 / 0.6);
+
+  /* Radius */
+  --radius-hero: 32px;
+  --radius-card: 20px;
+  --radius-control: 12px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px 0 rgba(59,50,48,0.04), 0 1px 2px -1px rgba(59,50,48,0.03);
+  --shadow-card-hover: 0 4px 12px 0 rgba(59,50,48,0.08);
+  --shadow-elevated: 0 8px 24px 0 rgba(59,50,48,0.10);
 }
 
 /* HeroUI semantic palette — mapped to current brand colors */

@@ -56,7 +56,7 @@ export default function CartPage() {
     <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Page header */}
       <div className="mb-8">
-        <h1 className="font-heading font-bold text-4xl lg:text-5xl tracking-tight text-[var(--color-graphite)]">
+        <h1 className="font-heading font-bold text-[length:var(--text-h1)] leading-[var(--leading-heading)] tracking-tight text-[var(--color-graphite)]">
           Корзина
         </h1>
         {!isEmpty && (
@@ -77,7 +77,7 @@ export default function CartPage() {
             transition={{ duration: 0.3, ease: 'easeOut' }}
             className="flex flex-col items-center justify-center py-32 text-center"
           >
-            <span className="text-5xl mb-6" aria-hidden="true">🎂</span>
+            <p className="font-heading text-6xl text-[var(--color-toffee)] mb-6 select-none" aria-hidden="true">∅</p>
             <h2 className="text-xl font-medium text-[var(--color-graphite-light)] mb-6">
               Корзина пуста
             </h2>
@@ -128,7 +128,7 @@ export default function CartPage() {
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={clearCart}
-                  className="text-xs text-neutral-400 hover:text-red-400 transition-colors duration-150 underline underline-offset-2 hover:no-underline cursor-pointer"
+                  className="text-xs text-[var(--color-graphite-light)] hover:text-red-400 transition-colors duration-150 underline underline-offset-2 hover:no-underline cursor-pointer"
                 >
                   Очистить корзину
                 </button>

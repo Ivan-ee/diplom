@@ -136,7 +136,7 @@ export function StepCoating() {
                   'w-full aspect-square rounded-xl border-2 cursor-pointer transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                   isSelected
                     ? 'border-[var(--color-caramel)] scale-105 shadow-sm'
-                    : 'border-transparent hover:border-neutral-300 hover:scale-105'
+                    : 'border-transparent hover:border-[var(--border-default)] hover:scale-105'
                 )}
                 style={{ backgroundColor: hex }}
               >
@@ -173,7 +173,7 @@ export function StepCoating() {
         </div>
       </div>
 
-      <div className="p-3 bg-[var(--color-milk-white)] rounded-xl border border-[var(--color-champagne)] flex flex-col gap-3">
+      <div className="p-3 bg-[var(--surface-elevated)] rounded-[var(--radius-control)] border border-[var(--border-default)] flex flex-col gap-3">
         <Toggle
           checked={!!coating.gradient?.enabled}
           onChange={handleGradientToggle}
@@ -247,7 +247,7 @@ export function StepCoating() {
         </AnimatePresence>
       </div>
 
-      <div className="p-3 bg-[var(--color-milk-white)] rounded-xl border border-[var(--color-champagne)] flex flex-col gap-3">
+      <div className="p-3 bg-[var(--surface-elevated)] rounded-[var(--radius-control)] border border-[var(--border-default)] flex flex-col gap-3">
         <Toggle
           checked={!!coating.drips?.enabled}
           onChange={handleDripsToggle}

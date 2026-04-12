@@ -76,7 +76,7 @@ export function StepFilling() {
           'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
           isSelected
             ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5'
-            : 'border-[var(--color-champagne)] bg-[var(--color-milk-white)] hover:border-[var(--color-champagne)] hover:shadow-sm'
+            : 'border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
         )}
         whileTap={{ scale: 0.985 }}
       >
@@ -161,7 +161,7 @@ export function StepFilling() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25 }}
-        className="flex items-start gap-2.5 p-3 bg-[var(--color-warm-ivory)] rounded-lg border border-[var(--color-toffee)]/40"
+        className="flex items-start gap-2.5 p-3 bg-[var(--surface-secondary)] border border-[var(--border-subtle)] rounded-[var(--radius-control)]"
       >
         <span className="text-base leading-none mt-0.5">🍓</span>
         <p className="text-xs text-[var(--color-graphite-light)] leading-relaxed">

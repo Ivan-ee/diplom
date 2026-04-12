@@ -97,7 +97,7 @@ export default function CheckoutPage() {
         {/* Progress indicator */}
         <ProgressIndicator />
 
-        <h1 className="font-heading font-bold text-4xl lg:text-5xl tracking-tight text-[var(--color-graphite)]">
+        <h1 className="font-heading font-bold text-[length:var(--text-h1)] leading-[var(--leading-heading)] tracking-tight text-[var(--color-graphite)]">
           Оформление заказа
         </h1>
         <p className="text-sm text-[var(--color-graphite-light)]/60 mt-2">

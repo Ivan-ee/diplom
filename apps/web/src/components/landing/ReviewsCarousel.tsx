@@ -42,33 +42,42 @@ function StarRating({ rating }: { rating: number }) {
 
 export function ReviewsCarousel() {
   return (
-    <section className="py-20 lg:py-28 px-4">
-      <h2 className="font-heading font-bold tracking-tight text-4xl lg:text-5xl text-center mb-12 text-[var(--color-graphite)]">
-        Отзывы
-      </h2>
+    <section className="py-[var(--spacing-section-mobile)] lg:py-[var(--spacing-section-desktop)] px-4">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-[length:var(--text-h2)] leading-[var(--leading-heading)] font-heading font-semibold text-center mb-12 text-[var(--color-graphite)]">
+          Отзывы
+        </h2>
 
-      <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {reviews.map((review) => (
-          <StaggerItem key={review.id}>
-            <div className="flex flex-col bg-white rounded-2xl p-8 border border-[var(--color-champagne)] h-full">
-              <StarRating rating={review.rating} />
+        <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {reviews.map((review) => (
+            <StaggerItem key={review.id}>
+              <div className="flex flex-col bg-[var(--surface-elevated)] rounded-[var(--radius-card)] p-8 border border-[var(--border-default)] shadow-[var(--shadow-card)] h-full">
+                <StarRating rating={review.rating} />
 
-              <p className="font-[family-name:var(--font-editorial)] italic text-[var(--color-graphite-light)] mt-4 text-sm leading-relaxed flex-1">
-                &ldquo;{review.text}&rdquo;
-              </p>
-
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-[var(--color-champagne)]">
-                <span className="font-semibold text-sm text-[var(--color-graphite)]">
-                  {review.author}
+                <span
+                  className="text-4xl text-[var(--color-toffee)]/40 font-[family-name:var(--font-editorial)] leading-none select-none mt-4"
+                  aria-hidden="true"
+                >
+                  &ldquo;
                 </span>
-                <span className="text-xs text-[var(--color-graphite-light)]/60">
-                  {review.date}
-                </span>
+
+                <p className="font-[family-name:var(--font-editorial)] italic text-lg lg:text-xl leading-relaxed text-[var(--color-graphite-light)] flex-1">
+                  {review.text}
+                </p>
+
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-[var(--border-default)]">
+                  <span className="font-heading font-medium text-[length:var(--text-body-sm)] text-[var(--color-graphite)]">
+                    {review.author}
+                  </span>
+                  <span className="text-[length:var(--text-caption)] text-[var(--color-graphite-light)]/60">
+                    {review.date}
+                  </span>
+                </div>
               </div>
-            </div>
-          </StaggerItem>
-        ))}
-      </StaggerChildren>
+            </StaggerItem>
+          ))}
+        </StaggerChildren>
+      </div>
     </section>
   );
 }

@@ -71,7 +71,7 @@ export function StepBase() {
                   'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                   isSelected
                     ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5'
-                    : 'border-[var(--color-champagne)] bg-[var(--color-milk-white)] hover:border-[var(--color-champagne)] hover:shadow-sm'
+                    : 'border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
                 )}
                 whileTap={{ scale: 0.985 }}
               >
@@ -116,7 +116,7 @@ export function StepBase() {
         <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm mb-3 uppercase tracking-wide">
           Вес {tierCount > 1 ? `яруса ${activeTier + 1}` : 'торта'}
         </h3>
-        <div className="flex items-center gap-4 p-3 bg-[var(--color-warm-ivory)] rounded-xl border border-[var(--color-toffee)]/40">
+        <div className="flex items-center gap-4 p-3 bg-[var(--surface-secondary)] rounded-[var(--radius-control)] border border-[var(--border-subtle)]">
           <button
             onClick={() => handleWeightChange(-weightStep)}
             disabled={!layer || layer.weight <= minWeight}

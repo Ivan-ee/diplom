@@ -1,13 +1,26 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useConstructorStore, type CakeShape, type TierCount } from '@/stores/constructor-store';
 import { cn } from '@/lib/utils';
 
-const SHAPES: { id: CakeShape; label: string; icon: string; description: string }[] = [
-  { id: 'circle', label: 'Круглый', icon: '⭕', description: 'Классическая форма' },
-  { id: 'square', label: 'Квадратный', icon: '⬜', description: '+10% к цене' },
-  { id: 'heart', label: 'Сердце', icon: '❤️', description: '+15% к цене' },
+const SHAPE_ICONS: Record<CakeShape, React.ReactNode> = {
+  circle: (
+    <svg viewBox="0 0 40 40" className="w-8 h-8"><circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
+  ),
+  square: (
+    <svg viewBox="0 0 40 40" className="w-8 h-8"><rect x="6" y="6" width="28" height="28" rx="3" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
+  ),
+  heart: (
+    <svg viewBox="0 0 40 40" className="w-8 h-8"><path d="M20 35s-14-8.35-14-17.5C6 11.46 10.46 7 16.5 7c3.58 0 5.36 2.01 3.5 3.5C22.14 9.01 23.93 7 27.5 7 31.54 7 34 11.46 34 17.5 34 26.65 20 35 20 35z" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
+  ),
+};
+
+const SHAPES: { id: CakeShape; label: string; description: string }[] = [
+  { id: 'circle', label: 'Круглый', description: 'Классическая форма' },
+  { id: 'square', label: 'Квадратный', description: '+10% к цене' },
+  { id: 'heart', label: 'Сердце', description: '+15% к цене' },
 ];
 
 const TIERS: TierCount[] = [1, 2, 3];
@@ -51,7 +64,7 @@ export function StepShape() {
           initial="hidden"
           animate="visible"
         >
-          {SHAPES.map(({ id, label, icon, description }) => {
+          {SHAPES.map(({ id, label, description }) => {
             const isSelected = shape === id;
             return (
               <motion.button
@@ -59,21 +72,23 @@ export function StepShape() {
                 variants={itemVariants}
                 onClick={() => setShape(id)}
                 className={cn(
-                  'relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
+                  'relative flex flex-col items-center gap-2 p-4 rounded-[var(--radius-control)] border cursor-pointer transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                   isSelected
                     ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5 shadow-sm'
-                    : 'border-[var(--color-champagne)] bg-[var(--color-milk-white)] hover:border-[var(--color-champagne)] hover:shadow-sm'
+                    : 'border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
                 )}
                 whileTap={{ scale: 0.97 }}
               >
                 {isSelected && (
                   <motion.div
                     layoutId="shape-selection"
-                    className="absolute inset-0 rounded-[10px] border-2 border-[var(--color-caramel)]"
+                    className="absolute inset-0 rounded-[var(--radius-control)] border-2 border-[var(--color-caramel)]"
                     transition={{ type: 'spring', stiffness: 350, damping: 28 }}
                   />
                 )}
-                <span className="text-2xl leading-none">{icon}</span>
+                <span className={cn('leading-none', isSelected ? 'text-[var(--color-caramel)]' : 'text-[var(--color-graphite-light)]')}>
+                  {SHAPE_ICONS[id]}
+                </span>
                 <div className="text-center">
                   <p className={cn(
                     'text-sm font-semibold leading-tight',
@@ -137,9 +152,9 @@ export function StepShape() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="flex items-start gap-2.5 p-3 bg-[var(--color-warm-ivory)] rounded-lg border border-[var(--color-toffee)]/40"
+        className="flex items-start gap-2.5 p-3 bg-[var(--surface-secondary)] border border-[var(--border-subtle)] rounded-[var(--radius-control)]"
       >
-        <span className="text-base leading-none mt-0.5">💡</span>
+        <span className="text-base leading-none mt-0.5 select-none" aria-hidden="true">💡</span>
         <p className="text-xs text-[var(--color-graphite-light)] leading-relaxed">
           Форма торта влияет на сложность приготовления. Круглая — классика, сердце и квадрат требуют дополнительной обработки.
         </p>

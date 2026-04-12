@@ -91,24 +91,24 @@ export function CartItem({ item, isUnavailable = false }: CartItemProps) {
     >
       <div className="flex items-start gap-4">
         {/* Image */}
-        <div className="relative shrink-0 w-20 h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden bg-[var(--color-warm-ivory)] flex-shrink-0">
+        <div className="relative shrink-0 w-24 h-24 lg:w-28 lg:h-28 rounded-[var(--radius-control)] overflow-hidden bg-[var(--color-warm-ivory)] flex-shrink-0">
           {item.imageUrl ? (
             <Image
               src={item.imageUrl}
               alt={item.name}
               fill
               className="object-cover"
-              sizes="(min-width: 1024px) 96px, 80px"
+              sizes="(min-width: 1024px) 112px, 96px"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
-              <span className="text-3xl select-none text-neutral-300" aria-hidden="true">
+              <span className="text-3xl select-none text-[var(--color-soft-oat)]" aria-hidden="true">
                 &#9728;
               </span>
             </div>
           )}
           {isUnavailable && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/70">
+            <div className="absolute inset-0 flex items-center justify-center rounded-[var(--radius-control)] bg-white/70">
               <span className="rounded-full bg-[var(--color-error,#ef4444)] px-2 py-0.5 text-[10px] font-medium text-white">
                 Нет в наличии
               </span>
@@ -182,7 +182,7 @@ export function CartItem({ item, isUnavailable = false }: CartItemProps) {
                     exit={{ opacity: 0 }}
                     onClick={handleDeleteClick}
                     aria-label="Удалить из корзины"
-                    className="p-1.5 rounded-lg text-neutral-300 hover:text-red-400 transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                    className="p-1.5 rounded-lg text-[var(--color-soft-oat)] hover:text-red-400 transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
                   >
                     <Trash2 size={15} />
                   </motion.button>
@@ -202,7 +202,7 @@ export function CartItem({ item, isUnavailable = false }: CartItemProps) {
                 className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150',
                   item.quantity <= 1 || isUnavailable
-                    ? 'opacity-30 cursor-not-allowed text-neutral-400'
+                    ? 'opacity-30 cursor-not-allowed text-[var(--color-graphite-light)]'
                     : 'cursor-pointer text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1'
                 )}
               >
@@ -220,7 +220,7 @@ export function CartItem({ item, isUnavailable = false }: CartItemProps) {
                 className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150',
                   isUnavailable
-                    ? 'opacity-30 cursor-not-allowed text-neutral-400'
+                    ? 'opacity-30 cursor-not-allowed text-[var(--color-graphite-light)]'
                     : 'cursor-pointer text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1'
                 )}
               >

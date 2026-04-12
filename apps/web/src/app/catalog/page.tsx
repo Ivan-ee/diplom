@@ -87,13 +87,15 @@ export default async function CatalogPage({
   return (
     <div className="pb-16">
       {/* Page header */}
-      <div className="pt-12 pb-8 px-4 max-w-7xl mx-auto">
-        <h1 className="text-5xl lg:text-6xl font-bold tracking-tight font-heading text-[var(--color-graphite)]">
-          Каталог
-        </h1>
-        <p className="text-lg text-[var(--color-graphite-light)] mt-3">
-          Торты, капкейки и десерты ручной работы
-        </p>
+      <div className="bg-[var(--surface-secondary)] pt-8 pb-6 lg:pt-12 lg:pb-8">
+        <div className="px-4 max-w-7xl mx-auto">
+          <h1 className="text-[length:var(--text-h1)] leading-[var(--leading-heading)] font-heading font-bold text-[var(--color-graphite)]">
+            Каталог
+          </h1>
+          <p className="text-[length:var(--text-body-sm)] text-[var(--color-graphite-light)] mt-3">
+            Торты, капкейки и десерты ручной работы
+          </p>
+        </div>
       </div>
 
       {/* Filters */}

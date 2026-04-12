@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, MapPin, Clock, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCartStore } from '@/stores/cart-store';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,7 +37,7 @@ export function CartSummary({ hasUnavailable = false }: CartSummaryProps) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="sticky lg:top-24 bg-[var(--color-warm-ivory)] rounded-2xl p-6 lg:p-8 border border-[var(--color-champagne)]"
+      className="sticky lg:top-24 bg-[var(--surface-secondary)] rounded-[var(--radius-card)] p-6 lg:p-8 border border-[var(--border-default)]"
     >
       <h2 className="font-heading font-semibold text-[var(--color-graphite)] text-lg mb-4">
         Итого
@@ -77,11 +77,27 @@ export function CartSummary({ hasUnavailable = false }: CartSummaryProps) {
       <button
         onClick={handleCheckout}
         disabled={hasUnavailable}
-        className="w-full flex items-center justify-center gap-2 bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white rounded-xl h-12 text-base font-medium mt-6 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--color-caramel)] cursor-pointer"
+        className="w-full flex items-center justify-center gap-2 bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white rounded-[var(--radius-control)] h-14 text-base font-semibold mt-6 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--color-caramel)] cursor-pointer"
       >
         Оформить заказ
         <ArrowRight size={16} />
       </button>
+
+      {/* Trust strip */}
+      <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[var(--border-default)]">
+        <div className="flex items-center gap-2 text-[length:var(--text-caption)] text-[var(--color-graphite-light)]">
+          <MapPin size={14} className="text-[var(--color-caramel)]" />
+          <span>Самовывоз: г. Арзамас</span>
+        </div>
+        <div className="flex items-center gap-2 text-[length:var(--text-caption)] text-[var(--color-graphite-light)]">
+          <Clock size={14} className="text-[var(--color-caramel)]" />
+          <span>Готовим под заказ</span>
+        </div>
+        <div className="flex items-center gap-2 text-[length:var(--text-caption)] text-[var(--color-graphite-light)]">
+          <CreditCard size={14} className="text-[var(--color-caramel)]" />
+          <span>Оплата при получении</span>
+        </div>
+      </div>
 
       {/* Unavailable warning */}
       {hasUnavailable && (
@@ -103,10 +119,6 @@ export function CartSummary({ hasUnavailable = false }: CartSummaryProps) {
         </p>
       )}
 
-      {/* Pickup address */}
-      <p className="text-sm text-[var(--color-graphite-light)] mt-4 text-center">
-        Самовывоз: г.&nbsp;Арзамас, ул.&nbsp;Ленина, д.&nbsp;15
-      </p>
     </motion.div>
   );
 }

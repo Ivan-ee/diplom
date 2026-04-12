@@ -72,7 +72,7 @@ export function CatalogFilters() {
     >
       {/* Category tabs */}
       <div
-        className="flex flex-wrap items-center gap-1 bg-[var(--color-champagne)]/40 rounded-xl p-1"
+        className="flex flex-wrap items-center gap-1 bg-[var(--surface-secondary)] border border-[var(--border-default)] rounded-[var(--radius-pill)] p-1"
         role="group"
         aria-label="Категория"
       >
@@ -81,10 +81,10 @@ export function CatalogFilters() {
             key={cat.value}
             onClick={() => handleCategory(cat.value)}
             aria-pressed={currentCategorySlug === cat.value}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`px-3 py-1.5 rounded-[var(--radius-pill)] text-sm font-medium transition-all duration-200 ${
               currentCategorySlug === cat.value
-                ? 'bg-[var(--color-milk-white)] text-[var(--color-graphite)] shadow-sm'
-                : 'text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)]'
+                ? 'bg-[var(--color-caramel)] text-white shadow-sm'
+                : 'bg-[var(--surface-secondary)] text-[var(--color-graphite)] hover:text-[var(--color-graphite)]'
             }`}
           >
             {cat.label}
@@ -98,7 +98,7 @@ export function CatalogFilters() {
           value={currentSort}
           onChange={(e) => handleSort(e.target.value)}
           aria-label="Сортировка"
-          className="text-sm border border-[var(--color-champagne)] rounded-xl px-3 py-2 bg-white text-[var(--color-graphite-light)] focus:outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)] cursor-pointer transition-colors duration-200"
+          className="text-sm border border-[var(--border-default)] rounded-[var(--radius-control)] px-3 py-2 bg-[var(--surface-elevated)] text-[var(--color-graphite)] focus:outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)] cursor-pointer transition-colors duration-200"
         >
           {sortOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>

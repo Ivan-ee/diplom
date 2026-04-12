@@ -24,28 +24,36 @@ const advantages = [
 
 export function Advantages() {
   return (
-    <section className="py-20 lg:py-28 px-4 bg-[var(--color-warm-ivory)]">
-      <h2 className="font-heading font-bold tracking-tight text-4xl lg:text-5xl text-center mb-12 text-[var(--color-graphite)]">
-        Почему выбирают нас
-      </h2>
+    <section className="py-[var(--spacing-section-mobile)] lg:py-[var(--spacing-section-desktop)] px-4 bg-[var(--surface-secondary)]">
+      <div className="max-w-5xl mx-auto">
+        <h2 className="text-[length:var(--text-h2)] leading-[var(--leading-heading)] font-heading font-semibold text-center mb-12 text-[var(--color-graphite)]">
+          Почему выбирают нас
+        </h2>
 
-      <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
-        {advantages.map(({ icon: Icon, title, description }) => (
-          <StaggerItem key={title} className="flex flex-col items-center text-center">
-            <Icon
-              size={36}
-              className="text-[var(--color-caramel)] mb-4"
-              strokeWidth={1.5}
-            />
-            <h3 className="font-heading font-semibold text-xl mb-2 text-[var(--color-graphite)]">
-              {title}
-            </h3>
-            <p className="text-[var(--color-graphite-light)] text-sm leading-relaxed">
-              {description}
-            </p>
-          </StaggerItem>
-        ))}
-      </StaggerChildren>
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible">
+          <StaggerChildren className="contents">
+            {advantages.map(({ icon: Icon, title, description }) => (
+              <StaggerItem key={title}>
+                <div className="snap-start min-w-[260px] lg:min-w-0 flex flex-col items-center text-center rounded-[var(--radius-card)] bg-[var(--surface-elevated)] p-8">
+                  <div className="w-12 h-12 rounded-full bg-[var(--surface-elevated)] border border-[var(--border-default)] flex items-center justify-center mb-4">
+                    <Icon
+                      size={22}
+                      className="text-[var(--color-caramel)]"
+                      strokeWidth={1.5}
+                    />
+                  </div>
+                  <h3 className="font-heading font-semibold text-[length:var(--text-h3)] mb-2 text-[var(--color-graphite)]">
+                    {title}
+                  </h3>
+                  <p className="text-[length:var(--text-body-sm)] text-[var(--color-graphite-light)] leading-[var(--leading-body)]">
+                    {description}
+                  </p>
+                </div>
+              </StaggerItem>
+            ))}
+          </StaggerChildren>
+        </div>
+      </div>
     </section>
   );
 }

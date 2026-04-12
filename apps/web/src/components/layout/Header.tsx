@@ -21,25 +21,26 @@ export function Header() {
   const { user, isAuthenticated, openAuth, logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 h-[72px] w-full bg-[var(--color-milk-white)]/85 backdrop-blur-xl border-b border-[var(--color-soft-oat)]/60">
+    <header className="sticky top-0 z-50 h-[72px] w-full bg-[var(--color-milk-white)]/85 backdrop-blur-xl border-b border-[var(--border-subtle)]">
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
         {/* Logo */}
         <Link
           href="/"
-          className="font-heading text-xl font-semibold tracking-tight text-[var(--color-graphite)] hover:text-[var(--color-caramel)] transition-colors duration-200 shrink-0"
+          className="hover:text-[var(--color-caramel)] transition-colors duration-200 shrink-0 flex items-baseline gap-0.5"
         >
-          Виктория Торт
+          <span className="font-[family-name:var(--font-editorial)] text-[22px] font-medium italic text-[var(--color-graphite)]">Виктория</span>
+          <span className="font-heading text-lg font-semibold tracking-tight text-[var(--color-graphite)]"> Торт</span>
         </Link>
 
         {/* Desktop nav */}
         {!isConstructor && (
-          <nav className="hidden lg:flex items-center gap-6" aria-label="Основная навигация">
+          <nav className="hidden lg:flex items-center gap-8" aria-label="Основная навигация">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors duration-200 ${
+                className={`text-[15px] font-medium tracking-[-0.01em] transition-colors duration-200 ${
                   pathname === link.href
                     ? 'text-[var(--color-graphite)] font-semibold'
                     : 'text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)]'
@@ -68,7 +69,7 @@ export function Header() {
           {/* Cart */}
           <Link
             href="/cart"
-            className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-[var(--color-champagne)]/60 transition-colors duration-200"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-[var(--surface-secondary)] transition-colors duration-200"
             aria-label="Корзина"
           >
             <ShoppingBag size={21} className="text-[var(--color-graphite-light)]" />
@@ -108,7 +109,7 @@ function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: User
       <button
         type="button"
         onClick={onLoginClick}
-        className="flex h-10 items-center gap-1.5 rounded-xl px-3 text-sm font-medium text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)] hover:bg-[var(--color-champagne)]/60 transition-colors duration-200"
+        className="flex h-10 items-center gap-1.5 rounded-xl px-3 text-sm font-medium text-[var(--color-graphite-light)] hover:text-[var(--color-graphite)] hover:bg-[var(--surface-secondary)] transition-colors duration-200"
         aria-label="Войти в аккаунт"
       >
         <User size={18} />
@@ -127,10 +128,10 @@ function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: User
       >
         {initial}
       </PopoverTrigger>
-      <PopoverContent className="z-50 min-w-[220px] rounded-xl border border-[var(--color-champagne)] bg-white p-0 shadow-xl outline-none">
+      <PopoverContent className="z-50 min-w-[220px] rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-0 shadow-xl outline-none">
         <PopoverDialog className="outline-none">
           {/* User info */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-champagne)]">
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border-default)]">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-toffee)] text-sm font-semibold text-neutral-800">
               {initial}
             </div>
@@ -150,7 +151,7 @@ function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: User
             </PopoverLink>
           </div>
 
-          <div className="my-1 border-t border-[var(--color-champagne)]" />
+          <div className="my-1 border-t border-[var(--border-default)]" />
 
           <button
             type="button"
@@ -176,7 +177,7 @@ function PopoverLink({ href, icon, children }: PopoverLinkProps) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-graphite-light)] transition-colors duration-150 hover:bg-[var(--color-champagne)]/60 hover:text-[var(--color-graphite)]"
+      className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-graphite-light)] transition-colors duration-150 hover:bg-[var(--surface-secondary)] hover:text-[var(--color-graphite)]"
     >
       <span className="text-[var(--color-graphite-light)]/60">{icon}</span>
       {children}
@@ -215,21 +216,21 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
     <DrawerRoot isOpen={open} onOpenChange={setOpen}>
       <DrawerTrigger
         aria-label="Открыть меню"
-        className="flex lg:hidden h-10 w-10 items-center justify-center rounded-xl hover:bg-[var(--color-champagne)]/60 transition-colors duration-200"
+        className="flex lg:hidden h-10 w-10 items-center justify-center rounded-xl hover:bg-[var(--surface-secondary)] transition-colors duration-200"
       >
         <Menu size={21} className="text-[var(--color-graphite-light)]" />
       </DrawerTrigger>
 
       <DrawerBackdrop isDismissable className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
 
-      <DrawerContent placement="right" className="fixed top-0 right-0 h-full w-72 bg-white shadow-2xl outline-none">
+      <DrawerContent placement="right" className="fixed top-0 right-0 h-full w-72 bg-[var(--surface-elevated)] shadow-2xl outline-none">
         <DrawerBody className="flex flex-col h-full p-0">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-champagne)]">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border-default)]">
             <span className="font-heading font-semibold text-base text-[var(--color-graphite)]">
               Меню
             </span>
-            <DrawerCloseTrigger className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-[var(--color-champagne)]/60 transition-colors duration-200 text-[var(--color-graphite-light)] focus-visible:outline-none">
+            <DrawerCloseTrigger className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-[var(--surface-secondary)] transition-colors duration-200 text-[var(--color-graphite-light)] focus-visible:outline-none">
               <X size={18} />
             </DrawerCloseTrigger>
           </div>
@@ -243,8 +244,8 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
                 onClick={handleClose}
                 className={`flex items-center px-3 py-3 rounded-xl text-sm font-medium transition-colors duration-200 ${
                   pathname === link.href
-                    ? 'bg-[var(--color-champagne)]/60 text-[var(--color-graphite)] font-semibold'
-                    : 'text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)]/60 hover:text-[var(--color-graphite)]'
+                    ? 'bg-[var(--surface-secondary)] text-[var(--color-graphite)] font-semibold'
+                    : 'text-[var(--color-graphite-light)] hover:bg-[var(--surface-secondary)] hover:text-[var(--color-graphite)]'
                 }`}
               >
                 {link.label}
@@ -253,7 +254,7 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
           </nav>
 
           {/* Footer actions */}
-          <div className="px-6 pb-8 pt-4 border-t border-[var(--color-champagne)] flex flex-col gap-3">
+          <div className="px-6 pb-8 pt-4 border-t border-[var(--border-default)] flex flex-col gap-3">
             {isAuthenticated && user ? (
               <>
                 <div className="flex items-center gap-3 py-2">
@@ -294,7 +295,7 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
               <button
                 type="button"
                 onClick={handleLogin}
-                className="w-full rounded-xl border border-[var(--color-champagne)] py-2.5 text-sm font-medium text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)]/60 transition-colors duration-200"
+                className="w-full rounded-xl border border-[var(--border-default)] py-2.5 text-sm font-medium text-[var(--color-graphite-light)] hover:bg-[var(--surface-secondary)] transition-colors duration-200"
               >
                 Войти
               </button>
