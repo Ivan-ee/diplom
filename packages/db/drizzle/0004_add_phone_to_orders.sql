@@ -1,1 +1,0 @@
-ALTER TABLE "orders" ADD COLUMN "phone" varchar(20);
