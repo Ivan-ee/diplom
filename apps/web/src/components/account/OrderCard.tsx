@@ -192,7 +192,11 @@ export function OrderCard({ order }: OrderCardProps) {
         imageUrl: item.imageUrl ?? '',
         weight: item.weight,
         price: item.price,
-        quantity: item.quantity,
+        quantity: item.quantity ?? 1,
+        priceType: 'per_kg',
+        pricePerKg: item.weight > 0
+          ? Math.round(item.price / (item.weight / 1000))
+          : undefined,
       });
     });
 

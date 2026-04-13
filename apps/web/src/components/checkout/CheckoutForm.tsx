@@ -371,7 +371,9 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError, promoResul
                 {item.name}
               </p>
               <p className="text-[11px] text-[var(--color-graphite-light)]">
-                × {item.quantity}
+                {item.priceType === 'per_kg'
+                  ? `${(item.weight / 1000).toLocaleString('ru-RU')} кг`
+                  : `× ${item.quantity}`}
               </p>
             </div>
 

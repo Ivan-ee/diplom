@@ -2,12 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Chip, Button } from '@heroui/react';
+import { Chip } from '@heroui/react';
 import { formatPrice } from '@/lib/utils';
-import { useCartStore } from '@/stores/cart-store';
-import { showCartToast } from '@/lib/cart-toast';
+import { AddToCartControl } from '@/components/catalog/AddToCartControl';
 
 export interface ProductCategory {
   id: string;
@@ -62,11 +59,6 @@ const categoryLabels: Record<string, string> = {
 };
 
 export function ProductCard({ product }: ProductCardProps) {
-  const addItem = useCartStore((s) => s.addItem);
-  const cartItems = useCartStore((s) => s.items);
-  const isInCart = cartItems.some((item) => item.productId === product.id);
-  const [added, setAdded] = useState(false);
-
   const minWeight =
     product.weightMin ??
     (product.weightOptions?.[0] ??
@@ -90,20 +82,6 @@ export function ProductCard({ product }: ProductCardProps) {
     : (product.pricePerKg ?? product.priceMin ?? 0);
 
   const imageUrl = product.imageUrl ?? product.images?.[0];
-
-  function handleAddToCart() {
-    addItem({
-      type: 'product',
-      productId: product.id,
-      name: product.name,
-      imageUrl: imageUrl ?? '',
-      weight: isPerUnit ? 0 : minWeight,
-      price: displayPrice,
-    });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
-    showCartToast({ name: product.name, image: imageUrl });
-  }
 
   return (
     <div className="group relative rounded-[var(--radius-card)] overflow-hidden bg-white border border-[var(--border-default)] hover:border-[var(--color-caramel)]/30 hover:shadow-[0_0_12px_rgba(184,146,106,0.12)] transition-all duration-300 focus-within:ring-2 focus-within:ring-[var(--color-caramel)] focus-within:ring-offset-2 flex flex-col h-full">
@@ -132,13 +110,6 @@ export function ProductCard({ product }: ProductCardProps) {
               {categoryLabel}
             </Chip>
           </div>
-        )}
-
-        {/* In-cart badge */}
-        {isInCart && (
-          <span className="absolute top-2 right-2 z-10 rounded-full bg-[var(--color-caramel)] px-2 py-0.5 text-[10px] font-medium text-white shadow-sm">
-            В корзине
-          </span>
         )}
 
         {/* Unavailable overlay */}
@@ -172,21 +143,9 @@ export function ProductCard({ product }: ProductCardProps) {
         </p>
 
         {/* Button sits above the stretched link at z-10 */}
-        <motion.div whileTap={{ scale: 0.98 }} className="mt-auto pt-2 sm:pt-3 relative z-10">
-          <Button
-            fullWidth
-            onClick={handleAddToCart}
-            isDisabled={product.isAvailable === false}
-            aria-label={`Добавить ${product.name} в корзину`}
-            className={`w-full rounded-[var(--radius-control)] text-xs sm:text-sm font-medium py-1.5 sm:py-2 transition-colors duration-200 ${
-              added
-                ? 'bg-[var(--color-champagne)] text-[var(--color-graphite-light)]'
-                : 'bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white'
-            }`}
-          >
-            {added ? '✓ Добавлено' : isInCart ? 'Ещё в корзину' : 'В корзину'}
-          </Button>
-        </motion.div>
+        <div className="mt-auto pt-2 sm:pt-3 relative z-10">
+          <AddToCartControl product={product} variant="compact" />
+        </div>
       </div>
     </div>
   );

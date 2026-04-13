@@ -50,10 +50,12 @@ function ConstructorConfigSummary({ config }: { config: unknown }) {
 
 export function CartItem({ item, isUnavailable = false }: CartItemProps) {
   const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const updateWeight = useCartStore((s) => s.updateWeight);
   const removeItem = useCartStore((s) => s.removeItem);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const isConstructor = item.type === 'constructor';
+  const isPerKg = item.type === 'product' && (item.priceType === 'per_kg' || (!item.priceType && !item.pricePerUnit));
   const itemTotal = item.price * item.quantity;
 
   function handleDecrement() {
@@ -191,54 +193,114 @@ export function CartItem({ item, isUnavailable = false }: CartItemProps) {
             </div>
           </div>
 
-          {/* Bottom: quantity stepper + price */}
+          {/* Bottom: stepper + price */}
           <div className="flex items-center justify-between gap-4">
-            {/* Quantity stepper */}
-            <div className="flex items-center gap-3 bg-[var(--color-champagne)]/40 rounded-full p-1">
-              <button
-                onClick={handleDecrement}
-                disabled={item.quantity <= 1 || isUnavailable}
-                aria-label="Уменьшить количество"
-                className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150',
-                  item.quantity <= 1 || isUnavailable
-                    ? 'opacity-30 cursor-not-allowed text-[var(--color-graphite-light)]'
-                    : 'cursor-pointer text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1'
-                )}
-              >
-                <Minus size={13} />
-              </button>
+            {isPerKg ? (
+              /* Weight stepper for per_kg products */
+              (() => {
+                const step = item.weightStep ?? 500;
+                const minW = item.minWeight ?? 0;
+                const maxW = item.maxWeight;
+                const atMax = maxW !== undefined && item.weight + step > maxW;
 
-              <span className="text-sm font-medium w-6 text-center select-none tabular-nums text-[var(--color-graphite)]">
-                {item.quantity}
-              </span>
+                return (
+                  <div className="flex items-center gap-3 bg-[var(--color-champagne)]/40 rounded-full p-1">
+                    <button
+                      onClick={() => {
+                        if (item.weight - step >= minW) {
+                          updateWeight(item.productId!, item.weight - step);
+                        } else {
+                          removeItem(item.id);
+                        }
+                      }}
+                      disabled={isUnavailable}
+                      aria-label="Уменьшить вес"
+                      className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150',
+                        isUnavailable
+                          ? 'opacity-30 cursor-not-allowed text-[var(--color-graphite-light)]'
+                          : 'cursor-pointer text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1'
+                      )}
+                    >
+                      <Minus size={13} />
+                    </button>
 
-              <button
-                onClick={handleIncrement}
-                disabled={isUnavailable}
-                aria-label="Увеличить количество"
-                className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150',
-                  isUnavailable
-                    ? 'opacity-30 cursor-not-allowed text-[var(--color-graphite-light)]'
-                    : 'cursor-pointer text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1'
-                )}
-              >
-                <Plus size={13} />
-              </button>
-            </div>
+                    <span className="text-sm font-medium min-w-[4rem] text-center select-none tabular-nums text-[var(--color-graphite)]">
+                      {(item.weight / 1000).toLocaleString('ru-RU')} кг
+                    </span>
+
+                    <button
+                      onClick={() => {
+                        if (!atMax) updateWeight(item.productId!, item.weight + step);
+                      }}
+                      disabled={isUnavailable || atMax}
+                      aria-label="Увеличить вес"
+                      className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150',
+                        isUnavailable || atMax
+                          ? 'opacity-30 cursor-not-allowed text-[var(--color-graphite-light)]'
+                          : 'cursor-pointer text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1'
+                      )}
+                    >
+                      <Plus size={13} />
+                    </button>
+                  </div>
+                );
+              })()
+            ) : (
+              /* Quantity stepper for per_unit and constructor */
+              <div className="flex items-center gap-3 bg-[var(--color-champagne)]/40 rounded-full p-1">
+                <button
+                  onClick={handleDecrement}
+                  disabled={item.quantity <= 1 || isUnavailable}
+                  aria-label="Уменьшить количество"
+                  className={cn(
+                    'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150',
+                    item.quantity <= 1 || isUnavailable
+                      ? 'opacity-30 cursor-not-allowed text-[var(--color-graphite-light)]'
+                      : 'cursor-pointer text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1'
+                  )}
+                >
+                  <Minus size={13} />
+                </button>
+
+                <span className="text-sm font-medium w-6 text-center select-none tabular-nums text-[var(--color-graphite)]">
+                  {item.quantity}
+                </span>
+
+                <button
+                  onClick={handleIncrement}
+                  disabled={isUnavailable}
+                  aria-label="Увеличить количество"
+                  className={cn(
+                    'w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150',
+                    isUnavailable
+                      ? 'opacity-30 cursor-not-allowed text-[var(--color-graphite-light)]'
+                      : 'cursor-pointer text-[var(--color-graphite-light)] hover:bg-[var(--color-champagne)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-1'
+                  )}
+                >
+                  <Plus size={13} />
+                </button>
+              </div>
+            )}
 
             {/* Price */}
             <div className="text-right">
               <p className="text-lg font-semibold text-[var(--color-caramel)] tabular-nums">
                 {formatPrice(itemTotal)}
               </p>
-              <p className={cn(
-                "text-xs tabular-nums",
-                item.quantity > 1 ? "text-[var(--color-graphite-light)]/60" : "invisible"
-              )}>
-                {formatPrice(item.price)} × {item.quantity}
-              </p>
+              {isPerKg ? (
+                <p className="text-xs tabular-nums text-[var(--color-graphite-light)]/60">
+                  {formatPrice(item.pricePerKg ?? 0)} / кг
+                </p>
+              ) : (
+                <p className={cn(
+                  "text-xs tabular-nums",
+                  item.quantity > 1 ? "text-[var(--color-graphite-light)]/60" : "invisible"
+                )}>
+                  {formatPrice(item.price)} × {item.quantity}
+                </p>
+              )}
             </div>
           </div>
         </div>
