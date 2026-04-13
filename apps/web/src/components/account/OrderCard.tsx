@@ -56,6 +56,9 @@ export interface Order {
   items: OrderItem[];
   customerName?: string;
   customerPhone?: string;
+  promoCode?: string | null;
+  discountAmount?: number | null;
+  originalPrice?: number | null;
 }
 
 // ---------- Status config ----------
@@ -208,6 +211,11 @@ export function OrderCard({ order }: OrderCardProps) {
           <p className="text-sm text-neutral-500 mt-1">{formatDate(order.createdAt)}</p>
           <p className="text-lg font-semibold text-[var(--color-caramel)] mt-2">
             {formatPrice(order.totalPrice)}
+            {order.originalPrice != null && order.discountAmount != null && (
+              <span className="ml-2 text-sm font-normal text-neutral-400 line-through">
+                {formatPrice(order.originalPrice)}
+              </span>
+            )}
           </p>
         </div>
         <Chip size="sm" color={statusCfg.color} variant="soft">
@@ -263,13 +271,34 @@ export function OrderCard({ order }: OrderCardProps) {
                   )
                 )}
               </div>
-              <div className="mt-3 flex justify-end border-t border-neutral-100 pt-3">
-                <span className="text-sm text-neutral-500">
-                  Итого:&nbsp;
-                  <span className="font-heading font-bold text-[var(--color-graphite)]">
-                    {formatPrice(order.totalPrice)}
-                  </span>
-                </span>
+              <div className="mt-3 flex flex-col gap-1.5 border-t border-neutral-100 pt-3">
+                {order.originalPrice != null && order.discountAmount != null ? (
+                  <>
+                    <div className="flex justify-between text-sm text-neutral-500">
+                      <span>Подытог</span>
+                      <span>{formatPrice(order.originalPrice)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-emerald-600">
+                      <span>Промокод {order.promoCode && <span className="font-mono text-xs">({order.promoCode})</span>}</span>
+                      <span>−{formatPrice(order.discountAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-neutral-500">Итого</span>
+                      <span className="font-heading font-bold text-[var(--color-graphite)]">
+                        {formatPrice(order.totalPrice)}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-end">
+                    <span className="text-sm text-neutral-500">
+                      Итого:&nbsp;
+                      <span className="font-heading font-bold text-[var(--color-graphite)]">
+                        {formatPrice(order.totalPrice)}
+                      </span>
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

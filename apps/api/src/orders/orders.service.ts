@@ -5,7 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, getTableColumns, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '@bakery/db/schema';
 import { DRIZZLE } from '../database/drizzle.token';
@@ -119,8 +119,12 @@ export class OrdersService {
 
   async findByUser(userId: string) {
     const orders = await this.db
-      .select()
+      .select({
+        ...getTableColumns(schema.orders),
+        promoCode: schema.promoCodes.code,
+      })
       .from(schema.orders)
+      .leftJoin(schema.promoCodes, eq(schema.orders.promoCodeId, schema.promoCodes.id))
       .where(eq(schema.orders.userId, userId))
       .orderBy(desc(schema.orders.createdAt));
 
@@ -161,8 +165,12 @@ export class OrdersService {
 
   async findOneByUser(orderId: string, userId: string) {
     const [order] = await this.db
-      .select()
+      .select({
+        ...getTableColumns(schema.orders),
+        promoCode: schema.promoCodes.code,
+      })
       .from(schema.orders)
+      .leftJoin(schema.promoCodes, eq(schema.orders.promoCodeId, schema.promoCodes.id))
       .where(and(eq(schema.orders.id, orderId), eq(schema.orders.userId, userId)))
       .limit(1);
 
