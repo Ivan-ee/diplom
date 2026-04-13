@@ -29,7 +29,7 @@ export function showCartToast({ name, image, weight }: CartToastProps) {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-[var(--color-graphite)]">
+        <p className="text-sm font-medium text-[var(--color-graphite)] break-words line-clamp-2">
           {name}{weight ? `, ${weight}` : ''}
         </p>
         <p className="text-xs text-[var(--color-graphite-light)]">Добавлен в корзину</p>
