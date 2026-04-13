@@ -32,8 +32,8 @@ export function Advantages() {
 
         <StaggerChildren className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible">
             {advantages.map(({ icon: Icon, title, description }) => (
-              <StaggerItem key={title}>
-                <div className="snap-start min-w-[260px] lg:min-w-0 flex flex-col items-center text-center rounded-[var(--radius-card)] bg-[var(--surface-elevated)] p-8">
+              <StaggerItem key={title} className="h-full">
+                <div className="snap-start min-w-[260px] lg:min-w-0 flex flex-col items-center text-center rounded-[var(--radius-card)] bg-[var(--surface-elevated)] p-8 h-full">
                   <div className="w-12 h-12 rounded-full bg-[var(--surface-elevated)] border border-[var(--border-default)] flex items-center justify-center mb-4">
                     <Icon
                       size={22}
