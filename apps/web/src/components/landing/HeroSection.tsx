@@ -7,7 +7,7 @@ export function HeroSection() {
       <div className="max-w-3xl mx-auto w-full py-20 lg:py-0">
         <RevealOnScroll delay={0} className="flex flex-col items-center text-center gap-6">
           <h1 className="text-4xl text-[length:var(--text-display)] leading-[var(--leading-display)] font-heading font-semibold tracking-tight text-[var(--color-graphite)]">
-            <span className="font-[family-name:var(--font-editorial)] italic">
+            <span className="font-[family-name:var(--font-editorial)]">
               Торты ручной работы
             </span>
           </h1>

@@ -11,4 +11,5 @@ export { orders, orderStatusEnum, pickupTimeSlotEnum } from './orders';
 export { orderItems, orderItemTypeEnum } from './order-items';
 export { favorites } from './favorites';
 export { reviews } from './reviews';
+export { promoCodes, promoCodeUsages, discountTypeEnum } from './promo-codes';
 export * from './relations';

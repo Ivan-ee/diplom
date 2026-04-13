@@ -30,8 +30,7 @@ export function Advantages() {
           Почему выбирают нас
         </h2>
 
-        <div className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible">
-          <StaggerChildren className="contents">
+        <StaggerChildren className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible">
             {advantages.map(({ icon: Icon, title, description }) => (
               <StaggerItem key={title}>
                 <div className="snap-start min-w-[260px] lg:min-w-0 flex flex-col items-center text-center rounded-[var(--radius-card)] bg-[var(--surface-elevated)] p-8">
@@ -51,8 +50,7 @@ export function Advantages() {
                 </div>
               </StaggerItem>
             ))}
-          </StaggerChildren>
-        </div>
+        </StaggerChildren>
       </div>
     </section>
   );

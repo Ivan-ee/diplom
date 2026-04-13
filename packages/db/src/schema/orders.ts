@@ -1,5 +1,6 @@
 import { pgTable, uuid, varchar, integer, text, date, timestamp, pgEnum, serial, index } from 'drizzle-orm/pg-core';
 import { users } from './users';
+import { promoCodes } from './promo-codes';
 
 export const orderStatusEnum = pgEnum('order_status', [
   'created',
@@ -26,6 +27,11 @@ export const orders = pgTable('orders', {
   pickupTimeSlot: pickupTimeSlotEnum('pickup_time_slot').notNull(),
   phone: varchar('phone', { length: 20 }),
   comment: text('comment'),
+  promoCodeId: uuid('promo_code_id').references(() => promoCodes.id),
+  /** Applied discount amount in kopecks */
+  discountAmount: integer('discount_amount'),
+  /** Original price before discount in kopecks */
+  originalPrice: integer('original_price'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [

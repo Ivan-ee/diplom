@@ -106,7 +106,7 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <div className="group relative rounded-[var(--radius-card)] overflow-hidden bg-white border border-[var(--border-default)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-300 focus-within:ring-2 focus-within:ring-[var(--color-caramel)] focus-within:ring-offset-2 flex flex-col h-full">
+    <div className="group relative rounded-[var(--radius-card)] overflow-hidden bg-white border border-[var(--border-default)] hover:border-[var(--color-caramel)]/30 hover:shadow-[0_0_12px_rgba(184,146,106,0.12)] transition-all duration-300 focus-within:ring-2 focus-within:ring-[var(--color-caramel)] focus-within:ring-offset-2 flex flex-col h-full">
       {/* Image area */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-warm-ivory)]">
         {imageUrl ? (
@@ -114,7 +114,7 @@ export function ProductCard({ product }: ProductCardProps) {
             src={imageUrl}
             alt={product.name}
             fill
-            className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
+            className="object-cover transition-transform duration-500"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
           />
         ) : (

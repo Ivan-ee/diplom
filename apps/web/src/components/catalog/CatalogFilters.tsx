@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useTransition } from 'react';
+import { motion } from 'framer-motion';
 
 const categories = [
   { value: '', label: 'Все' },
@@ -81,13 +82,20 @@ export function CatalogFilters() {
             key={cat.value}
             onClick={() => handleCategory(cat.value)}
             aria-pressed={currentCategorySlug === cat.value}
-            className={`px-3 py-1.5 rounded-[var(--radius-pill)] text-sm font-medium transition-all duration-200 ${
+            className={`relative cursor-pointer px-3 py-1.5 rounded-[var(--radius-pill)] text-sm font-medium transition-colors duration-200 ${
               currentCategorySlug === cat.value
-                ? 'bg-[var(--color-caramel)] text-white shadow-sm'
-                : 'bg-[var(--surface-secondary)] text-[var(--color-graphite)] hover:text-[var(--color-graphite)]'
+                ? 'text-white'
+                : 'text-[var(--color-graphite)] hover:text-[var(--color-graphite)]'
             }`}
           >
-            {cat.label}
+            {currentCategorySlug === cat.value && (
+              <motion.div
+                layoutId="category-pill"
+                className="absolute inset-0 rounded-[var(--radius-pill)] bg-[var(--color-caramel)] shadow-sm"
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              />
+            )}
+            <span className="relative z-10">{cat.label}</span>
           </button>
         ))}
       </div>

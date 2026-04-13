@@ -38,7 +38,7 @@ export function CTASection() {
         <RevealOnScroll delay={0.2} className="flex flex-col gap-6">
           <h2 className="text-[length:var(--text-h2)] lg:text-[length:var(--text-h1)] leading-[var(--leading-heading)] font-heading font-semibold text-[var(--color-graphite)]">
             Создайте свой{' '}
-            <span className="font-[family-name:var(--font-editorial)] italic">идеальный</span>{' '}
+            <span className="font-[family-name:var(--font-editorial)]">идеальный</span>{' '}
             торт
           </h2>
 

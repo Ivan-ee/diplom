@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MapPin, Clock, MessageSquare, Phone, Loader2, AlertCircle, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Clock, MessageSquare, Phone, Loader2, AlertCircle, ShoppingBag, ChevronLeft, ChevronRight, Tag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/stores/cart-store';
+import { useAuthStore } from '@/stores/auth-store';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
 import type { CartItem } from '@/stores/cart-store';
@@ -313,14 +314,24 @@ function CalendarPicker({ value, onChange, minDate, isDateDisabled, error }: Cal
 
 // ── OrderSummary component ───────────────────────────────────────────────────
 
+interface PromoResult {
+  valid: boolean;
+  code: string;
+  discountType?: string;
+  discountValue?: number;
+  discountAmount: number;
+  message?: string;
+}
+
 interface OrderSummaryProps {
   items: CartItem[];
   totalPrice: number;
   isSubmitting: boolean;
   submitError: string | null;
+  promoResult: PromoResult | null;
 }
 
-function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSummaryProps) {
+function OrderSummary({ items, totalPrice, isSubmitting, submitError, promoResult }: OrderSummaryProps) {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const itemWord =
     totalItems === 1
@@ -372,12 +383,37 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError }: OrderSum
       </div>
 
       <div className="flex flex-col">
-        <div className="flex justify-between py-3 border-b border-[var(--border-default)]">
-          <span className="text-sm text-[var(--color-graphite-light)]">Итого</span>
-          <span className="font-heading font-bold text-2xl text-[var(--color-caramel)] tabular-nums">
-            {formatPrice(totalPrice)}
-          </span>
-        </div>
+        {promoResult ? (
+          <>
+            <div className="flex justify-between py-2">
+              <span className="text-sm text-[var(--color-graphite-light)]">Подытог</span>
+              <span className="text-sm font-medium text-[var(--color-graphite)] tabular-nums">
+                {formatPrice(totalPrice)}
+              </span>
+            </div>
+            <div className="flex justify-between py-2">
+              <span className="text-sm text-[var(--color-graphite-light)]">
+                Скидка ({promoResult.code})
+              </span>
+              <span className="text-sm font-medium text-emerald-600 tabular-nums">
+                −{formatPrice(promoResult.discountAmount)}
+              </span>
+            </div>
+            <div className="flex justify-between py-3 border-t border-[var(--border-default)]">
+              <span className="text-sm text-[var(--color-graphite-light)]">Итого к оплате</span>
+              <span className="font-heading font-bold text-2xl text-[var(--color-caramel)] tabular-nums">
+                {formatPrice(totalPrice - promoResult.discountAmount)}
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-between py-3 border-b border-[var(--border-default)]">
+            <span className="text-sm text-[var(--color-graphite-light)]">Итого</span>
+            <span className="font-heading font-bold text-2xl text-[var(--color-caramel)] tabular-nums">
+              {formatPrice(totalPrice)}
+            </span>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -427,6 +463,13 @@ export function CheckoutForm() {
 
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const [promoCode, setPromoCode] = useState('');
+  const [promoResult, setPromoResult] = useState<PromoResult | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+
+  const user = useAuthStore((s) => s.user);
+
   const {
     handleSubmit,
     control,
@@ -445,6 +488,44 @@ export function CheckoutForm() {
   const commentValue = watch('comment') ?? '';
   const pickupDateValue = watch('pickupDate') ?? '';
 
+  useEffect(() => {
+    if (user?.phone) {
+      setValue('phone', user.phone, { shouldValidate: false });
+    }
+  }, [user?.phone, setValue]);
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError(null);
+    try {
+      const res = await fetchClient<PromoResult>('/promo-codes/validate', {
+        method: 'POST',
+        body: JSON.stringify({
+          code: promoCode.trim().toUpperCase(),
+          cartTotal: totalPrice,
+        }),
+      });
+      if (res.data?.valid) {
+        setPromoResult(res.data);
+        setPromoError(null);
+      } else {
+        setPromoResult(null);
+        setPromoError(res.data?.message ?? 'Промокод недействителен');
+      }
+    } catch {
+      setPromoError('Не удалось проверить промокод');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoResult(null);
+    setPromoCode('');
+    setPromoError(null);
+  };
+
   async function onSubmit(data: CheckoutFormData) {
     setSubmitError(null);
     try {
@@ -453,6 +534,7 @@ export function CheckoutForm() {
         pickupDate: data.pickupDate,
         pickupTimeSlot: data.timeSlot,
         comment: data.comment ?? '',
+        ...(promoResult?.valid ? { promoCode: promoResult.code } : {}),
         items: items.map((item) => ({
           type: item.type,
           ...(item.type === 'product' && item.productId ? { productId: item.productId } : {}),
@@ -616,11 +698,7 @@ export function CheckoutForm() {
                           )}
                         >
                           {isSelected && (
-                            <motion.div
-                              layoutId="timeslot-selection"
-                              className="absolute inset-0 rounded-[10px] border-2 border-[var(--color-caramel)]"
-                              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                            />
+                            <div className="absolute inset-0 rounded-[10px] border-2 border-[var(--color-caramel)]" />
                           )}
                           <span
                             className={cn(
@@ -654,6 +732,76 @@ export function CheckoutForm() {
                 )}
               </AnimatePresence>
             </div>
+          </section>
+
+          {/* Section: Promo code */}
+          <section className="bg-[var(--surface-elevated)] rounded-[var(--radius-card)] border border-[var(--border-default)] p-6 mb-6">
+            <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4 flex items-center gap-2">
+              <Tag size={17} className="text-[var(--color-caramel)]" />
+              Промокод
+            </h2>
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={promoCode}
+                onChange={(e) => {
+                  setPromoCode(e.target.value.toUpperCase());
+                  setPromoError(null);
+                }}
+                placeholder="Введите промокод"
+                className={inputClass(!!promoError)}
+                disabled={!!promoResult}
+                maxLength={50}
+              />
+              {promoResult ? (
+                <button
+                  type="button"
+                  onClick={handleRemovePromo}
+                  className="shrink-0 rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+                >
+                  Убрать
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleApplyPromo}
+                  disabled={promoLoading || !promoCode.trim()}
+                  className="shrink-0 rounded-xl bg-[var(--color-caramel)] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--color-caramel-dark)] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {promoLoading ? <Loader2 size={16} className="animate-spin" /> : 'Применить'}
+                </button>
+              )}
+            </div>
+
+            <AnimatePresence>
+              {promoResult && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="mt-3 text-sm font-medium text-emerald-600"
+                >
+                  Скидка: −{formatPrice(promoResult.discountAmount)}
+                  {promoResult.discountType === 'percentage' && ` (${promoResult.discountValue}%)`}
+                </motion.p>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {promoError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="mt-3 flex items-center gap-1.5 text-sm text-red-500"
+                >
+                  <AlertCircle size={14} />
+                  {promoError}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </section>
 
           {/* Section: Comment */}
@@ -716,6 +864,7 @@ export function CheckoutForm() {
             totalPrice={totalPrice}
             isSubmitting={isSubmitting}
             submitError={submitError}
+            promoResult={promoResult}
           />
         </div>
       </div>

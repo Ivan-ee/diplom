@@ -99,7 +99,7 @@ export default async function CatalogPage({
       </div>
 
       {/* Filters */}
-      <div className="mb-8">
+      <div className="mt-6 mb-8">
         <Suspense fallback={<div className="h-10 animate-pulse rounded-xl bg-[var(--color-champagne)]/40 max-w-7xl mx-auto px-4" />}>
           <CatalogFilters />
         </Suspense>

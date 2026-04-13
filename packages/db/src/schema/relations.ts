@@ -7,10 +7,12 @@ import { productOccasions } from './product-occasions';
 import { orders } from './orders';
 import { orderItems } from './order-items';
 import { favorites } from './favorites';
+import { promoCodes, promoCodeUsages } from './promo-codes';
 
 export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
   favorites: many(favorites),
+  promoCodeUsages: many(promoCodeUsages),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -48,6 +50,10 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
     references: [users.id],
   }),
   items: many(orderItems),
+  promoCode: one(promoCodes, {
+    fields: [orders.promoCodeId],
+    references: [promoCodes.id],
+  }),
 }));
 
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({
@@ -69,5 +75,25 @@ export const favoritesRelations = relations(favorites, ({ one }) => ({
   product: one(products, {
     fields: [favorites.productId],
     references: [products.id],
+  }),
+}));
+
+export const promoCodesRelations = relations(promoCodes, ({ many }) => ({
+  usages: many(promoCodeUsages),
+  orders: many(orders),
+}));
+
+export const promoCodeUsagesRelations = relations(promoCodeUsages, ({ one }) => ({
+  promoCode: one(promoCodes, {
+    fields: [promoCodeUsages.promoCodeId],
+    references: [promoCodes.id],
+  }),
+  user: one(users, {
+    fields: [promoCodeUsages.userId],
+    references: [users.id],
+  }),
+  order: one(orders, {
+    fields: [promoCodeUsages.orderId],
+    references: [orders.id],
   }),
 }));

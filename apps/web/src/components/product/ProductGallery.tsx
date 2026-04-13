@@ -110,7 +110,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-sm"
             onClick={() => setLightboxOpen(false)}
           >
             {/* Close button */}

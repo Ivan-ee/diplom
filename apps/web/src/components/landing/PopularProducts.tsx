@@ -21,7 +21,7 @@ export function PopularProducts({ products }: PopularProductsProps) {
             <h2 className="text-[length:var(--text-h2)] leading-[var(--leading-heading)] font-heading font-semibold text-[var(--color-graphite)]">
               Популярные десерты
             </h2>
-            <p className="font-[family-name:var(--font-editorial)] italic text-[length:var(--text-body)] text-[var(--color-graphite-light)] mt-2">
+            <p className="font-[family-name:var(--font-editorial)] text-[length:var(--text-body)] text-[var(--color-graphite-light)] mt-2">
               Самые любимые торты наших клиентов
             </p>
           </div>

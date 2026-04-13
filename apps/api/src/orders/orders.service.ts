@@ -16,6 +16,7 @@ import {
   OrderItemType,
 } from './dto/create-order.dto';
 import { SafeUser } from '../common/types/user.type';
+import { PromoCodesService } from '../promo-codes/promo-codes.service';
 
 
 @Injectable()
@@ -26,6 +27,7 @@ export class OrdersService {
     @Inject(DRIZZLE)
     private readonly db: NodePgDatabase<typeof schema>,
     private readonly constructorService: ConstructorService,
+    private readonly promoCodesService: PromoCodesService,
   ) {}
 
   /** Creates order with server-side price recalculation. Client-supplied prices are overridden. */
@@ -34,10 +36,29 @@ export class OrdersService {
       dto.items.map((item) => this.recalculateItemPrice(item)),
     );
 
-    const totalPrice = pricedItems.reduce(
+    const originalPrice = pricedItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
     );
+
+    // --- Promo code validation ---
+    let promoCodeId: string | null = null;
+    let discountAmount = 0;
+
+    if (dto.promoCode) {
+      const validation = await this.promoCodesService.validate(
+        dto.promoCode,
+        originalPrice,
+        user.id,
+      );
+      if (!validation.valid) {
+        throw new BadRequestException(validation.message ?? 'Промокод недействителен');
+      }
+      promoCodeId = validation.promoCodeId ?? null;
+      discountAmount = validation.discountAmount;
+    }
+
+    const totalPrice = originalPrice - discountAmount;
 
     const result = await this.db.transaction(async (tx) => {
       const [order] = await tx
@@ -46,6 +67,9 @@ export class OrdersService {
           userId: user.id,
           status: 'created',
           totalPrice,
+          originalPrice: promoCodeId ? originalPrice : null,
+          discountAmount: promoCodeId ? discountAmount : null,
+          promoCodeId,
           pickupDate: dto.pickupDate,
           pickupTimeSlot: dto.pickupTimeSlot,
           phone: dto.phone ?? null,
@@ -61,7 +85,7 @@ export class OrdersService {
             type: item.type as 'product' | 'constructor',
             productId: item.productId ?? null,
             cakeConfig: item.cakeConfig ?? null,
-            weight: String(item.weight / 10), // store as decimal string
+            weight: String(item.weight / 10),
             quantity: item.quantity,
             price: item.price,
             inscription: item.inscription ?? null,
@@ -70,6 +94,17 @@ export class OrdersService {
         )
         .returning();
 
+      // Record promo code usage inside the same transaction
+      if (promoCodeId) {
+        await this.promoCodesService.applyToOrder(
+          promoCodeId,
+          user.id,
+          order.id,
+          discountAmount,
+          tx,
+        );
+      }
+
       return { order, items: itemRows };
     });
 
@@ -77,6 +112,7 @@ export class OrdersService {
       orderId: result.order.id,
       userId: user.id,
       totalPrice: result.order.totalPrice,
+      ...(promoCodeId && { promoCodeId, discountAmount }),
     });
     return result;
   }

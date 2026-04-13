@@ -61,7 +61,7 @@ export function ReviewsCarousel() {
                   &ldquo;
                 </span>
 
-                <p className="font-[family-name:var(--font-editorial)] italic text-lg lg:text-xl leading-relaxed text-[var(--color-graphite-light)] flex-1">
+                <p className="font-[family-name:var(--font-editorial)] text-lg lg:text-xl leading-relaxed text-[var(--color-graphite-light)] flex-1">
                   {review.text}
                 </p>
 

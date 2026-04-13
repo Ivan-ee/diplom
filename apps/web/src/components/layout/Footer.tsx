@@ -17,10 +17,10 @@ export function Footer() {
           {/* Column 1 — Brand */}
           <div className="flex flex-col">
             <div className="flex items-baseline gap-0.5">
-              <span className="font-[family-name:var(--font-editorial)] text-2xl font-medium italic text-[var(--color-graphite)]">Виктория</span>
+              <span className="font-[family-name:var(--font-editorial)] text-2xl font-medium text-[var(--color-graphite)]">Виктория</span>
               <span className="font-heading text-lg font-semibold tracking-tight text-[var(--color-graphite)]"> Торт</span>
             </div>
-            <p className="mt-3 text-sm italic text-[var(--color-graphite-light)]">
+            <p className="mt-3 text-sm text-[var(--color-graphite-light)]">
               {shopConfig.tagline}
             </p>
           </div>

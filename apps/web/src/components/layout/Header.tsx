@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ShoppingBag, User, Menu, Heart, ShoppingBag as OrdersIcon, LogOut, X } from 'lucide-react';
-import { Drawer, DrawerRoot, DrawerTrigger, DrawerBackdrop, DrawerContent, DrawerBody, DrawerCloseTrigger, Popover, PopoverRoot, PopoverTrigger, PopoverContent, PopoverDialog } from '@heroui/react';
+import { Drawer, DrawerRoot, DrawerTrigger, DrawerBackdrop, DrawerContent, DrawerBody, DrawerCloseTrigger, DrawerHandle, Popover, PopoverRoot, PopoverTrigger, PopoverContent, PopoverDialog } from '@heroui/react';
 import { CartBadge } from './CartBadge';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -29,7 +29,7 @@ export function Header() {
           href="/"
           className="hover:text-[var(--color-caramel)] transition-colors duration-200 shrink-0 flex items-baseline gap-0.5"
         >
-          <span className="font-[family-name:var(--font-editorial)] text-[22px] font-medium italic text-[var(--color-graphite)]">Виктория</span>
+          <span className="font-[family-name:var(--font-editorial)] text-[22px] font-medium text-[var(--color-graphite)]">Виктория</span>
           <span className="font-heading text-lg font-semibold tracking-tight text-[var(--color-graphite)]"> Торт</span>
         </Link>
 
@@ -223,10 +223,11 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
 
       <DrawerBackdrop isDismissable className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
 
-      <DrawerContent placement="right" className="fixed top-0 right-0 h-full w-72 bg-[var(--surface-elevated)] shadow-2xl outline-none">
+      <DrawerContent placement="bottom" className="bg-[var(--surface-elevated)] outline-none">
         <DrawerBody className="flex flex-col h-full p-0">
+          <DrawerHandle className="pt-3" />
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border-default)]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-default)]">
             <span className="font-heading font-semibold text-base text-[var(--color-graphite)]">
               Меню
             </span>

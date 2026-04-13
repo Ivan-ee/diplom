@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Cake, RefreshCw } from 'lucide-react';
+import Image from 'next/image';
 import { Chip } from '@heroui/react';
 import { toast } from 'sonner';
 import { cn, formatPrice } from '@/lib/utils';
@@ -94,8 +95,14 @@ const SHAPE_LABELS: Record<string, string> = {
 
 function ProductItemRow({ item }: { item: OrderItemProduct }) {
   return (
-    <div className="flex items-start gap-3 py-2">
-      <Chip size="sm" color="default" variant="secondary" className="mt-0.5 shrink-0">Товар</Chip>
+    <div className="flex items-center gap-3 py-2">
+      <div className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-[var(--surface-secondary)] border border-[var(--border-default)]">
+        {item.imageUrl ? (
+          <Image src={item.imageUrl} alt={item.name} fill className="object-cover" sizes="48px" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-[var(--color-soft-oat)] text-lg" aria-hidden="true">~</div>
+        )}
+      </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-[var(--color-graphite)] leading-snug">{item.name}</p>
         <p className="text-xs text-neutral-400 mt-0.5">

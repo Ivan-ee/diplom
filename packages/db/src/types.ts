@@ -11,6 +11,8 @@ import type {
   orderItems,
   favorites,
   reviews,
+  promoCodes,
+  promoCodeUsages,
 } from './schema/index';
 
 export type User = typeof users.$inferSelect;
@@ -46,3 +48,9 @@ export type NewOrderItem = typeof orderItems.$inferInsert;
 export type Favorite = typeof favorites.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type NewReview = typeof reviews.$inferInsert;
+
+export type PromoCode = typeof promoCodes.$inferSelect;
+export type NewPromoCode = typeof promoCodes.$inferInsert;
+
+export type PromoCodeUsage = typeof promoCodeUsages.$inferSelect;
+export type NewPromoCodeUsage = typeof promoCodeUsages.$inferInsert;

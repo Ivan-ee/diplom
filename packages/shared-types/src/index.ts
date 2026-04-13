@@ -262,6 +262,45 @@ export interface Product {
 }
 
 // ---------------------------------------------------------------------------
+// Promo Codes
+// ---------------------------------------------------------------------------
+
+/** Type of discount applied by a promo code. */
+export type DiscountType = 'percentage' | 'fixed';
+
+/** Promo code entity as returned by admin API endpoints. */
+export interface PromoCodeInfo {
+  id: string;
+  code: string;
+  discountType: DiscountType;
+  discountValue: number;
+  minOrderAmount: number | null;
+  maxDiscountAmount: number | null;
+  startsAt: string | null;
+  expiresAt: string | null;
+  usageLimit: number | null;
+  usageLimitPerUser: number | null;
+  usageCount: number;
+  isActive: boolean;
+  description: string | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+/** Result of promo code validation (POST /promo-codes/validate). */
+export interface PromoValidationResult {
+  valid: boolean;
+  promoCodeId?: string;
+  code: string;
+  discountType?: DiscountType;
+  discountValue?: number;
+  /** Calculated discount amount in kopecks for the given cart total. */
+  discountAmount: number;
+  /** Human-readable reason if the code is invalid. */
+  message?: string;
+}
+
+// ---------------------------------------------------------------------------
 // API response wrapper
 // ---------------------------------------------------------------------------
 

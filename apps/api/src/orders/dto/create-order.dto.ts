@@ -91,6 +91,12 @@ export class CreateOrderDto {
   @MaxLength(500)
   comment?: string;
 
+  @ApiPropertyOptional({ description: 'Promo code to apply', example: 'SPRING20' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  promoCode?: string;
+
   @ApiProperty({ type: [CreateOrderItemDto] })
   @IsArray()
   @ArrayMinSize(1)

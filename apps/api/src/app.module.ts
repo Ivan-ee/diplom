@@ -13,6 +13,7 @@ import { ConstructorModule } from './constructor/constructor.module';
 import { OrdersModule } from './orders/orders.module';
 import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
+import { PromoCodesModule } from './promo-codes/promo-codes.module';
 
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -32,6 +33,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     OrdersModule,
     UploadModule,
     AdminModule,
+    PromoCodesModule,
   ],
   controllers: [AppController],
   providers: [
