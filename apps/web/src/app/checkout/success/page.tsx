@@ -1,87 +1,11 @@
 'use client';
 
-import { useEffect, useRef, Suspense } from 'react';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, MapPin, Clock, CalendarDays, ShoppingBag, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-
-// ── Confetti particle ────────────────────────────────────────────────────────
-
-interface Particle {
-  id: number;
-  x: number;
-  delay: number;
-  duration: number;
-  color: string;
-  size: number;
-  rotate: number;
-}
-
-const CONFETTI_COLORS = [
-  '#C4A08A',
-  '#F9D5C4',
-  '#A8C5A0',
-  '#F5C5A3',
-  '#D4B896',
-  '#E8D5C4',
-];
-
-function useConfettiParticles(count: number): Particle[] {
-  const ref = useRef<Particle[]>([]);
-  if (ref.current.length === 0) {
-    ref.current = Array.from({ length: count }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      delay: Math.random() * 1.8,
-      duration: 2.4 + Math.random() * 2,
-      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)] as string,
-      size: 6 + Math.random() * 8,
-      rotate: Math.random() * 360,
-    }));
-  }
-  return ref.current;
-}
-
-function ConfettiPiece({ p }: { p: Particle }) {
-  return (
-    <motion.div
-      className="absolute top-0 rounded-sm pointer-events-none"
-      style={{
-        left: `${p.x}%`,
-        width: p.size,
-        height: p.size * 0.6,
-        backgroundColor: p.color,
-        rotate: p.rotate,
-      }}
-      initial={{ y: -20, opacity: 1 }}
-      animate={{
-        y: ['0%', '120vh'],
-        opacity: [1, 1, 0],
-        rotate: [p.rotate, p.rotate + 360 * (Math.random() > 0.5 ? 1 : -1)],
-        x: [0, (Math.random() - 0.5) * 120],
-      }}
-      transition={{
-        delay: p.delay,
-        duration: p.duration,
-        ease: 'easeIn',
-        times: [0, 0.8, 1],
-      }}
-    />
-  );
-}
-
-function Confetti() {
-  const particles = useConfettiParticles(36);
-  return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-50" aria-hidden="true">
-      {particles.map((p) => (
-        <ConfettiPiece key={p.id} p={p} />
-      ))}
-    </div>
-  );
-}
 
 // ── Time slot display ────────────────────────────────────────────────────────
 
@@ -174,9 +98,9 @@ function SuccessContent() {
 
       {/* Order details card */}
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut', delay: 0.38 }}
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, type: 'spring', stiffness: 280, damping: 22 }}
         className="bg-white rounded-2xl border border-neutral-100 p-6 mt-8 max-w-md mx-auto w-full"
       >
         {/* Order number */}
@@ -252,15 +176,8 @@ function SuccessContent() {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CheckoutSuccessPage() {
-  const mounted = useRef(false);
-  useEffect(() => {
-    mounted.current = true;
-  }, []);
-
   return (
     <>
-      <Confetti />
-
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="flex flex-col items-center">
           <Suspense

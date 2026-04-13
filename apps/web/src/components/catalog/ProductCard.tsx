@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Chip } from '@heroui/react';
@@ -59,6 +60,8 @@ const categoryLabels: Record<string, string> = {
 };
 
 export function ProductCard({ product }: ProductCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   const minWeight =
     product.weightMin ??
     (product.weightOptions?.[0] ??
@@ -84,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const imageUrl = product.imageUrl ?? product.images?.[0];
 
   return (
-    <div className="group relative rounded-[var(--radius-card)] overflow-hidden bg-white border border-[var(--border-default)] hover:border-[var(--color-caramel)]/30 hover:shadow-[0_0_12px_rgba(184,146,106,0.12)] transition-all duration-300 focus-within:ring-2 focus-within:ring-[var(--color-caramel)] focus-within:ring-offset-2 flex flex-col h-full">
+    <div className="group relative rounded-[var(--radius-card)] overflow-hidden bg-white border border-[var(--border-default)] hover:border-[var(--color-caramel)]/30 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 ease-out focus-within:ring-2 focus-within:ring-[var(--color-caramel)] focus-within:ring-offset-2 flex flex-col h-full">
       {/* Image area */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-warm-ivory)]">
         {imageUrl ? (
@@ -92,8 +95,9 @@ export function ProductCard({ product }: ProductCardProps) {
             src={imageUrl}
             alt={product.name}
             fill
-            className="object-cover transition-transform duration-500"
+            className={`object-cover transition-[opacity,filter] duration-300 ease-out ${imageLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-[8px]'}`}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            onLoad={() => setImageLoaded(true)}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-[var(--color-warm-ivory)]">
@@ -138,8 +142,8 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <p className="text-sm sm:text-lg font-semibold text-[var(--color-caramel)] mt-1">
           {isPerUnit
-            ? `${formatPrice(product.pricePerUnit ?? 0)} ₽`
-            : `от ${formatPrice(product.pricePerKg ?? product.priceMin ?? 0)} ₽/кг`}
+            ? formatPrice(product.pricePerUnit ?? 0)
+            : `от ${formatPrice(product.pricePerKg ?? product.priceMin ?? 0)}/кг`}
         </p>
 
         {/* Button sits above the stretched link at z-10 */}

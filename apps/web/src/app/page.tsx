@@ -26,9 +26,14 @@ export default async function HomePage() {
     products = [];
   }
 
+  const heroImages = products
+    .filter((p) => p.imageUrl)
+    .slice(0, 5)
+    .map((p) => ({ src: p.imageUrl as string, alt: p.name }));
+
   return (
     <>
-      <HeroSection />
+      <HeroSection heroImages={heroImages} />
       <PopularProducts products={products} />
       <Advantages />
       <ReviewsCarousel />

@@ -21,6 +21,15 @@ export interface CakeConfigData {
   inscription?: string;
 }
 
+export interface PromoResult {
+  valid: boolean;
+  code: string;
+  discountType?: string;
+  discountValue?: number;
+  discountAmount: number;
+  message?: string;
+}
+
 export interface CartItem {
   id: string;
   type: 'product' | 'constructor';
@@ -56,6 +65,9 @@ interface CartState {
   clearCart: () => void;
   getTotalPrice: () => number;
   getTotalItems: () => number;
+  promoResult: PromoResult | null;
+  setPromoResult: (result: PromoResult | null) => void;
+  clearPromo: () => void;
 }
 
 // Версия схемы persist — увеличить при изменении формата CartItem
@@ -168,7 +180,7 @@ export const useCartStore = create<CartState>()(
         );
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], promoResult: null }),
 
       getTotalPrice: () => {
         return get().items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -177,6 +189,12 @@ export const useCartStore = create<CartState>()(
       getTotalItems: () => {
         return get().items.reduce((sum, item) => sum + item.quantity, 0);
       },
+
+      promoResult: null,
+
+      setPromoResult: (result) => set({ promoResult: result }),
+
+      clearPromo: () => set({ promoResult: null }),
     }),
     {
       name: 'bakery-cart',

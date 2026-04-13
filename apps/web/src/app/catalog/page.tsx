@@ -2,6 +2,16 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { fetchServer } from '@/lib/api';
 import { shopConfig } from '@/config/shop.config';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+
+const categorySlugToName: Record<string, string> = {
+  classic: 'Классические',
+  wedding: 'Свадебные',
+  kids: 'Детские',
+  bento: 'Бенто',
+  cupcakes: 'Капкейки',
+  trifles: 'Трайфлы',
+};
 
 export const metadata: Metadata = {
   title: `Каталог — ${shopConfig.name}`,
@@ -89,6 +99,15 @@ export default async function CatalogPage({
       {/* Page header */}
       <div className="bg-[var(--surface-secondary)] pt-8 pb-6 lg:pt-12 lg:pb-8">
         <div className="px-4 max-w-7xl mx-auto">
+          <Breadcrumbs
+            items={[
+              { label: 'Главная', href: '/' },
+              ...(params.categorySlug
+                ? [{ label: 'Каталог', href: '/catalog' }, { label: categorySlugToName[params.categorySlug] ?? params.categorySlug }]
+                : [{ label: 'Каталог' }]),
+            ]}
+            className="mb-4"
+          />
           <h1 className="text-[length:var(--text-h1)] leading-[var(--leading-heading)] font-heading font-bold text-[var(--color-graphite)]">
             Каталог
           </h1>

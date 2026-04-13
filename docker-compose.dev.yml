@@ -50,4 +50,19 @@ services:
       echo 'Buckets created and policies set';
       "
 
+  meilisearch:
+    image: getmeili/meilisearch:v1.14
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_MASTER_KEY: devMasterKey123
+      MEILI_ENV: development
+    volumes:
+      - ./docker-volumes/meili_data:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:7700/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 

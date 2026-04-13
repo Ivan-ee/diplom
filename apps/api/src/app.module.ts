@@ -14,6 +14,7 @@ import { OrdersModule } from './orders/orders.module';
 import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
 import { PromoCodesModule } from './promo-codes/promo-codes.module';
+import { SearchModule } from './search/search.module';
 
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -34,6 +35,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     UploadModule,
     AdminModule,
     PromoCodesModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

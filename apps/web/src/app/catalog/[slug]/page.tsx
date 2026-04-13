@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
 import { fetchServer } from '@/lib/api';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { type Product } from '@/components/catalog/ProductCard';
 import { ProductGallery } from '@/components/product/ProductGallery';
 import { ProductInfo } from '@/components/product/ProductInfo';
+import { CrossSell } from '@/components/product/CrossSell';
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -67,22 +67,17 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumbs */}
-      <nav
-        className="flex items-center gap-2 text-sm text-[var(--color-graphite-light)]/60 mb-10"
-        aria-label="Хлебные крошки"
-      >
-        <Link href="/" className="hover:text-[var(--color-graphite)] transition-colors duration-200">
-          Главная
-        </Link>
-        <ChevronRight size={13} className="shrink-0 text-[var(--color-champagne)]" />
-        <Link href="/catalog" className="hover:text-[var(--color-graphite)] transition-colors duration-200">
-          Каталог
-        </Link>
-        <ChevronRight size={13} className="shrink-0 text-[var(--color-champagne)]" />
-        <span className="text-[var(--color-graphite)] font-medium">
-          {product.name}
-        </span>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: 'Главная', href: '/' },
+          { label: 'Каталог', href: '/catalog' },
+          ...(product.category && typeof product.category === 'object'
+            ? [{ label: product.category.name, href: `/catalog?categorySlug=${product.category.slug}` }]
+            : []),
+          { label: product.name },
+        ]}
+        className="mb-6"
+      />
 
       {/* Main content — Apple-style asymmetric grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-12 lg:gap-16">
@@ -92,6 +87,18 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         {/* Info */}
         <ProductInfo product={product} />
       </div>
+
+      {/* Cross-sell */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-12">
+        <CrossSell
+          categorySlug={
+            product.category && typeof product.category === 'object'
+              ? product.category.slug
+              : undefined
+          }
+          currentProductId={product.id}
+        />
+      </section>
     </div>
   );
 }

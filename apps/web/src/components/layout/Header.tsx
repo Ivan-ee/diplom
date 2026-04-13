@@ -3,10 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, User, Menu, Heart, ShoppingBag as OrdersIcon, LogOut, X } from 'lucide-react';
+import { ShoppingBag, User, Menu, Heart, ShoppingBag as OrdersIcon, LogOut, X, Search } from 'lucide-react';
 import { Drawer, DrawerRoot, DrawerTrigger, DrawerBackdrop, DrawerContent, DrawerBody, DrawerCloseTrigger, DrawerHandle, Popover, PopoverRoot, PopoverTrigger, PopoverContent, PopoverDialog } from '@heroui/react';
 import { CartBadge } from './CartBadge';
 import { useAuth } from '@/hooks/useAuth';
+import { SearchDialog } from '@/components/search/SearchDialog';
+import { useSearchDialog } from '@/hooks/useSearchDialog';
+import { CartDrawer } from '@/components/cart/CartDrawer';
+import { useCartDrawer } from '@/hooks/useCartDrawer';
 
 const navLinks = [
   { href: '/catalog', label: 'Каталог' },
@@ -19,6 +23,8 @@ export function Header() {
   const pathname = usePathname();
   const isConstructor = pathname === '/constructor';
   const { user, isAuthenticated, openAuth, logout } = useAuth();
+  const searchDialog = useSearchDialog();
+  const cartDrawer = useCartDrawer();
 
   return (
     <header className="sticky top-0 z-50 h-[72px] w-full bg-[var(--color-milk-white)]/85 backdrop-blur-xl border-b border-[var(--border-subtle)]">
@@ -54,27 +60,52 @@ export function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          {/* Desktop UserMenu */}
+          {/* Desktop UserMenu + Search pill */}
           {!isConstructor && (
-            <div className="hidden lg:block">
-              <DesktopUserMenu
-                user={user}
-                isAuthenticated={isAuthenticated}
-                onLoginClick={() => openAuth('login')}
-                onLogout={logout}
-              />
-            </div>
+            <>
+              <div className="hidden lg:block">
+                <DesktopUserMenu
+                  user={user}
+                  isAuthenticated={isAuthenticated}
+                  onLoginClick={() => openAuth('login')}
+                  onLogout={logout}
+                />
+              </div>
+
+              {/* Desktop search pill */}
+              <button
+                type="button"
+                onClick={searchDialog.open}
+                className="hidden lg:flex items-center gap-2 h-9 px-4 rounded-full bg-[var(--surface-secondary)] border border-[var(--border-default)] text-[var(--color-graphite-light)] text-sm hover:border-[var(--color-champagne)] hover:text-[var(--color-graphite)] transition-colors duration-200"
+                aria-label="Поиск"
+              >
+                <Search size={16} />
+                <span>Поиск...</span>
+                <kbd className="ml-2 text-[10px] font-sans border border-[var(--color-champagne)] rounded px-1.5 py-0.5 text-[var(--color-graphite-light)]/60">⌘K</kbd>
+              </button>
+
+              {/* Mobile search icon */}
+              <button
+                type="button"
+                onClick={searchDialog.open}
+                className="flex lg:hidden h-10 w-10 items-center justify-center rounded-xl hover:bg-[var(--surface-secondary)] transition-colors duration-200"
+                aria-label="Поиск"
+              >
+                <Search size={21} className="text-[var(--color-graphite-light)]" />
+              </button>
+            </>
           )}
 
           {/* Cart */}
-          <Link
-            href="/cart"
+          <button
+            type="button"
+            onClick={cartDrawer.open}
             className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-[var(--surface-secondary)] transition-colors duration-200"
             aria-label="Корзина"
           >
             <ShoppingBag size={21} className="text-[var(--color-graphite-light)]" />
             <CartBadge />
-          </Link>
+          </button>
 
           {/* Mobile hamburger */}
           {!isConstructor && (
@@ -88,6 +119,9 @@ export function Header() {
           )}
         </div>
       </div>
+
+      <SearchDialog isOpen={searchDialog.isOpen} onClose={searchDialog.close} />
+      <CartDrawer isOpen={cartDrawer.isOpen} onOpenChange={cartDrawer.setOpen} />
     </header>
   );
 }

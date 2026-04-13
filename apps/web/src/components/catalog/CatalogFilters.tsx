@@ -3,6 +3,8 @@
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useTransition } from 'react';
 import { motion } from 'framer-motion';
+import { PriceRangeFilter } from './PriceRangeFilter';
+import { ActiveFilterChips } from './ActiveFilterChips';
 
 const categories = [
   { value: '', label: 'Все' },
@@ -28,6 +30,8 @@ export function CatalogFilters() {
 
   const currentCategorySlug = searchParams.get('categorySlug') ?? '';
   const currentSort = `${searchParams.get('sort') ?? 'createdAt'}:${searchParams.get('order') ?? 'desc'}`;
+  const currentPriceMin = searchParams.get('priceMin') ?? '';
+  const currentPriceMax = searchParams.get('priceMax') ?? '';
 
   const updateParam = useCallback(
     (updates: Record<string, string | null>) => {
@@ -59,72 +63,134 @@ export function CatalogFilters() {
     updateParam({ sort, order });
   }
 
-  function handleReset() {
+  function handleResetAll() {
     startTransition(() => {
       router.push(pathname, { scroll: false });
     });
   }
 
-  const hasActiveFilters = currentCategorySlug !== '' || currentSort !== 'createdAt:desc';
+  const hasActiveFilters =
+    currentCategorySlug !== '' ||
+    currentSort !== 'createdAt:desc' ||
+    currentPriceMin !== '' ||
+    currentPriceMax !== '';
+
+  function kopecksToRubles(kopecks: string): string {
+    const n = parseInt(kopecks, 10);
+    if (isNaN(n)) return kopecks;
+    return String(Math.round(n / 100));
+  }
+
+  function buildActiveFilters() {
+    const chips: { key: string; label: string; onRemove: () => void }[] = [];
+
+    if (currentCategorySlug !== '') {
+      const cat = categories.find((c) => c.value === currentCategorySlug);
+      chips.push({
+        key: 'category',
+        label: cat?.label ?? currentCategorySlug,
+        onRemove: () => updateParam({ categorySlug: null }),
+      });
+    }
+
+    if (currentPriceMin !== '') {
+      chips.push({
+        key: 'priceMin',
+        label: `от ${kopecksToRubles(currentPriceMin)} ₽`,
+        onRemove: () => updateParam({ priceMin: null }),
+      });
+    }
+
+    if (currentPriceMax !== '') {
+      chips.push({
+        key: 'priceMax',
+        label: `до ${kopecksToRubles(currentPriceMax)} ₽`,
+        onRemove: () => updateParam({ priceMax: null }),
+      });
+    }
+
+    return chips;
+  }
 
   return (
     <div
-      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 max-w-7xl mx-auto px-4 transition-opacity duration-200 ${isPending ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}
+      className={`flex flex-col gap-3 max-w-7xl mx-auto px-4 transition-opacity duration-200 ${isPending ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}
     >
-      {/* Category tabs */}
-      <div
-        className="flex flex-wrap items-center gap-1 bg-[var(--surface-secondary)] border border-[var(--border-default)] rounded-[var(--radius-pill)] p-1"
-        role="group"
-        aria-label="Категория"
-      >
-        {categories.map((cat) => (
-          <button
-            key={cat.value}
-            onClick={() => handleCategory(cat.value)}
-            aria-pressed={currentCategorySlug === cat.value}
-            className={`relative cursor-pointer px-3 py-1.5 rounded-[var(--radius-pill)] text-sm font-medium transition-colors duration-200 ${
-              currentCategorySlug === cat.value
-                ? 'text-white'
-                : 'text-[var(--color-graphite)] hover:text-[var(--color-graphite)]'
-            }`}
-          >
-            {currentCategorySlug === cat.value && (
-              <motion.div
-                layoutId="category-pill"
-                className="absolute inset-0 rounded-[var(--radius-pill)] bg-[var(--color-caramel)] shadow-sm"
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              />
-            )}
-            <span className="relative z-10">{cat.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Right side: sort + reset */}
-      <div className="flex items-center gap-3">
-        <select
-          value={currentSort}
-          onChange={(e) => handleSort(e.target.value)}
-          aria-label="Сортировка"
-          className="text-sm border border-[var(--border-default)] rounded-[var(--radius-control)] px-3 py-2 bg-[var(--surface-elevated)] text-[var(--color-graphite)] focus:outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)] cursor-pointer transition-colors duration-200"
+      {/* Filter bar: categories + price + sort + reset */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        {/* Category tabs */}
+        <div
+          className="flex flex-wrap items-center gap-1 bg-[var(--surface-secondary)] border border-[var(--border-default)] rounded-[var(--radius-pill)] p-1"
+          role="group"
+          aria-label="Категория"
         >
-          {sortOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
+          {categories.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => handleCategory(cat.value)}
+              aria-pressed={currentCategorySlug === cat.value}
+              className={`relative cursor-pointer px-3 py-1.5 rounded-[var(--radius-pill)] text-sm font-medium transition-colors duration-200 ${
+                currentCategorySlug === cat.value
+                  ? 'text-white'
+                  : 'text-[var(--color-graphite)] hover:text-[var(--color-graphite)]'
+              }`}
+            >
+              {currentCategorySlug === cat.value && (
+                <motion.div
+                  layoutId="category-pill"
+                  className="absolute inset-0 rounded-[var(--radius-pill)] bg-[var(--color-caramel)] shadow-sm"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">{cat.label}</span>
+            </button>
           ))}
-        </select>
+        </div>
 
-        {hasActiveFilters && (
-          <button
-            onClick={handleReset}
-            className="text-sm text-[var(--color-graphite-light)]/60 hover:text-[var(--color-graphite)] transition-colors duration-200 whitespace-nowrap"
-            aria-label="Сбросить фильтры"
+        {/* Right side: price filter + sort + reset */}
+        <div className="flex items-center gap-3">
+          <PriceRangeFilter
+            priceMin={currentPriceMin || undefined}
+            priceMax={currentPriceMax || undefined}
+            onUpdate={(params) => {
+              updateParam({
+                priceMin: params.priceMin ?? null,
+                priceMax: params.priceMax ?? null,
+              });
+            }}
+            className="hidden sm:flex"
+          />
+
+          <select
+            value={currentSort}
+            onChange={(e) => handleSort(e.target.value)}
+            aria-label="Сортировка"
+            className="text-sm border border-[var(--border-default)] rounded-[var(--radius-control)] px-3 py-2 bg-[var(--surface-elevated)] text-[var(--color-graphite)] focus:outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)] cursor-pointer transition-colors duration-200"
           >
-            Сбросить
-          </button>
-        )}
+            {sortOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
+          {hasActiveFilters && (
+            <button
+              onClick={handleResetAll}
+              className="text-sm text-[var(--color-graphite-light)]/60 hover:text-[var(--color-graphite)] transition-colors duration-200 whitespace-nowrap"
+              aria-label="Сбросить фильтры"
+            >
+              Сбросить
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Active filter chips */}
+      <ActiveFilterChips
+        filters={buildActiveFilters()}
+        onResetAll={handleResetAll}
+      />
     </div>
   );
 }

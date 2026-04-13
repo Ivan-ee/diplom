@@ -1,17 +1,33 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CartItem } from '@/components/cart/CartItem';
 import { CartSummary } from '@/components/cart/CartSummary';
 import { CartCrossSell } from '@/components/cart/CartCrossSell';
 import { useCartStore } from '@/stores/cart-store';
+import { useAuth } from '@/hooks/useAuth';
+import { formatPrice } from '@/lib/utils';
 
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clearCart);
+  const totalPrice = useCartStore((s) => s.getTotalPrice());
+  const totalItems = useCartStore((s) => s.getTotalItems());
   const isEmpty = items.length === 0;
+
+  const router = useRouter();
+  const { isAuthenticated, openAuth } = useAuth();
+
+  const handleCheckout = () => {
+    if (!isAuthenticated) {
+      openAuth('login');
+      return;
+    }
+    router.push('/checkout');
+  };
 
   const [unavailableIds, setUnavailableIds] = useState<Set<string>>(new Set());
 
@@ -53,7 +69,7 @@ export default function CartPage() {
   const hasUnavailable = unavailableIds.size > 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="max-w-7xl mx-auto px-4 py-12 pb-24 lg:pb-0">
       {/* Page header */}
       <div className="mb-8">
         <h1 className="font-heading font-bold text-[length:var(--text-h1)] leading-[var(--leading-heading)] tracking-tight text-[var(--color-graphite)]">
@@ -144,6 +160,29 @@ export default function CartPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Mobile sticky bottom bar — only when cart has items */}
+      {!isEmpty && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] lg:hidden">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+            <div>
+              <p className="text-xs text-[var(--color-graphite-light)]">
+                {totalItems} {totalItems === 1 ? 'товар' : totalItems < 5 ? 'товара' : 'товаров'}
+              </p>
+              <p className="text-lg font-bold text-[var(--color-graphite)]">
+                {formatPrice(totalPrice)}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCheckout}
+              className="rounded-[var(--radius-control)] bg-[var(--color-caramel)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--color-caramel-hover)] transition-colors"
+            >
+              Оформить заказ
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

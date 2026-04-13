@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, CreditCard, Clock, MapPin } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { TrustSignals } from '@/components/ui/TrustSignals';
 import { Chip, Disclosure } from '@heroui/react';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart-store';
@@ -192,20 +193,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         )}
 
         {/* Trust cues */}
-        <div className="flex items-center gap-4 mt-4 pt-4 border-t border-[var(--border-default)]">
-          <div className="flex items-center gap-1.5 text-[length:var(--text-caption)] text-[var(--color-graphite-light)]">
-            <MapPin size={14} className="text-[var(--color-caramel)]" />
-            <span>Самовывоз: г. Арзамас</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-[length:var(--text-caption)] text-[var(--color-graphite-light)]">
-            <Clock size={14} className="text-[var(--color-caramel)]" />
-            <span>Под заказ</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-[length:var(--text-caption)] text-[var(--color-graphite-light)]">
-            <CreditCard size={14} className="text-[var(--color-caramel)]" />
-            <span>Оплата при получении</span>
-          </div>
-        </div>
+        <TrustSignals variant="pdp" />
       </div>
 
       {/* Details disclosure — shown when product has both description and weight */}

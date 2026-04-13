@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { ProductCard, type Product } from '@/components/catalog/ProductCard';
-import { StaggerChildren, StaggerItem } from '@/components/ui/stagger-children';
+import { Carousel } from '@/components/ui/Carousel';
 
 interface PopularProductsProps {
   products: Product[];
@@ -34,14 +34,19 @@ export function PopularProducts({ products }: PopularProductsProps) {
           </Link>
         </div>
 
-        {/* Grid */}
-        <StaggerChildren className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+        {/* Carousel */}
+        <Carousel
+          ariaLabel="Популярные десерты"
+          showArrows
+          showDots
+          options={{ dragFree: true, containScroll: 'trimSnaps', align: 'start' }}
+          slideClassName="min-w-0 flex-[0_0_80%] sm:flex-[0_0_45%] lg:flex-[0_0_30%] xl:flex-[0_0_25%] pl-4"
+          className="-ml-4"
+        >
           {products.map((product) => (
-            <StaggerItem key={product.id}>
-              <ProductCard product={product} />
-            </StaggerItem>
+            <ProductCard key={product.id} product={product} />
           ))}
-        </StaggerChildren>
+        </Carousel>
       </div>
     </section>
   );

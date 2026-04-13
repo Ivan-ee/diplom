@@ -6,13 +6,13 @@ import Image from 'next/image';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MapPin, Clock, MessageSquare, Phone, Loader2, AlertCircle, ShoppingBag, ChevronLeft, ChevronRight, Tag } from 'lucide-react';
+import { MapPin, Clock, MessageSquare, Phone, Loader2, AlertCircle, ShoppingBag, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { TrustSignals } from '@/components/ui/TrustSignals';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCartStore } from '@/stores/cart-store';
+import { useCartStore, type CartItem, type PromoResult } from '@/stores/cart-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
-import type { CartItem } from '@/stores/cart-store';
 
 // ── cakeConfig → API DTO adapter ─────────────────────────────────────────────
 
@@ -77,12 +77,17 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 // ── API response shape ───────────────────────────────────────────────────────
 
-interface OrderCreatedResponse {
+interface OrderData {
   id: string;
-  orderNumber: string;
+  orderNumber: number;
   pickupDate: string;
-  timeSlot: string;
+  pickupTimeSlot: string;
   totalPrice: number;
+}
+
+interface OrderCreatedResponse {
+  order: OrderData;
+  items: unknown[];
 }
 
 // ── Time slot config ─────────────────────────────────────────────────────────
@@ -314,15 +319,6 @@ function CalendarPicker({ value, onChange, minDate, isDateDisabled, error }: Cal
 
 // ── OrderSummary component ───────────────────────────────────────────────────
 
-interface PromoResult {
-  valid: boolean;
-  code: string;
-  discountType?: string;
-  discountValue?: number;
-  discountAmount: number;
-  message?: string;
-}
-
 interface OrderSummaryProps {
   items: CartItem[];
   totalPrice: number;
@@ -433,6 +429,8 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError, promoResul
         )}
       </AnimatePresence>
 
+      <TrustSignals variant="checkout" />
+
       <button
         type="submit"
         disabled={isSubmitting}
@@ -465,10 +463,7 @@ export function CheckoutForm() {
 
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const [promoCode, setPromoCode] = useState('');
-  const [promoResult, setPromoResult] = useState<PromoResult | null>(null);
-  const [promoLoading, setPromoLoading] = useState(false);
-  const [promoError, setPromoError] = useState<string | null>(null);
+  const promoResult = useCartStore((s) => s.promoResult);
 
   const user = useAuthStore((s) => s.user);
 
@@ -480,6 +475,7 @@ export function CheckoutForm() {
     formState: { errors, isSubmitting },
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
+    mode: 'onBlur',
     defaultValues: {
       phone: '',
       pickupDate: '',
@@ -495,38 +491,6 @@ export function CheckoutForm() {
       setValue('phone', user.phone, { shouldValidate: false });
     }
   }, [user?.phone, setValue]);
-
-  const handleApplyPromo = async () => {
-    if (!promoCode.trim()) return;
-    setPromoLoading(true);
-    setPromoError(null);
-    try {
-      const res = await fetchClient<PromoResult>('/promo-codes/validate', {
-        method: 'POST',
-        body: JSON.stringify({
-          code: promoCode.trim().toUpperCase(),
-          cartTotal: totalPrice,
-        }),
-      });
-      if (res.data?.valid) {
-        setPromoResult(res.data);
-        setPromoError(null);
-      } else {
-        setPromoResult(null);
-        setPromoError(res.data?.message ?? 'Промокод недействителен');
-      }
-    } catch {
-      setPromoError('Не удалось проверить промокод');
-    } finally {
-      setPromoLoading(false);
-    }
-  };
-
-  const handleRemovePromo = () => {
-    setPromoResult(null);
-    setPromoCode('');
-    setPromoError(null);
-  };
 
   async function onSubmit(data: CheckoutFormData) {
     setSubmitError(null);
@@ -559,11 +523,11 @@ export function CheckoutForm() {
 
       clearCart();
 
-      const order = res.data;
+      const order = res.data.order ?? res.data;
       const params = new URLSearchParams({
-        orderNumber: order.orderNumber ?? order.id,
+        orderNumber: String(order.orderNumber ?? order.id),
         pickupDate: order.pickupDate ?? data.pickupDate,
-        timeSlot: order.timeSlot ?? data.timeSlot,
+        timeSlot: order.pickupTimeSlot ?? data.timeSlot,
       });
 
       router.push(`/checkout/success?${params.toString()}`);
@@ -573,8 +537,22 @@ export function CheckoutForm() {
     }
   }
 
+  const onInvalidSubmit = () => {
+    const firstError = document.querySelector('[aria-invalid="true"]');
+    if (firstError) {
+      firstError.closest('.field-wrapper, [data-field]')?.classList.add('animate-shake');
+      setTimeout(() => {
+        firstError.closest('.field-wrapper, [data-field]')?.classList.remove('animate-shake');
+      }, 600);
+      (firstError as HTMLElement).focus();
+    }
+  };
+
+  const phoneValue = watch('phone') ?? '';
+  const phoneDigits = phoneValue.replace(/\D/g, '');
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form onSubmit={handleSubmit(onSubmit, onInvalidSubmit)} noValidate>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-12 items-start">
 
         {/* Left column: form sections */}
@@ -586,26 +564,37 @@ export function CheckoutForm() {
               <Phone size={17} className="text-[var(--color-caramel)]" />
               Контактная информация
             </h2>
-            <div>
+            <div data-field="phone">
               <label className="block text-sm font-medium text-[var(--color-graphite)] mb-1.5">
                 Телефон <span className="text-red-400">*</span>
               </label>
-              <input
-                type="tel"
-                placeholder="+7 (___) ___-__-__"
-                value={watch('phone') ? formatPhone(watch('phone')) : ''}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, '');
-                  const normalized = raw.startsWith('7')
-                    ? `+${raw.slice(0, 11)}`
-                    : `+7${raw.slice(0, 10)}`;
-                  setValue('phone', normalized, { shouldValidate: true });
-                }}
-                className={inputClass(!!errors.phone)}
-              />
+              <div className="relative">
+                <input
+                  type="tel"
+                  placeholder="+7 (___) ___-__-__"
+                  value={phoneValue ? formatPhone(phoneValue) : ''}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, '');
+                    const normalized = raw.startsWith('7')
+                      ? `+${raw.slice(0, 11)}`
+                      : `+7${raw.slice(0, 10)}`;
+                    setValue('phone', normalized, { shouldValidate: true });
+                  }}
+                  aria-invalid={!!errors.phone}
+                  aria-describedby={errors.phone ? 'phone-error' : undefined}
+                  className={inputClass(!!errors.phone)}
+                />
+                {phoneDigits.length >= 11 && !errors.phone && (
+                  <CheckCircle2
+                    size={16}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-success)] pointer-events-none"
+                  />
+                )}
+              </div>
               <AnimatePresence>
                 {errors.phone && (
                   <motion.p
+                    id="phone-error"
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
@@ -734,76 +723,6 @@ export function CheckoutForm() {
                 )}
               </AnimatePresence>
             </div>
-          </section>
-
-          {/* Section: Promo code */}
-          <section className="bg-[var(--surface-elevated)] rounded-[var(--radius-card)] border border-[var(--border-default)] p-6 mb-6">
-            <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4 flex items-center gap-2">
-              <Tag size={17} className="text-[var(--color-caramel)]" />
-              Промокод
-            </h2>
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={promoCode}
-                onChange={(e) => {
-                  setPromoCode(e.target.value.toUpperCase());
-                  setPromoError(null);
-                }}
-                placeholder="Введите промокод"
-                className={inputClass(!!promoError)}
-                disabled={!!promoResult}
-                maxLength={50}
-              />
-              {promoResult ? (
-                <button
-                  type="button"
-                  onClick={handleRemovePromo}
-                  className="shrink-0 rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
-                >
-                  Убрать
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleApplyPromo}
-                  disabled={promoLoading || !promoCode.trim()}
-                  className="shrink-0 rounded-xl bg-[var(--color-caramel)] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--color-caramel-dark)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {promoLoading ? <Loader2 size={16} className="animate-spin" /> : 'Применить'}
-                </button>
-              )}
-            </div>
-
-            <AnimatePresence>
-              {promoResult && (
-                <motion.p
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.15 }}
-                  className="mt-3 text-sm font-medium text-emerald-600"
-                >
-                  Скидка: −{formatPrice(promoResult.discountAmount)}
-                  {promoResult.discountType === 'percentage' && ` (${promoResult.discountValue}%)`}
-                </motion.p>
-              )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-              {promoError && (
-                <motion.p
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.15 }}
-                  className="mt-3 flex items-center gap-1.5 text-sm text-red-500"
-                >
-                  <AlertCircle size={14} />
-                  {promoError}
-                </motion.p>
-              )}
-            </AnimatePresence>
           </section>
 
           {/* Section: Comment */}

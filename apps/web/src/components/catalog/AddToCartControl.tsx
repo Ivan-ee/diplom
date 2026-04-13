@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Minus, Plus, ShoppingCart } from 'lucide-react';
+import { CheckCircle2, Minus, Plus, ShoppingCart } from 'lucide-react';
 import { useCartStore } from '@/stores/cart-store';
 import { showCartToast } from '@/lib/cart-toast';
+import { useCartDrawer } from '@/hooks/useCartDrawer';
 import { cn, formatPrice } from '@/lib/utils';
 import { type Product } from '@/components/catalog/ProductCard';
 
@@ -61,6 +63,8 @@ export function AddToCartControl({
   const updateWeight = useCartStore((s) => s.updateWeight);
   const cartItem = useCartStore((s) => s.getItemByProductId(product.id));
 
+  const [justAdded, setJustAdded] = useState(false);
+
   const isDisabled = product.isAvailable === false;
   const isPerUnit = product.priceType === 'per_unit';
   const { minWeightG, maxWeightG, stepG } = deriveWeightParams(product);
@@ -99,6 +103,12 @@ export function AddToCartControl({
         ? undefined
         : `${((initialWeight ?? minWeightG) / 1000).toLocaleString('ru-RU')} кг`,
     });
+
+    // Open cart drawer for regular products (not constructor)
+    useCartDrawer.getState().open();
+
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 800);
   }
 
   function handleIncrease(e: React.MouseEvent) {
@@ -173,7 +183,25 @@ export function AddToCartControl({
   return (
     <div className={cn('relative', className)}>
       <AnimatePresence mode="wait" initial={false}>
-        {cartItem ? (
+        {justAdded && cartItem ? (
+          /* ── "Добавлено" feedback ────────────────────────────────────────── */
+          <motion.div
+            key="added-feedback"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className={cn(
+              isCompact
+                ? 'w-full rounded-[var(--radius-control)] text-xs sm:text-sm font-medium py-1.5 sm:py-2'
+                : 'w-full rounded-[var(--radius-control)] h-14 text-base font-semibold flex items-center justify-center gap-2',
+              'bg-[var(--color-success)]/10 text-[var(--color-success)] flex items-center justify-center gap-1.5'
+            )}
+          >
+            <CheckCircle2 size={isCompact ? 14 : 18} />
+            <span>Добавлено</span>
+          </motion.div>
+        ) : cartItem ? (
           /* ── In-cart controller ─────────────────────────────────────────── */
           <motion.div
             key="controller"
