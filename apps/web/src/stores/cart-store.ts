@@ -33,6 +33,17 @@ export interface CartItem {
   quantity: number;
   inscription?: string;
   cakeConfig?: CakeConfigData;
+  /** копейки за кг — для пересчёта per_kg */
+  pricePerKg?: number;
+  /** копейки за штуку — для пересчёта per_unit */
+  pricePerUnit?: number;
+  priceType?: 'per_kg' | 'per_unit';
+  /** шаг веса в граммах (500 = 0.5 кг) */
+  weightStep?: number;
+  /** мин. вес в граммах */
+  minWeight?: number;
+  /** макс. вес в граммах */
+  maxWeight?: number;
 }
 
 interface CartState {
@@ -40,10 +51,15 @@ interface CartState {
   addItem: (item: Omit<CartItem, 'id' | 'quantity'> & { quantity?: number }) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  updateWeight: (productId: string, newWeight: number) => void;
+  getItemByProductId: (productId: string) => CartItem | null;
   clearCart: () => void;
   getTotalPrice: () => number;
   getTotalItems: () => number;
 }
+
+// Версия схемы persist — увеличить при изменении формата CartItem
+const CART_VERSION = 1;
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -51,10 +67,51 @@ export const useCartStore = create<CartState>()(
       items: [],
 
       addItem: (item) => {
-        const id = `${item.type}-${item.productId ?? 'custom'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        // Constructor — всегда уникальный элемент
+        if (item.type === 'constructor') {
+          const id = `constructor-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+          const newItem: CartItem = {
+            ...item,
+            id,
+            quantity: item.quantity ?? 1,
+          };
+          set((state) => ({ items: [...state.items, newItem] }));
+          return;
+        }
+
+        // Product — upsert по productId
+        const stableId = `product-${item.productId}`;
+        const existing = get().items.find(
+          (i) => i.type === 'product' && i.productId === item.productId
+        );
+
+        if (existing) {
+          set((state) => ({
+            items: state.items.map((i) =>
+              i.id === existing.id
+                ? {
+                    ...i,
+                    weight: item.weight,
+                    price: item.price,
+                    name: item.name,
+                    imageUrl: item.imageUrl,
+                    inscription: item.inscription !== undefined ? item.inscription : i.inscription,
+                    pricePerKg: item.pricePerKg ?? i.pricePerKg,
+                    pricePerUnit: item.pricePerUnit ?? i.pricePerUnit,
+                    priceType: item.priceType ?? i.priceType,
+                    weightStep: item.weightStep ?? i.weightStep,
+                    minWeight: item.minWeight ?? i.minWeight,
+                    maxWeight: item.maxWeight ?? i.maxWeight,
+                  }
+                : i
+            ),
+          }));
+          return;
+        }
+
         const newItem: CartItem = {
           ...item,
-          id,
+          id: stableId,
           quantity: item.quantity ?? 1,
         };
         set((state) => ({ items: [...state.items, newItem] }));
@@ -76,6 +133,41 @@ export const useCartStore = create<CartState>()(
         }));
       },
 
+      updateWeight: (productId, newWeight) => {
+        const item = get().items.find(
+          (i) => i.type === 'product' && i.productId === productId
+        );
+        if (!item) return;
+
+        const min = item.minWeight ?? 0;
+        if (newWeight < min) {
+          get().removeItem(item.id);
+          return;
+        }
+
+        const clampedWeight = item.maxWeight !== undefined
+          ? Math.min(newWeight, item.maxWeight)
+          : newWeight;
+
+        const newPrice = Math.round((item.pricePerKg ?? 0) * clampedWeight / 1000);
+
+        set((state) => ({
+          items: state.items.map((i) =>
+            i.id === item.id
+              ? { ...i, weight: clampedWeight, price: newPrice }
+              : i
+          ),
+        }));
+      },
+
+      getItemByProductId: (productId) => {
+        return (
+          get().items.find(
+            (i) => i.type === 'product' && i.productId === productId
+          ) ?? null
+        );
+      },
+
       clearCart: () => set({ items: [] }),
 
       getTotalPrice: () => {
@@ -88,6 +180,42 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'bakery-cart',
+      version: CART_VERSION,
+      migrate: (persistedState, version) => {
+        const state = persistedState as { items: CartItem[] };
+
+        if (version === CART_VERSION) return state;
+
+        // v0 → v1: дедупликация product по productId, стабилизация ID,
+        // приблизительное восстановление pricePerKg
+        const seen = new Set<string>();
+        const migratedItems: CartItem[] = [];
+
+        for (const item of state.items ?? []) {
+          if (item.type === 'constructor') {
+            migratedItems.push(item);
+            continue;
+          }
+
+          const pid = item.productId;
+          if (!pid || seen.has(pid)) continue;
+          seen.add(pid);
+
+          const restoredPricePerKg =
+            item.pricePerKg ??
+            (item.weight > 0
+              ? Math.round(item.price / (item.weight / 1000))
+              : undefined);
+
+          migratedItems.push({
+            ...item,
+            id: `product-${pid}`,
+            pricePerKg: restoredPricePerKg,
+          });
+        }
+
+        return { ...state, items: migratedItems };
+      },
     }
   )
 );

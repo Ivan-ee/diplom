@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import Link from 'next/link';
-import { ChevronDown, Check, ShoppingCart, CreditCard, Clock, MapPin } from 'lucide-react';
-import { Chip, Button, Disclosure } from '@heroui/react';
+import { useState } from 'react';
+import { ChevronDown, CreditCard, Clock, MapPin } from 'lucide-react';
+import { Chip, Disclosure } from '@heroui/react';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart-store';
 import { type Product } from '@/components/catalog/ProductCard';
-import { showCartToast } from '@/lib/cart-toast';
+import { AddToCartControl } from '@/components/catalog/AddToCartControl';
 
 interface ProductInfoProps {
   product: Product;
@@ -58,13 +57,13 @@ function calcPrice(product: Product, weightG: number): number {
 export function ProductInfo({ product }: ProductInfoProps) {
   const isPerUnit = product.priceType === 'per_unit';
   const weightOptions = isPerUnit ? [] : buildWeightOptions(product);
-  const [selectedWeight, setSelectedWeight] = useState(weightOptions[0] ?? 1000);
+  const [localWeight, setLocalWeight] = useState(weightOptions[0] ?? 1000);
   const [inscription, setInscription] = useState('');
-  const [added, setAdded] = useState(false);
 
-  const addItem = useCartStore((s) => s.addItem);
-  const cartItems = useCartStore((s) => s.items);
-  const isInCart = cartItems.some((item) => item.productId === product.id);
+  const cartItem = useCartStore((s) => s.getItemByProductId(product.id));
+  const updateWeight = useCartStore((s) => s.updateWeight);
+
+  const selectedWeight = cartItem && !isPerUnit ? cartItem.weight : localWeight;
   const price = calcPrice(product, selectedWeight);
 
   const categoryName =
@@ -81,27 +80,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
     ? `${parseFloat(product.minWeight ?? String(product.weightMin / 1000)).toLocaleString('ru-RU')} кг`
     : null;
   const hasDetails = !!(product.composition || weightDisplay);
-
-  const handleAddToCart = useCallback(() => {
-    addItem({
-      type: 'product',
-      productId: product.id,
-      name: product.name,
-      imageUrl: product.imageUrl ?? product.images?.[0] ?? '',
-      weight: isPerUnit
-        ? Math.round(parseFloat(product.minWeight ?? '0') * 1000)
-        : selectedWeight,
-      price,
-      inscription: inscription.trim() || undefined,
-    });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
-    showCartToast({
-      name: product.name,
-      image: product.imageUrl ?? product.images?.[0],
-      weight: isPerUnit ? undefined : `${(selectedWeight / 1000).toLocaleString('ru-RU')} кг`,
-    });
-  }, [addItem, product, isPerUnit, selectedWeight, price, inscription]);
 
   return (
     <div className="flex flex-col">
@@ -153,7 +131,13 @@ export function ProductInfo({ product }: ProductInfoProps) {
               {weightOptions.map((w) => (
                 <button
                   key={w}
-                  onClick={() => setSelectedWeight(w)}
+                  onClick={() => {
+                    if (cartItem && !isPerUnit) {
+                      updateWeight(product.id, w);
+                    } else {
+                      setLocalWeight(w);
+                    }
+                  }}
                   aria-pressed={w === selectedWeight}
                   className={`px-4 h-11 rounded-[var(--radius-control)] text-sm font-medium border transition-all duration-200 ${
                     w === selectedWeight
@@ -193,42 +177,18 @@ export function ProductInfo({ product }: ProductInfoProps) {
           </div>
         </div>
 
-        {/* Add to cart button */}
-        <Button
-          onPress={handleAddToCart}
-          isDisabled={product.isAvailable === false}
-          className={`w-full rounded-[var(--radius-control)] h-14 text-base font-semibold text-white transition-all duration-300 cursor-pointer ${
-            added
-              ? 'bg-emerald-500 hover:bg-emerald-500'
-              : 'bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)]'
-          }`}
-        >
-          {added ? (
-            <span className="flex items-center justify-center gap-2">
-              <Check size={18} />
-              Добавлено
-            </span>
-          ) : (
-            <span className="flex items-center justify-center gap-2">
-              <ShoppingCart size={18} />
-              В корзину — {formatPrice(price)}
-            </span>
-          )}
-        </Button>
+        {/* Add to cart */}
+        <AddToCartControl
+          product={product}
+          variant="full"
+          inscription={inscription}
+          initialWeight={localWeight}
+        />
 
         {product.isAvailable === false && (
           <p className="text-center text-sm text-[var(--color-graphite-light)]/60 mt-3">
             Этот товар временно недоступен
           </p>
-        )}
-
-        {isInCart && !added && (
-          <Link
-            href="/cart"
-            className="block text-center text-xs text-[var(--color-caramel)] hover:underline transition-colors mt-2"
-          >
-            Уже в корзине → Перейти
-          </Link>
         )}
 
         {/* Trust cues */}
