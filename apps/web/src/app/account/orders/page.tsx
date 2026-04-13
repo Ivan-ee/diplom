@@ -56,7 +56,22 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchClient<Order[]>('/orders')
-      .then((res) => setOrders(res.data))
+      .then((res) => {
+        const mapped = (res.data ?? []).map((order) => ({
+          ...order,
+          items: order.items.map((item: any) => {
+            if (item.type === 'product') {
+              return {
+                ...item,
+                name: item.productName ?? item.name ?? 'Товар',
+                imageUrl: item.productImageUrl ?? item.imageUrl ?? undefined,
+              };
+            }
+            return item;
+          }),
+        }));
+        setOrders(mapped);
+      })
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : 'Не удалось загрузить заказы')
       )

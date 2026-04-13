@@ -106,8 +106,9 @@ function ProductItemRow({ item }: { item: OrderItemProduct }) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-[var(--color-graphite)] leading-snug">{item.name}</p>
         <p className="text-xs text-neutral-400 mt-0.5">
-          {`${parseFloat(String(item.weight)).toLocaleString('ru-RU')} кг`}
-          {item.quantity > 1 && ` × ${item.quantity}`}
+          {parseFloat(String(item.weight)) > 0
+            ? `${parseFloat(String(item.weight)).toLocaleString('ru-RU')} кг${item.quantity > 1 ? ` × ${item.quantity}` : ''}`
+            : `${item.quantity} шт.`}
         </p>
       </div>
       <span className="shrink-0 text-sm font-semibold text-[var(--color-caramel)]">

@@ -128,8 +128,23 @@ export class OrdersService {
 
     const orderIds = orders.map((o) => o.id);
     const allItems = await this.db
-      .select()
+      .select({
+        id: schema.orderItems.id,
+        orderId: schema.orderItems.orderId,
+        type: schema.orderItems.type,
+        productId: schema.orderItems.productId,
+        cakeConfig: schema.orderItems.cakeConfig,
+        weight: schema.orderItems.weight,
+        quantity: schema.orderItems.quantity,
+        price: schema.orderItems.price,
+        inscription: schema.orderItems.inscription,
+        screenshotUrl: schema.orderItems.screenshotUrl,
+        productName: schema.products.name,
+        productImageUrl: schema.products.imageUrl,
+        productPriceType: schema.products.priceType,
+      })
       .from(schema.orderItems)
+      .leftJoin(schema.products, eq(schema.orderItems.productId, schema.products.id))
       .where(inArray(schema.orderItems.orderId, orderIds));
 
     const itemsByOrder = new Map<string, typeof allItems>();
@@ -156,8 +171,23 @@ export class OrdersService {
     }
 
     const items = await this.db
-      .select()
+      .select({
+        id: schema.orderItems.id,
+        orderId: schema.orderItems.orderId,
+        type: schema.orderItems.type,
+        productId: schema.orderItems.productId,
+        cakeConfig: schema.orderItems.cakeConfig,
+        weight: schema.orderItems.weight,
+        quantity: schema.orderItems.quantity,
+        price: schema.orderItems.price,
+        inscription: schema.orderItems.inscription,
+        screenshotUrl: schema.orderItems.screenshotUrl,
+        productName: schema.products.name,
+        productImageUrl: schema.products.imageUrl,
+        productPriceType: schema.products.priceType,
+      })
       .from(schema.orderItems)
+      .leftJoin(schema.products, eq(schema.orderItems.productId, schema.products.id))
       .where(eq(schema.orderItems.orderId, orderId));
 
     return { ...order, items };
