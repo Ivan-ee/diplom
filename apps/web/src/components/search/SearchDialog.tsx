@@ -13,23 +13,13 @@ import { AnimatePresence, motion, useReducedMotion, type Transition } from 'fram
 import { Search } from 'lucide-react';
 import { fetchClient } from '@/lib/api';
 import { cn, formatPrice } from '@/lib/utils';
-import { SEARCH_DEBOUNCE_MS } from '@/lib/constants';
+import { SEARCH_DEBOUNCE_MS, SEARCH_RESULTS_LIMIT } from '@/lib/constants';
+import type { SearchHit } from '@bakery/shared-types';
+import { sanitizeHighlight } from '@/lib/sanitize';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-interface SearchResult {
-  id: string;
-  name: string;
-  highlightedName: string;
-  slug: string;
-  imageUrl: string | null;
-  pricePerKg: number | null;
-  pricePerUnit: number | null;
-  priceType: string;
-  category: string;
-}
 
 export interface SearchDialogProps {
   isOpen: boolean;
@@ -40,7 +30,7 @@ export interface SearchDialogProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getPrice(result: SearchResult): string | null {
+function getPrice(result: SearchHit): string | null {
   if (result.priceType === 'per_kg' && result.pricePerKg !== null) {
     return `${formatPrice(result.pricePerKg)} / кг`;
   }
@@ -67,7 +57,7 @@ function SkeletonRow() {
 }
 
 interface ResultRowProps {
-  result: SearchResult;
+  result: SearchHit;
   index: number;
   isActive: boolean;
   resultId: string;
@@ -120,8 +110,15 @@ function ResultRow({
         <p
           className="truncate text-sm font-medium text-[var(--color-graphite)] [&_mark]:bg-transparent [&_mark]:font-semibold [&_mark]:text-[var(--color-caramel)]"
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: result.highlightedName }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.highlightedName) }}
         />
+        {result.highlightedDescription && (
+          <p
+            className="mt-0.5 truncate text-xs text-[var(--color-graphite-light)] [&_mark]:bg-transparent [&_mark]:font-semibold [&_mark]:text-[var(--color-caramel)]"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.highlightedDescription) }}
+          />
+        )}
         <p className="mt-0.5 truncate text-xs text-[var(--color-graphite-light)]">
           {[price, result.category].filter(Boolean).join(' · ')}
         </p>
@@ -140,9 +137,10 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
   const instanceId = useId();
 
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<SearchHit[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [error, setError] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -173,6 +171,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
       setQuery('');
       setResults([]);
       setActiveIndex(-1);
+      setError(false);
     }
   }, [isOpen]);
 
@@ -186,6 +185,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
     }
 
     setIsLoading(true);
+    setError(false);
     setActiveIndex(-1);
 
     const timer = setTimeout(async () => {
@@ -195,8 +195,8 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
       abortControllerRef.current = controller;
 
       try {
-        const response = await fetchClient<SearchResult[]>('/search', {
-          params: { q: query.trim(), limit: '6' },
+        const response = await fetchClient<SearchHit[]>('/search', {
+          params: { q: query.trim(), limit: String(SEARCH_RESULTS_LIMIT) },
           signal: controller.signal,
         });
         if (!controller.signal.aborted) {
@@ -205,6 +205,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
       } catch {
         if (!controller.signal.aborted) {
           setResults([]);
+          setError(true);
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -221,7 +222,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
   // ----- Navigation -----
 
   const navigateToResult = useCallback(
-    (result: SearchResult) => {
+    (result: SearchHit) => {
       router.push(`/catalog/${result.slug}`);
       onClose();
     },
@@ -309,7 +310,8 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
   // ----- Derived state -----
 
   const trimmedQuery = query.trim();
-  const showEmpty = !isLoading && trimmedQuery.length > 0 && results.length === 0;
+  const showError = error && !isLoading && trimmedQuery.length > 0;
+  const showEmpty = !isLoading && !error && trimmedQuery.length > 0 && results.length === 0;
   const showResults = !isLoading && results.length > 0;
   const showHint = !trimmedQuery && !isLoading;
 
@@ -424,6 +426,13 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
                     <SkeletonRow />
                     <SkeletonRow />
                   </div>
+                )}
+
+                {/* Error state */}
+                {showError && (
+                  <p className="px-5 py-8 text-center text-sm text-[var(--color-graphite-light)]">
+                    Поиск временно недоступен. Попробуйте позже.
+                  </p>
                 )}
 
                 {/* Empty state */}
