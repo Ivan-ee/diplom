@@ -201,11 +201,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <div className="mt-6">
           <Disclosure className="border-t border-[var(--color-champagne)]">
             <Disclosure.Heading>
-              <Disclosure.Trigger className="flex w-full items-center justify-between py-4 text-sm font-semibold text-[var(--color-graphite)] hover:text-[var(--color-caramel)] transition-colors duration-200 cursor-pointer">
-                Состав и детали
-                <Disclosure.Indicator className="transition-transform duration-200 data-[open]:rotate-180">
-                  <ChevronDown size={16} />
-                </Disclosure.Indicator>
+              <Disclosure.Trigger>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between py-4 text-sm font-semibold text-[var(--color-graphite)] hover:text-[var(--color-caramel)] transition-colors duration-200 cursor-pointer"
+                >
+                  Состав и детали
+                  <Disclosure.Indicator className="transition-transform duration-200 data-[open]:rotate-180">
+                    <ChevronDown size={16} />
+                  </Disclosure.Indicator>
+                </button>
               </Disclosure.Trigger>
             </Disclosure.Heading>
             <Disclosure.Content>

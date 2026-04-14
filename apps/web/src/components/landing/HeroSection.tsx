@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
-import { Carousel } from '@/components/ui/Carousel';
 
 interface HeroSectionProps {
   heroImages?: Array<{ src: string; alt: string }>;
@@ -20,30 +19,25 @@ export function HeroSection({ heroImages }: HeroSectionProps) {
           {/* Right column (image) — rendered first in DOM so it appears above text on mobile */}
           <div className="order-first lg:order-none">
             {hasImages ? (
-              <div className="relative rounded-[var(--radius-hero)] overflow-hidden">
-                <Carousel
-                  ariaLabel="Фото тортов"
-                  autoplay={{ delay: 5000, stopOnInteraction: true }}
-                  showDots
-                  options={{ loop: true }}
-                  slideClassName="basis-full"
-                >
-                  {heroImages.map((img, i) => (
-                    <div key={i} className="aspect-[16/9] lg:aspect-square relative">
-                      <Image
-                        src={img.src}
-                        alt={img.alt}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 1024px) 100vw, 50vw"
-                        priority={i === 0}
-                        loading={i === 0 ? 'eager' : 'lazy'}
-                      />
-                    </div>
-                  ))}
-                </Carousel>
-                {/* Floating price card */}
-                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2.5 shadow-[var(--shadow-card)]">
+              <div className="relative overflow-hidden aspect-[16/9] lg:aspect-square rounded-[var(--radius-hero)] bg-[var(--color-warm-ivory)]">
+                <Image
+                  src={heroImages[0].src}
+                  alt=""
+                  fill
+                  className="object-cover scale-110 blur-xl opacity-40"
+                  sizes="32px"
+                  aria-hidden="true"
+                />
+                <Image
+                  src={heroImages[0].src}
+                  alt={heroImages[0].alt}
+                  fill
+                  className="object-contain relative z-10"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                  loading="eager"
+                />
+                <div className="absolute bottom-4 left-4 z-20 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2.5 shadow-[var(--shadow-card)]">
                   <p className="text-sm font-semibold text-[var(--color-graphite)]">от 1 500 ₽/кг</p>
                   <p className="text-xs text-[var(--color-graphite-light)]">Бесплатная дегустация</p>
                 </div>

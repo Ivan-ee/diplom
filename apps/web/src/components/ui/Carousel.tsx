@@ -162,7 +162,7 @@ export function Carousel({
     >
       {/* Embla viewport */}
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex">
+        <div className="flex touch-pan-y">
           {slides}
         </div>
       </div>
