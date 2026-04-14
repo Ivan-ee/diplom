@@ -1,6 +1,12 @@
 @import 'tailwindcss';
 @import '@heroui/styles';
 
+@layer base {
+  button, [role="button"] {
+    cursor: pointer;
+  }
+}
+
 @theme {
   --color-milk-white: #FEFDFB;
   --color-warm-ivory: #FAF7F2;
