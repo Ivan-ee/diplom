@@ -262,6 +262,26 @@ export interface Product {
 }
 
 // ---------------------------------------------------------------------------
+// Search
+// ---------------------------------------------------------------------------
+
+/** A single search result item returned by GET /api/search. */
+export interface SearchHit {
+  id: string;
+  name: string;
+  /** Product name with matched tokens wrapped in <mark> tags, or null if no highlight. */
+  highlightedName: string | null;
+  /** Product description with matched tokens wrapped in <mark> tags, or null if no highlight. */
+  highlightedDescription: string | null;
+  slug: string;
+  imageUrl: string | null;
+  pricePerKg: number | null;
+  pricePerUnit: number | null;
+  priceType: PriceType;
+  category: string;
+}
+
+// ---------------------------------------------------------------------------
 // Promo Codes
 // ---------------------------------------------------------------------------
 
