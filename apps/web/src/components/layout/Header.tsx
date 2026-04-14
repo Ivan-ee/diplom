@@ -27,6 +27,7 @@ export function Header() {
   const cartDrawer = useCartDrawer();
 
   return (
+    <>
     <header className="sticky top-0 z-50 h-[72px] w-full bg-[var(--color-milk-white)]/85 backdrop-blur-xl border-b border-[var(--border-subtle)]">
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
@@ -120,9 +121,10 @@ export function Header() {
         </div>
       </div>
 
+    </header>
       <SearchDialog isOpen={searchDialog.isOpen} onClose={searchDialog.close} />
       <CartDrawer isOpen={cartDrawer.isOpen} onOpenChange={cartDrawer.setOpen} />
-    </header>
+    </>
   );
 }
 

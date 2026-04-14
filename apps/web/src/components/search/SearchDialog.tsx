@@ -339,8 +339,8 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
             aria-modal="true"
             aria-label="Поиск по каталогу"
             className={cn(
-              'fixed inset-0 z-[60] flex items-center justify-center',
-              'p-4 sm:p-6',
+              'fixed inset-0 z-[60] flex items-start justify-center',
+              'sm:items-center',
             )}
             // Clicks on the wrapper (outside the inner box) should close
             onClick={(e) => {
