@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle2, Minus, Plus, ShoppingCart } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/stores/cart-store';
 import { showCartToast } from '@/lib/cart-toast';
-import { useCartDrawer } from '@/hooks/useCartDrawer';
 import { cn, formatPrice } from '@/lib/utils';
 import { type Product } from '@/components/catalog/ProductCard';
 
@@ -105,9 +104,6 @@ export function AddToCartControl({
         ? undefined
         : `${((initialWeight ?? minWeightG) / 1000).toLocaleString('ru-RU')} кг`,
     });
-
-    // Open cart drawer for regular products (not constructor)
-    useCartDrawer.getState().open();
 
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 800);

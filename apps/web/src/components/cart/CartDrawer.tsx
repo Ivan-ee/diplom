@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Chip, DrawerRoot, DrawerBackdrop, DrawerContent, DrawerBody } from '@heroui/react';
+import { Chip, DrawerRoot, DrawerBackdrop, DrawerContent, DrawerDialog, DrawerBody } from '@heroui/react';
 import { useCartStore, type CartItem } from '@/stores/cart-store';
 import { useAuth } from '@/hooks/useAuth';
 import { formatPrice, cn } from '@/lib/utils';
@@ -45,14 +45,11 @@ export function CartDrawer({ isOpen, onOpenChange }: CartDrawerProps) {
     <DrawerRoot isOpen={isOpen} onOpenChange={onOpenChange}>
       <DrawerBackdrop
         isDismissable
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-      />
-
-      <DrawerContent
-        placement="right"
-        className="bg-[var(--surface-elevated)] outline-none w-[380px] max-w-full flex flex-col shadow-[var(--shadow-elevated)]"
+        className="bg-black/30 backdrop-blur-sm"
       >
-        <DrawerBody className="flex flex-col h-full p-0 overflow-hidden">
+        <DrawerContent placement="right">
+          <DrawerDialog className="bg-[var(--surface-elevated)] outline-none w-[380px] max-w-full flex flex-col shadow-[var(--shadow-elevated)] !p-0">
+            <DrawerBody className="flex flex-col h-full p-0 mx-0 overflow-hidden">
 
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-default)] shrink-0">
@@ -125,8 +122,10 @@ export function CartDrawer({ isOpen, onOpenChange }: CartDrawerProps) {
             </>
           )}
 
-        </DrawerBody>
-      </DrawerContent>
+            </DrawerBody>
+          </DrawerDialog>
+        </DrawerContent>
+      </DrawerBackdrop>
     </DrawerRoot>
   );
 }
