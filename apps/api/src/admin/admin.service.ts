@@ -92,6 +92,75 @@ export class AdminService {
     };
   }
 
+  async getAllProducts(query: PaginationDto) {
+    const { page, limit, order } = query;
+    const offset = (page - 1) * limit;
+
+    const orderExpr =
+      order === 'asc'
+        ? asc(schema.products.createdAt)
+        : desc(schema.products.createdAt);
+
+    const [rows, [{ count: total }]] = await Promise.all([
+      this.db
+        .select({
+          id: schema.products.id,
+          slug: schema.products.slug,
+          name: schema.products.name,
+          description: schema.products.description,
+          imageUrl: schema.products.imageUrl,
+          images: schema.products.images,
+          priceType: schema.products.priceType,
+          pricePerKg: schema.products.pricePerKg,
+          pricePerUnit: schema.products.pricePerUnit,
+          minWeight: schema.products.minWeight,
+          maxWeight: schema.products.maxWeight,
+          weightStep: schema.products.weightStep,
+          isAvailable: schema.products.isAvailable,
+          createdAt: schema.products.createdAt,
+          categoryId: schema.products.categoryId,
+          categoryName: schema.categories.name,
+          categorySlug: schema.categories.slug,
+        })
+        .from(schema.products)
+        .leftJoin(
+          schema.categories,
+          eq(schema.products.categoryId, schema.categories.id),
+        )
+        .where(eq(schema.products.isDeleted, false))
+        .orderBy(orderExpr)
+        .limit(limit)
+        .offset(offset),
+
+      this.db
+        .select({ count: sql<number>`cast(count(*) as int)` })
+        .from(schema.products)
+        .where(eq(schema.products.isDeleted, false)),
+    ]);
+
+    const data = rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description,
+      imageUrl: row.imageUrl,
+      images: row.images,
+      priceType: row.priceType,
+      pricePerKg: row.pricePerKg,
+      pricePerUnit: row.pricePerUnit,
+      minWeight: row.minWeight,
+      maxWeight: row.maxWeight,
+      weightStep: row.weightStep,
+      isAvailable: row.isAvailable,
+      createdAt: row.createdAt,
+      category: row.categoryId
+        ? { id: row.categoryId, name: row.categoryName, slug: row.categorySlug }
+        : null,
+    }));
+
+    return { data, meta: { page, limit, total } };
+  }
+
   async getAllOrders(query: PaginationDto & { status?: string }) {
     const { page, limit, order } = query;
     const offset = (page - 1) * limit;
@@ -143,6 +212,23 @@ export class AdminService {
         .where(where),
     ]);
 
+    const orderIds = paginatedOrders.map((row) => row.id);
+
+    const allItems =
+      orderIds.length > 0
+        ? await this.db
+            .select()
+            .from(schema.orderItems)
+            .where(inArray(schema.orderItems.orderId, orderIds))
+        : [];
+
+    const itemsByOrderId = new Map<string, typeof allItems>();
+    for (const item of allItems) {
+      const list = itemsByOrderId.get(item.orderId) ?? [];
+      list.push(item);
+      itemsByOrderId.set(item.orderId, list);
+    }
+
     const data = paginatedOrders.map((row) => ({
       id: row.id,
       orderNumber: row.orderNumber,
@@ -159,6 +245,7 @@ export class AdminService {
         email: row.userEmail,
         phone: row.userPhone,
       },
+      items: itemsByOrderId.get(row.id) ?? [],
     }));
 
     return { data, meta: { page, limit, total } };

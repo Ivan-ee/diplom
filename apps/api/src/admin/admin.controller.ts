@@ -86,6 +86,15 @@ export class AdminController {
     return this.adminService.updateOrderStatus(id, dto);
   }
 
+  @Get('products')
+  @ApiOperation({ summary: 'List all products with pagination (admin)' })
+  @ApiResponse({ status: 200, description: 'Paginated product list' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden — admin role required' })
+  getAllProducts(@Query() pagination: PaginationDto) {
+    return this.adminService.getAllProducts(pagination);
+  }
+
   @Post('products')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new product (admin)' })
