@@ -87,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const imageUrl = product.imageUrl ?? product.images?.[0];
 
   return (
-    <div className="group relative rounded-[var(--radius-card)] overflow-hidden bg-white border border-[var(--border-default)] hover:border-[var(--color-caramel)]/30 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 ease-out focus-within:ring-2 focus-within:ring-[var(--color-caramel)] focus-within:ring-offset-2 flex flex-col h-full">
+    <div className="group relative rounded-[var(--radius-card)] overflow-hidden bg-white border border-[var(--border-default)] hover:border-[var(--color-caramel)]/30 active:scale-[0.98] transition-all duration-200 ease-out flex flex-col h-full">
       {/* Image area */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-warm-ivory)]">
         {imageUrl ? (
@@ -95,7 +95,8 @@ export function ProductCard({ product }: ProductCardProps) {
             src={imageUrl}
             alt={product.name}
             fill
-            className={`object-cover transition-[opacity,filter] duration-300 ease-out ${imageLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-[8px]'}`}
+            className={`object-cover group-hover:scale-105 ${imageLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-[8px]'}`}
+            style={{ transition: 'opacity 300ms ease-out, filter 300ms ease-out, scale 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94)' }}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
             onLoad={() => setImageLoaded(true)}
           />
@@ -132,7 +133,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <Link
           href={`/catalog/${product.slug}`}
           aria-label={product.name}
-          className="after:absolute after:inset-0 after:z-0 focus:outline-none"
+          className="after:absolute after:inset-0 after:z-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2 focus-visible:rounded-[var(--radius-card)]"
           tabIndex={0}
         >
           <h3 className="text-xs sm:text-base font-medium text-[var(--color-graphite)] line-clamp-2 leading-snug min-h-[2.5rem] sm:min-h-[2.75rem]">

@@ -85,6 +85,8 @@ export interface CarouselProps {
   className?: string;
   /** Extra classes applied to every slide wrapper div. */
   slideClassName?: string;
+  /** Extra classes applied to the inner flex container (e.g. gap-4). */
+  containerClassName?: string;
   /** Required for accessibility — describes the carousel purpose. */
   ariaLabel: string;
 }
@@ -101,6 +103,7 @@ export function Carousel({
   showDots = true,
   className,
   slideClassName,
+  containerClassName,
   ariaLabel,
 }: CarouselProps) {
   // Build plugin list -------------------------------------------------------
@@ -162,7 +165,7 @@ export function Carousel({
     >
       {/* Embla viewport */}
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex touch-pan-y">
+        <div className={cn("flex touch-pan-y", containerClassName)}>
           {slides}
         </div>
       </div>

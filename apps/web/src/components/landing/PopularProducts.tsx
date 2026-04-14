@@ -39,9 +39,9 @@ export function PopularProducts({ products }: PopularProductsProps) {
           ariaLabel="Популярные десерты"
           showArrows
           showDots
-          options={{ dragFree: true, containScroll: 'trimSnaps', align: 'start' }}
-          slideClassName="min-w-0 flex-[0_0_80%] sm:flex-[0_0_45%] lg:flex-[0_0_30%] xl:flex-[0_0_25%] pl-4"
-          className="-ml-4"
+          options={{ loop: false, containScroll: 'trimSnaps', align: 'start', skipSnaps: true }}
+          slideClassName="min-w-0 flex-[0_0_80%] sm:flex-[0_0_calc(50%-8px)] lg:flex-[0_0_calc(33.333%-10.667px)] xl:flex-[0_0_calc(25%-12px)]"
+          containerClassName="gap-4"
         >
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
