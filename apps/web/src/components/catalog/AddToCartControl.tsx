@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle2, Minus, Plus, ShoppingCart } from 'lucide-react';
-import { useCartStore } from '@/stores/cart-store';
+import { useCartStore, useCartHydrated } from '@/stores/cart-store';
 import { showCartToast } from '@/lib/cart-toast';
 import { useCartDrawer } from '@/hooks/useCartDrawer';
 import { cn, formatPrice } from '@/lib/utils';
@@ -62,6 +62,8 @@ export function AddToCartControl({
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const updateWeight = useCartStore((s) => s.updateWeight);
   const cartItem = useCartStore((s) => s.getItemByProductId(product.id));
+  const hydrated = useCartHydrated();
+  const effectiveCartItem = hydrated ? cartItem : null;
 
   const [justAdded, setJustAdded] = useState(false);
 
@@ -145,16 +147,16 @@ export function AddToCartControl({
 
   // ── Display value ────────────────────────────────────────────────────────────
 
-  const displayValue = cartItem
+  const displayValue = effectiveCartItem
     ? isPerUnit
-      ? String(cartItem.quantity)
-      : `${(cartItem.weight / 1000).toLocaleString('ru-RU')} кг`
+      ? String(effectiveCartItem.quantity)
+      : `${(effectiveCartItem.weight / 1000).toLocaleString('ru-RU')} кг`
     : null;
 
   const increaseDisabled =
     isDisabled ||
-    !cartItem ||
-    (!isPerUnit && cartItem.weight >= maxWeightG);
+    !effectiveCartItem ||
+    (!isPerUnit && effectiveCartItem.weight >= maxWeightG);
 
   // ── Variant-specific class sets ─────────────────────────────────────────────
 
@@ -183,7 +185,7 @@ export function AddToCartControl({
   return (
     <div className={cn('relative', className)}>
       <AnimatePresence mode="wait" initial={false}>
-        {justAdded && cartItem ? (
+        {justAdded && effectiveCartItem ? (
           /* ── "Добавлено" feedback ────────────────────────────────────────── */
           <motion.div
             key="added-feedback"
@@ -201,7 +203,7 @@ export function AddToCartControl({
             <CheckCircle2 size={isCompact ? 14 : 18} />
             <span>Добавлено</span>
           </motion.div>
-        ) : cartItem ? (
+        ) : effectiveCartItem ? (
           /* ── In-cart controller ─────────────────────────────────────────── */
           <motion.div
             key="controller"

@@ -322,7 +322,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
           {/* Overlay */}
           <motion.div
             key="search-overlay"
-            className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm"
             variants={overlayVariants}
             initial="hidden"
             animate="visible"
@@ -339,9 +339,8 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
             aria-modal="true"
             aria-label="Поиск по каталогу"
             className={cn(
-              'fixed inset-0 z-50 flex items-start justify-center',
-              'sm:items-center sm:pt-0',
-              'pt-0',
+              'fixed inset-0 z-[60] flex items-center justify-center',
+              'p-4 sm:p-6',
             )}
             // Clicks on the wrapper (outside the inner box) should close
             onClick={(e) => {

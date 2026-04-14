@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import { middleware } from '@/middleware';
+import { proxy } from '@/proxy';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -19,22 +19,22 @@ function createRequest(path: string, token?: string): NextRequest {
   return req;
 }
 
-// ── Middleware ─────────────────────────────────────────────────────────────────
+// ── Proxy ─────────────────────────────────────────────────────────────────────
 
-describe('middleware', () => {
+describe('proxy', () => {
   // ── No token ────────────────────────────────────────────────────────────────
 
   describe('when no bakery_token cookie is present', () => {
     it('redirects to /?auth=login for /account routes', () => {
       const req = createRequest('/account/profile');
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(307);
       expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
     });
 
     it('redirects to /?auth=login for /admin routes', () => {
       const req = createRequest('/admin/orders');
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(307);
       expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
     });
@@ -46,7 +46,7 @@ describe('middleware', () => {
     it('allows access to /account routes', () => {
       const token = createJWT({ sub: 'user-1', role: 'USER' });
       const req = createRequest('/account/profile', token);
-      const res = middleware(req);
+      const res = proxy(req);
       // NextResponse.next() has status 200
       expect(res.status).toBe(200);
     });
@@ -54,7 +54,7 @@ describe('middleware', () => {
     it('redirects away from /admin routes', () => {
       const token = createJWT({ sub: 'user-1', role: 'USER' });
       const req = createRequest('/admin/dashboard', token);
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(307);
       expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
     });
@@ -66,14 +66,14 @@ describe('middleware', () => {
     it('allows access to /admin routes', () => {
       const token = createJWT({ sub: 'admin-1', role: 'admin' });
       const req = createRequest('/admin/orders', token);
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(200);
     });
 
     it('allows access to /account routes', () => {
       const token = createJWT({ sub: 'admin-1', role: 'admin' });
       const req = createRequest('/account/profile', token);
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(200);
     });
   });
@@ -84,14 +84,14 @@ describe('middleware', () => {
     it('allows access to /admin routes', () => {
       const token = createJWT({ sub: 'admin-1', role: 'ADMIN' });
       const req = createRequest('/admin/orders', token);
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(200);
     });
 
     it('allows access to /account routes', () => {
       const token = createJWT({ sub: 'admin-1', role: 'ADMIN' });
       const req = createRequest('/account/profile', token);
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(200);
     });
   });
@@ -101,20 +101,20 @@ describe('middleware', () => {
   describe('when the token is malformed', () => {
     it('redirects when token has only one part', () => {
       const req = createRequest('/admin/orders', 'not-a-jwt');
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(307);
       expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
     });
 
     it('redirects when token has two parts (missing signature)', () => {
       const req = createRequest('/admin/orders', 'header.payload');
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(307);
     });
 
     it('redirects when token payload is not valid base64 JSON', () => {
       const req = createRequest('/admin/dashboard', 'header.!!!.sig');
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(307);
     });
 
@@ -123,7 +123,7 @@ describe('middleware', () => {
       // For /account the route guard only checks token presence, not payload
       const req = createRequest('/account/profile', 'header.payload');
       // Token IS present so no-token redirect is skipped; /account never checks payload
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res.status).toBe(200);
     });
   });

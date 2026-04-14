@@ -156,11 +156,14 @@ function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: User
 
   return (
     <PopoverRoot>
-      <PopoverTrigger
-        aria-label="Меню пользователя"
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-caramel)] text-sm font-semibold text-white shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2"
-      >
-        {initial}
+      <PopoverTrigger>
+        <button
+          type="button"
+          aria-label="Меню пользователя"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-caramel)] text-sm font-semibold text-white shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2"
+        >
+          {initial}
+        </button>
       </PopoverTrigger>
       <PopoverContent className="z-50 min-w-[220px] rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-0 shadow-xl outline-none">
         <PopoverDialog className="outline-none">

@@ -37,6 +37,7 @@ export function HeroSection({ heroImages }: HeroSectionProps) {
                         className="object-cover"
                         sizes="(max-width: 1024px) 100vw, 50vw"
                         priority={i === 0}
+                        loading={i === 0 ? 'eager' : 'lazy'}
                       />
                     </div>
                   ))}

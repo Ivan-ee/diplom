@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -237,3 +238,18 @@ export const useCartStore = create<CartState>()(
     }
   )
 );
+
+export function useCartHydrated(): boolean {
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    if (useCartStore.persist.hasHydrated()) {
+      setHydrated(true);
+      return;
+    }
+    const unsub = useCartStore.persist.onFinishHydration(() => setHydrated(true));
+    return unsub;
+  }, []);
+
+  return hydrated;
+}
