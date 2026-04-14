@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { RefreshCw, Check, X } from 'lucide-react';
+import { RefreshCw, Check, X, Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
 import type {
@@ -192,6 +193,287 @@ function TableSkeleton({ cols }: { cols: number }) {
   );
 }
 
+// ---------- Delete ingredient button ----------
+
+type IngredientApiType = 'base' | 'filling' | 'coating' | 'decoration';
+
+interface DeleteIngredientButtonProps {
+  ingredientId: string;
+  type: IngredientApiType;
+  onDeleted: (id: string) => void;
+}
+
+function DeleteIngredientButton({ ingredientId, type, onDeleted }: DeleteIngredientButtonProps) {
+  const [confirm, setConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      await fetchClient(`/admin/constructor/ingredients/${ingredientId}`, {
+        method: 'DELETE',
+        body: JSON.stringify({ type }),
+      });
+      toast.success('Ингредиент удалён');
+      onDeleted(ingredientId);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Ошибка удаления');
+    } finally {
+      setLoading(false);
+      setConfirm(false);
+    }
+  };
+
+  if (confirm) {
+    return (
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => void handleDelete()}
+          disabled={loading}
+          className="flex h-6 w-6 items-center justify-center rounded text-red-600 hover:bg-red-50 disabled:opacity-50"
+          aria-label="Подтвердить удаление"
+        >
+          {loading ? <RefreshCw size={11} className="animate-spin" /> : <Check size={13} />}
+        </button>
+        <button
+          onClick={() => setConfirm(false)}
+          disabled={loading}
+          className="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100 disabled:opacity-50"
+          aria-label="Отмена"
+        >
+          <X size={13} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setConfirm(true)}
+      className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+      aria-label="Удалить ингредиент"
+    >
+      <Trash2 size={14} />
+    </button>
+  );
+}
+
+// ---------- Add ingredient modal ----------
+
+const TYPE_LABELS: Record<IngredientApiType, string> = {
+  base: 'основу',
+  filling: 'начинку',
+  coating: 'покрытие',
+  decoration: 'декор',
+};
+
+const fieldClass =
+  'w-full rounded-xl border border-[var(--color-champagne)] bg-white px-4 py-3 text-sm text-[var(--color-graphite)] focus:border-[var(--color-caramel)] focus:outline-none focus:ring-1 focus:ring-[var(--color-caramel)]';
+
+interface AddIngredientModalProps {
+  type: IngredientApiType;
+  onClose: () => void;
+  onCreated: () => void;
+}
+
+function AddIngredientModal({ type, onClose, onCreated }: AddIngredientModalProps) {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [pricePerKg, setPricePerKg] = useState('');
+  const [pricePerUnit, setPricePerUnit] = useState('');
+  const [sortOrder, setSortOrder] = useState('0');
+  const [saving, setSaving] = useState(false);
+
+  const hasDescription = type === 'base' || type === 'filling';
+  const hasPerKg = type === 'base' || type === 'filling' || type === 'coating';
+  const hasPerUnit = type === 'decoration';
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toast.error('Укажите название');
+      return;
+    }
+
+    const body: Record<string, unknown> = {
+      type,
+      name: name.trim(),
+      sortOrder: parseInt(sortOrder, 10) || 0,
+    };
+
+    if (hasDescription && description.trim()) {
+      body.description = description.trim();
+    }
+    if (hasPerKg) {
+      const parsed = parseFloat(pricePerKg);
+      if (isNaN(parsed) || parsed <= 0) {
+        toast.error('Укажите корректную цену за кг');
+        return;
+      }
+      body.pricePerKg = Math.round(parsed * 100);
+    }
+    if (hasPerUnit) {
+      const parsed = parseFloat(pricePerUnit);
+      if (isNaN(parsed) || parsed <= 0) {
+        toast.error('Укажите корректную цену за штуку');
+        return;
+      }
+      body.pricePerUnit = Math.round(parsed * 100);
+    }
+
+    setSaving(true);
+    try {
+      await fetchClient('/admin/constructor/ingredients', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      toast.success('Ингредиент создан');
+      onCreated();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Ошибка создания');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal header */}
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-bold font-heading text-neutral-900">
+            Добавить {TYPE_LABELS[type]}
+          </h2>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 transition-colors"
+            aria-label="Закрыть"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
+          {/* Name */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              Название <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Введите название"
+              className={fieldClass}
+              disabled={saving}
+              autoFocus
+            />
+          </div>
+
+          {/* Description */}
+          {hasDescription && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+                Описание
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Необязательное описание"
+                rows={3}
+                className={cn(fieldClass, 'resize-none')}
+                disabled={saving}
+              />
+            </div>
+          )}
+
+          {/* Price per kg */}
+          {hasPerKg && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+                Цена за кг (₽) <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={pricePerKg}
+                onChange={(e) => setPricePerKg(e.target.value)}
+                placeholder="500"
+                className={fieldClass}
+                disabled={saving}
+              />
+            </div>
+          )}
+
+          {/* Price per unit */}
+          {hasPerUnit && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+                Цена за штуку (₽) <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={pricePerUnit}
+                onChange={(e) => setPricePerUnit(e.target.value)}
+                placeholder="150"
+                className={fieldClass}
+                disabled={saving}
+              />
+            </div>
+          )}
+
+          {/* Sort order */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              Порядок сортировки
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              placeholder="0"
+              className={fieldClass}
+              disabled={saving}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 mt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex items-center gap-2 rounded-xl bg-[var(--color-caramel)] px-4 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-caramel-hover)] transition-colors disabled:opacity-50"
+            >
+              {saving && <RefreshCw size={13} className="animate-spin" />}
+              Создать
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ---------- Generic ingredient table ----------
 
 interface IngredientTableProps<T extends AnyIngredient> {
@@ -199,12 +481,14 @@ interface IngredientTableProps<T extends AnyIngredient> {
   loading: boolean;
   priceKey: 'pricePerKg' | 'pricePerUnit';
   priceLabel: string;
+  type: IngredientApiType;
   extraColumns?: {
     header: string;
     render: (row: T) => React.ReactNode;
   }[];
   onAvailabilityToggle: (id: string, value: boolean) => void;
   onPriceSaved: (id: string, price: number) => void;
+  onDeleted: (id: string) => void;
 }
 
 function IngredientTable<T extends AnyIngredient>({
@@ -212,11 +496,14 @@ function IngredientTable<T extends AnyIngredient>({
   loading,
   priceKey,
   priceLabel,
+  type,
   extraColumns = [],
   onAvailabilityToggle,
   onPriceSaved,
+  onDeleted,
 }: IngredientTableProps<T>) {
-  const colCount = 3 + extraColumns.length;
+  // +1 for actions column
+  const colCount = 4 + extraColumns.length;
 
   return (
     <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
@@ -240,6 +527,9 @@ function IngredientTable<T extends AnyIngredient>({
               </th>
               <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                 Доступно
+              </th>
+              <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
+                Действия
               </th>
             </tr>
           </thead>
@@ -301,6 +591,15 @@ function IngredientTable<T extends AnyIngredient>({
                       </span>
                     </div>
                   </td>
+
+                  {/* Actions */}
+                  <td className="px-4 py-3">
+                    <DeleteIngredientButton
+                      ingredientId={row.id}
+                      type={type}
+                      onDeleted={onDeleted}
+                    />
+                  </td>
                 </tr>
               ))
             )}
@@ -313,8 +612,20 @@ function IngredientTable<T extends AnyIngredient>({
 
 // ---------- Page ----------
 
+// Map Tab key → IngredientApiType
+const TAB_TO_API_TYPE: Record<Tab, IngredientApiType> = {
+  bases:       'base',
+  fillings:    'filling',
+  coatings:    'coating',
+  decorations: 'decoration',
+};
+
+// Map Tab key → section key in ConstructorCatalog
+type IngredientSection = keyof Pick<ConstructorCatalog, 'bases' | 'fillings' | 'coatings' | 'decorations'>;
+
 export default function AdminConstructorPage() {
   const [activeTab, setActiveTab] = useState<Tab>('bases');
+  const [showAddModal, setShowAddModal] = useState(false);
   const [ingredients, setConstructorCatalog] = useState<ConstructorCatalog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -331,7 +642,10 @@ export default function AdminConstructorPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  type IngredientSection = keyof Pick<ConstructorCatalog, 'bases' | 'fillings' | 'coatings' | 'decorations'>;
+  useEffect(() => {
+    const interval = setInterval(load, 60_000);
+    return () => clearInterval(interval);
+  }, [load]);
 
   const updateIngredient = (section: IngredientSection, id: string, patch: Partial<AnyIngredient>) => {
     setConstructorCatalog((prev) => {
@@ -351,6 +665,16 @@ export default function AdminConstructorPage() {
   const handlePrice = (section: IngredientSection, priceKey: string) => (id: string, price: number) =>
     updateIngredient(section, id, { [priceKey]: price } as Partial<AnyIngredient>);
 
+  const handleDeleted = (section: IngredientSection) => (id: string) => {
+    setConstructorCatalog((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [section]: (prev[section] as AnyIngredient[]).filter((item) => item.id !== id),
+      };
+    });
+  };
+
   const sectionCount = (section: IngredientSection) =>
     ingredients?.[section].length ?? 0;
 
@@ -359,14 +683,15 @@ export default function AdminConstructorPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold font-heading text-neutral-900">Ингредиенты</h1>
-        <button
-          onClick={load}
-          disabled={loading}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw size={14} className={cn(loading && 'animate-spin')} />
-          Обновить
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 bg-[var(--color-caramel)] text-white rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-caramel-hover)] transition-colors"
+          >
+            <Plus size={14} />
+            Добавить
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -405,8 +730,10 @@ export default function AdminConstructorPage() {
           loading={loading}
           priceKey="pricePerKg"
           priceLabel="Цена за кг"
+          type="base"
           onAvailabilityToggle={handleAvailability('bases')}
           onPriceSaved={handlePrice('bases', 'pricePerKg')}
+          onDeleted={handleDeleted('bases')}
         />
       )}
 
@@ -416,8 +743,10 @@ export default function AdminConstructorPage() {
           loading={loading}
           priceKey="pricePerKg"
           priceLabel="Цена за кг"
+          type="filling"
           onAvailabilityToggle={handleAvailability('fillings')}
           onPriceSaved={handlePrice('fillings', 'pricePerKg')}
+          onDeleted={handleDeleted('fillings')}
         />
       )}
 
@@ -427,6 +756,7 @@ export default function AdminConstructorPage() {
           loading={loading}
           priceKey="pricePerKg"
           priceLabel="Цена за кг"
+          type="coating"
           extraColumns={[
             {
               header: 'Тип',
@@ -439,6 +769,7 @@ export default function AdminConstructorPage() {
           ]}
           onAvailabilityToggle={handleAvailability('coatings')}
           onPriceSaved={handlePrice('coatings', 'pricePerKg')}
+          onDeleted={handleDeleted('coatings')}
         />
       )}
 
@@ -448,6 +779,7 @@ export default function AdminConstructorPage() {
           loading={loading}
           priceKey="pricePerUnit"
           priceLabel="Цена за штуку"
+          type="decoration"
           extraColumns={[
             {
               header: 'Категория',
@@ -460,6 +792,16 @@ export default function AdminConstructorPage() {
           ]}
           onAvailabilityToggle={handleAvailability('decorations')}
           onPriceSaved={handlePrice('decorations', 'pricePerUnit')}
+          onDeleted={handleDeleted('decorations')}
+        />
+      )}
+
+      {/* Add ingredient modal */}
+      {showAddModal && (
+        <AddIngredientModal
+          type={TAB_TO_API_TYPE[activeTab]}
+          onClose={() => setShowAddModal(false)}
+          onCreated={load}
         />
       )}
     </div>

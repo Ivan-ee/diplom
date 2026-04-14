@@ -56,6 +56,10 @@ export interface Order {
   items: OrderItem[];
   customerName?: string;
   customerPhone?: string;
+  pickupDate?: string;
+  pickupTimeSlot?: string;
+  comment?: string;
+  phone?: string;
   promoCode?: string | null;
   discountAmount?: number | null;
   originalPrice?: number | null;

@@ -6,7 +6,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, desc, eq, gte, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, inArray, or, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { AnyPgTable } from 'drizzle-orm/pg-core';
 import { PgColumn } from 'drizzle-orm/pg-core';
@@ -14,9 +14,15 @@ import * as schema from '@bakery/db/schema';
 import { DRIZZLE } from '../database/drizzle.token';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { UpdateOrderStatusDto, OrderStatus } from './dto/update-status.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 import { UpdateIngredientDto, IngredientType } from './dto/update-ingredient.dto';
+import { CreateIngredientDto } from './dto/create-ingredient.dto';
+import { DeleteIngredientDto } from './dto/delete-ingredient.dto';
 import { SearchService } from '../search/search.service';
+import { QueryUsersDto } from './dto/query-users.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { AddOrderItemDto } from './dto/add-order-item.dto';
 
 // Valid transitions: current status -> allowed next statuses
 const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
@@ -219,8 +225,22 @@ export class AdminService {
     const allItems =
       orderIds.length > 0
         ? await this.db
-            .select()
+            .select({
+              id: schema.orderItems.id,
+              orderId: schema.orderItems.orderId,
+              type: schema.orderItems.type,
+              productId: schema.orderItems.productId,
+              cakeConfig: schema.orderItems.cakeConfig,
+              weight: schema.orderItems.weight,
+              quantity: schema.orderItems.quantity,
+              price: schema.orderItems.price,
+              inscription: schema.orderItems.inscription,
+              screenshotUrl: schema.orderItems.screenshotUrl,
+              productName: schema.products.name,
+              productImageUrl: schema.products.imageUrl,
+            })
             .from(schema.orderItems)
+            .leftJoin(schema.products, eq(schema.orderItems.productId, schema.products.id))
             .where(inArray(schema.orderItems.orderId, orderIds))
         : [];
 
@@ -280,8 +300,22 @@ export class AdminService {
     }
 
     const items = await this.db
-      .select()
+      .select({
+        id: schema.orderItems.id,
+        orderId: schema.orderItems.orderId,
+        type: schema.orderItems.type,
+        productId: schema.orderItems.productId,
+        cakeConfig: schema.orderItems.cakeConfig,
+        weight: schema.orderItems.weight,
+        quantity: schema.orderItems.quantity,
+        price: schema.orderItems.price,
+        inscription: schema.orderItems.inscription,
+        screenshotUrl: schema.orderItems.screenshotUrl,
+        productName: schema.products.name,
+        productImageUrl: schema.products.imageUrl,
+      })
       .from(schema.orderItems)
+      .leftJoin(schema.products, eq(schema.orderItems.productId, schema.products.id))
       .where(eq(schema.orderItems.orderId, id));
 
     return {
@@ -341,6 +375,58 @@ export class AdminService {
       to: nextStatus,
     });
     return updated;
+  }
+
+  async updateOrder(id: string, dto: UpdateOrderDto) {
+    const [order] = await this.db
+      .select({ id: schema.orders.id, status: schema.orders.status })
+      .from(schema.orders)
+      .where(eq(schema.orders.id, id))
+      .limit(1);
+
+    if (!order) {
+      throw new NotFoundException(`Order "${id}" not found`);
+    }
+
+    const updateValues: Record<string, unknown> = { updatedAt: new Date() };
+    if (dto.pickupDate !== undefined) updateValues.pickupDate = dto.pickupDate;
+    if (dto.pickupTimeSlot !== undefined) updateValues.pickupTimeSlot = dto.pickupTimeSlot;
+    if (dto.phone !== undefined) updateValues.phone = dto.phone;
+    if (dto.comment !== undefined) updateValues.comment = dto.comment;
+
+    const [updated] = await this.db
+      .update(schema.orders)
+      .set(updateValues)
+      .where(eq(schema.orders.id, id))
+      .returning();
+
+    return updated;
+  }
+
+  async deleteOrder(id: string) {
+    const [order] = await this.db
+      .select({ id: schema.orders.id, status: schema.orders.status })
+      .from(schema.orders)
+      .where(eq(schema.orders.id, id))
+      .limit(1);
+
+    if (!order) {
+      throw new NotFoundException(`Order "${id}" not found`);
+    }
+
+    if (order.status === 'completed' || order.status === 'cancelled') {
+      throw new BadRequestException(
+        `Cannot cancel order with status "${order.status}"`,
+      );
+    }
+
+    await this.db
+      .update(schema.orders)
+      .set({ status: 'cancelled', updatedAt: new Date() })
+      .where(eq(schema.orders.id, id));
+
+    this.logger.log('Order cancelled by admin', { orderId: id });
+    return { cancelled: true, id };
   }
 
   async createProduct(dto: CreateProductDto) {
@@ -452,6 +538,233 @@ export class AdminService {
     return { deleted: true, id };
   }
 
+  async getAllUsers(query: QueryUsersDto) {
+    const { page, limit, order } = query;
+    const offset = (page - 1) * limit;
+
+    const conditions = [];
+    if (query.role) {
+      conditions.push(eq(schema.users.role, query.role));
+    }
+    if (query.search) {
+      const pattern = `%${query.search}%`;
+      conditions.push(
+        or(
+          ilike(schema.users.name, pattern),
+          ilike(schema.users.email, pattern),
+        ),
+      );
+    }
+
+    const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const orderExpr =
+      order === 'asc'
+        ? asc(schema.users.createdAt)
+        : desc(schema.users.createdAt);
+
+    const [rows, [{ count: total }]] = await Promise.all([
+      this.db
+        .select({
+          id: schema.users.id,
+          name: schema.users.name,
+          email: schema.users.email,
+          phone: schema.users.phone,
+          role: schema.users.role,
+          createdAt: schema.users.createdAt,
+          updatedAt: schema.users.updatedAt,
+        })
+        .from(schema.users)
+        .where(where)
+        .orderBy(orderExpr)
+        .limit(limit)
+        .offset(offset),
+
+      this.db
+        .select({ count: sql<number>`cast(count(*) as int)` })
+        .from(schema.users)
+        .where(where),
+    ]);
+
+    const data = rows.map(({ ...row }) => {
+      const r = row as typeof row & { passwordHash?: string };
+      delete r.passwordHash;
+      return r;
+    });
+
+    return { data, meta: { page, limit, total } };
+  }
+
+  async getUserById(id: string) {
+    const [user] = await this.db
+      .select({
+        id: schema.users.id,
+        name: schema.users.name,
+        email: schema.users.email,
+        phone: schema.users.phone,
+        role: schema.users.role,
+        createdAt: schema.users.createdAt,
+      })
+      .from(schema.users)
+      .where(eq(schema.users.id, id))
+      .limit(1);
+
+    if (!user) {
+      throw new NotFoundException(`User "${id}" not found`);
+    }
+
+    const [{ count: ordersCount }] = await this.db
+      .select({ count: sql<number>`cast(count(*) as int)` })
+      .from(schema.orders)
+      .where(eq(schema.orders.userId, id));
+
+    return { ...user, ordersCount };
+  }
+
+  async updateUser(id: string, dto: UpdateUserDto) {
+    const [existing] = await this.db
+      .select({ id: schema.users.id })
+      .from(schema.users)
+      .where(eq(schema.users.id, id))
+      .limit(1);
+
+    if (!existing) {
+      throw new NotFoundException(`User "${id}" not found`);
+    }
+
+    const updateValues: Partial<typeof schema.users.$inferInsert> & { updatedAt: Date } = {
+      updatedAt: new Date(),
+    };
+
+    if (dto.name !== undefined) updateValues.name = dto.name;
+    if (dto.phone !== undefined) updateValues.phone = dto.phone;
+    if (dto.role !== undefined) updateValues.role = dto.role;
+
+    const [updated] = await this.db
+      .update(schema.users)
+      .set(updateValues)
+      .where(eq(schema.users.id, id))
+      .returning();
+
+    const { passwordHash: _pw, ...safeUser } = updated as typeof updated & {
+      passwordHash?: string;
+    };
+    return safeUser;
+  }
+
+  async getAllCategories() {
+    return this.db
+      .select({
+        id: schema.categories.id,
+        name: schema.categories.name,
+        slug: schema.categories.slug,
+      })
+      .from(schema.categories)
+      .orderBy(asc(schema.categories.name));
+  }
+
+  async deleteOrderItem(orderId: string, itemId: string) {
+    const [order] = await this.db
+      .select({ id: schema.orders.id, status: schema.orders.status })
+      .from(schema.orders)
+      .where(eq(schema.orders.id, orderId))
+      .limit(1);
+
+    if (!order) {
+      throw new NotFoundException(`Order "${orderId}" not found`);
+    }
+
+    const [item] = await this.db
+      .select({ id: schema.orderItems.id, price: schema.orderItems.price })
+      .from(schema.orderItems)
+      .where(and(eq(schema.orderItems.id, itemId), eq(schema.orderItems.orderId, orderId)))
+      .limit(1);
+
+    if (!item) {
+      throw new NotFoundException(`Order item "${itemId}" not found`);
+    }
+
+    await this.db
+      .delete(schema.orderItems)
+      .where(eq(schema.orderItems.id, itemId));
+
+    const [{ total }] = await this.db
+      .select({ total: sql<number>`cast(coalesce(sum(${schema.orderItems.price}), 0) as int)` })
+      .from(schema.orderItems)
+      .where(eq(schema.orderItems.orderId, orderId));
+
+    await this.db
+      .update(schema.orders)
+      .set({ totalPrice: total, updatedAt: new Date() })
+      .where(eq(schema.orders.id, orderId));
+
+    this.logger.log('Order item deleted', { orderId, itemId });
+    return { deleted: true, itemId, newTotal: total };
+  }
+
+  async addOrderItem(orderId: string, dto: AddOrderItemDto) {
+    const [order] = await this.db
+      .select({ id: schema.orders.id })
+      .from(schema.orders)
+      .where(eq(schema.orders.id, orderId))
+      .limit(1);
+
+    if (!order) {
+      throw new NotFoundException(`Order "${orderId}" not found`);
+    }
+
+    const [product] = await this.db
+      .select({
+        id: schema.products.id,
+        name: schema.products.name,
+        pricePerKg: schema.products.pricePerKg,
+        pricePerUnit: schema.products.pricePerUnit,
+        priceType: schema.products.priceType,
+      })
+      .from(schema.products)
+      .where(and(eq(schema.products.id, dto.productId), eq(schema.products.isDeleted, false)))
+      .limit(1);
+
+    if (!product) {
+      throw new NotFoundException(`Product "${dto.productId}" not found`);
+    }
+
+    const quantity = dto.quantity ?? 1;
+    let price: number;
+    if (product.priceType === 'per_unit') {
+      price = (product.pricePerUnit ?? 0) * quantity;
+    } else {
+      const weightKg = dto.weight / 10;
+      price = Math.round((product.pricePerKg ?? 0) * weightKg) * quantity;
+    }
+
+    const [item] = await this.db
+      .insert(schema.orderItems)
+      .values({
+        orderId,
+        type: 'product',
+        productId: dto.productId,
+        weight: String(dto.weight / 10),
+        quantity,
+        price,
+        inscription: dto.inscription ?? null,
+      })
+      .returning();
+
+    const [{ total }] = await this.db
+      .select({ total: sql<number>`cast(coalesce(sum(${schema.orderItems.price}), 0) as int)` })
+      .from(schema.orderItems)
+      .where(eq(schema.orderItems.orderId, orderId));
+
+    await this.db
+      .update(schema.orders)
+      .set({ totalPrice: total, updatedAt: new Date() })
+      .where(eq(schema.orders.id, orderId));
+
+    this.logger.log('Order item added', { orderId, itemId: item.id, productId: dto.productId });
+    return { ...item, productName: product.name, newTotal: total };
+  }
+
   private async getCategoryName(categoryId: string | null): Promise<string> {
     if (!categoryId) return '';
     const [cat] = await this.db
@@ -495,6 +808,29 @@ export class AdminService {
         `Failed to remove product ${id} from search index: ${(err as Error).message}`,
       );
     }
+  }
+
+  async getAdminIngredients() {
+    const [bases, fillings, coatings, decorations] = await Promise.all([
+      this.db
+        .select()
+        .from(schema.constructorBases)
+        .orderBy(asc(schema.constructorBases.sortOrder)),
+      this.db
+        .select()
+        .from(schema.constructorFillings)
+        .orderBy(asc(schema.constructorFillings.sortOrder)),
+      this.db
+        .select()
+        .from(schema.constructorCoatings)
+        .orderBy(asc(schema.constructorCoatings.sortOrder)),
+      this.db
+        .select()
+        .from(schema.constructorDecorations)
+        .orderBy(asc(schema.constructorDecorations.sortOrder)),
+    ]);
+
+    return { bases, fillings, coatings, decorations };
   }
 
   async updateIngredient(id: string, dto: UpdateIngredientDto) {
@@ -588,5 +924,99 @@ export class AdminService {
       .returning();
 
     return updated;
+  }
+
+  async createIngredient(dto: CreateIngredientDto) {
+    switch (dto.type) {
+      case IngredientType.BASE: {
+        const [created] = await this.db
+          .insert(schema.constructorBases)
+          .values({
+            name: dto.name,
+            description: dto.description ?? null,
+            pricePerKg: dto.pricePerKg ?? 0,
+            sortOrder: dto.sortOrder ?? 0,
+            isAvailable: dto.isAvailable ?? true,
+          })
+          .returning();
+        this.logger.log('Constructor base created', { id: created.id, name: dto.name });
+        return created;
+      }
+      case IngredientType.FILLING: {
+        const [created] = await this.db
+          .insert(schema.constructorFillings)
+          .values({
+            name: dto.name,
+            description: dto.description ?? null,
+            pricePerKg: dto.pricePerKg ?? 0,
+            sortOrder: dto.sortOrder ?? 0,
+            isAvailable: dto.isAvailable ?? true,
+          })
+          .returning();
+        this.logger.log('Constructor filling created', { id: created.id, name: dto.name });
+        return created;
+      }
+      case IngredientType.COATING: {
+        const [created] = await this.db
+          .insert(schema.constructorCoatings)
+          .values({
+            name: dto.name,
+            pricePerKg: dto.pricePerKg ?? 0,
+            type: 'cream',
+            sortOrder: dto.sortOrder ?? 0,
+            isAvailable: dto.isAvailable ?? true,
+          })
+          .returning();
+        this.logger.log('Constructor coating created', { id: created.id, name: dto.name });
+        return created;
+      }
+      case IngredientType.DECORATION: {
+        const [created] = await this.db
+          .insert(schema.constructorDecorations)
+          .values({
+            name: dto.name,
+            pricePerUnit: dto.pricePerUnit ?? 0,
+            category: 'berries',
+            sortOrder: dto.sortOrder ?? 0,
+            isAvailable: dto.isAvailable ?? true,
+          })
+          .returning();
+        this.logger.log('Constructor decoration created', { id: created.id, name: dto.name });
+        return created;
+      }
+      default:
+        throw new BadRequestException(`Unknown ingredient type: ${String(dto.type)}`);
+    }
+  }
+
+  async deleteIngredient(id: string, dto: DeleteIngredientDto) {
+    const tableMap = {
+      [IngredientType.BASE]: { table: schema.constructorBases, idCol: schema.constructorBases.id, label: 'Base' },
+      [IngredientType.FILLING]: { table: schema.constructorFillings, idCol: schema.constructorFillings.id, label: 'Filling' },
+      [IngredientType.COATING]: { table: schema.constructorCoatings, idCol: schema.constructorCoatings.id, label: 'Coating' },
+      [IngredientType.DECORATION]: { table: schema.constructorDecorations, idCol: schema.constructorDecorations.id, label: 'Decoration' },
+    };
+
+    const config = tableMap[dto.type];
+    if (!config) {
+      throw new BadRequestException(`Unknown ingredient type: ${String(dto.type)}`);
+    }
+
+    const [existing] = await this.db
+      .select({ id: config.idCol })
+      .from(config.table)
+      .where(eq(config.idCol, id))
+      .limit(1);
+
+    if (!existing) {
+      throw new NotFoundException(`${config.label} ingredient "${id}" not found`);
+    }
+
+    await this.db
+      .delete(config.table)
+      .where(eq(config.idCol, id));
+
+    this.logger.log(`Constructor ${config.label.toLowerCase()} deleted`, { id });
+    return { deleted: true, id };
   }
 }

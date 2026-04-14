@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, RefreshCw, Trash2, X, Check } from 'lucide-react';
+import { Plus, RefreshCw, Trash2, X, Check, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
@@ -329,6 +329,308 @@ function AddPromoCodeModal({ onClose, onCreated }: AddPromoCodeModalProps) {
   );
 }
 
+// ---------- Edit PromoCode Modal ----------
+
+interface EditPromoCodeModalProps {
+  promoCode: PromoCode;
+  onClose: () => void;
+  onSaved: () => void;
+}
+
+function EditPromoCodeModal({ promoCode, onClose, onSaved }: EditPromoCodeModalProps) {
+  const [code, setCode] = useState(promoCode.code);
+  const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>(promoCode.discountType);
+  const [discountValue, setDiscountValue] = useState(
+    promoCode.discountType === 'percentage'
+      ? String(promoCode.discountValue)
+      : String(promoCode.discountValue / 100)
+  );
+  const [minOrderAmount, setMinOrderAmount] = useState(
+    promoCode.minOrderAmount != null ? String(promoCode.minOrderAmount / 100) : ''
+  );
+  const [maxDiscountAmount, setMaxDiscountAmount] = useState(
+    promoCode.maxDiscountAmount != null ? String(promoCode.maxDiscountAmount / 100) : ''
+  );
+  const [startsAt, setStartsAt] = useState(
+    promoCode.startsAt ? new Date(promoCode.startsAt).toISOString().split('T')[0] : ''
+  );
+  const [expiresAt, setExpiresAt] = useState(
+    promoCode.expiresAt ? new Date(promoCode.expiresAt).toISOString().split('T')[0] : ''
+  );
+  const [usageLimit, setUsageLimit] = useState(
+    promoCode.usageLimit != null ? String(promoCode.usageLimit) : ''
+  );
+  const [usageLimitPerUser, setUsageLimitPerUser] = useState(
+    promoCode.usageLimitPerUser != null ? String(promoCode.usageLimitPerUser) : ''
+  );
+  const [description, setDescription] = useState(promoCode.description ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!code.trim()) {
+      toast.error('Введите код промокода');
+      return;
+    }
+    const parsedValue = parseFloat(discountValue);
+    if (isNaN(parsedValue) || parsedValue <= 0) {
+      toast.error('Введите корректное значение скидки');
+      return;
+    }
+    if (discountType === 'percentage' && parsedValue > 100) {
+      toast.error('Процент скидки не может быть больше 100');
+      return;
+    }
+
+    const body: Record<string, unknown> = {
+      code: code.trim().toUpperCase(),
+      discountType,
+      discountValue:
+        discountType === 'percentage' ? parsedValue : Math.round(parsedValue * 100),
+    };
+
+    if (minOrderAmount) {
+      body.minOrderAmount = Math.round(parseFloat(minOrderAmount) * 100);
+    }
+    if (maxDiscountAmount && discountType === 'percentage') {
+      body.maxDiscountAmount = Math.round(parseFloat(maxDiscountAmount) * 100);
+    }
+    if (startsAt) body.startsAt = new Date(startsAt).toISOString();
+    if (expiresAt) body.expiresAt = new Date(expiresAt).toISOString();
+    if (usageLimit) body.usageLimit = parseInt(usageLimit, 10);
+    if (usageLimitPerUser) body.usageLimitPerUser = parseInt(usageLimitPerUser, 10);
+    if (description.trim()) body.description = description.trim();
+
+    setSaving(true);
+    try {
+      await fetchClient(`/promo-codes/${promoCode.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
+      toast.success('Промокод обновлён');
+      onSaved();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Не удалось обновить промокод');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const fieldClass =
+    'w-full rounded-xl border border-[var(--color-champagne)] bg-white px-4 py-3 text-sm text-[var(--color-graphite)] focus:border-[var(--color-caramel)] focus:outline-none focus:ring-1 focus:ring-[var(--color-caramel)]';
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="font-heading text-lg font-bold text-neutral-900">Редактировать промокод</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+            aria-label="Закрыть"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Code */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-neutral-500" htmlFor="epc-code">
+              Код промокода
+            </label>
+            <input
+              id="epc-code"
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="Например: SUMMER20"
+              className={cn(fieldClass, 'font-mono uppercase')}
+              required
+            />
+          </div>
+
+          {/* Discount type */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-neutral-500" htmlFor="epc-type">
+              Тип скидки
+            </label>
+            <select
+              id="epc-type"
+              value={discountType}
+              onChange={(e) => setDiscountType(e.target.value as 'percentage' | 'fixed')}
+              className={fieldClass}
+            >
+              <option value="percentage">Процент (%)</option>
+              <option value="fixed">Фиксированная сумма (₽)</option>
+            </select>
+          </div>
+
+          {/* Discount value */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-neutral-500" htmlFor="epc-value">
+              Значение скидки{discountType === 'percentage' ? ' (%)' : ' (руб.)'}
+            </label>
+            <input
+              id="epc-value"
+              type="number"
+              min="1"
+              max={discountType === 'percentage' ? 100 : undefined}
+              step={discountType === 'percentage' ? '1' : '0.01'}
+              value={discountValue}
+              onChange={(e) => setDiscountValue(e.target.value)}
+              placeholder={discountType === 'percentage' ? 'Например: 20' : 'Например: 500'}
+              className={fieldClass}
+              required
+            />
+          </div>
+
+          {/* Min order amount */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-neutral-500" htmlFor="epc-min-order">
+              Минимальная сумма заказа (руб.) — необязательно
+            </label>
+            <input
+              id="epc-min-order"
+              type="number"
+              min="0"
+              step="0.01"
+              value={minOrderAmount}
+              onChange={(e) => setMinOrderAmount(e.target.value)}
+              placeholder="Например: 1000"
+              className={fieldClass}
+            />
+          </div>
+
+          {/* Max discount amount (only for percentage) */}
+          {discountType === 'percentage' && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-neutral-500" htmlFor="epc-max-discount">
+                Максимальная скидка (руб.) — необязательно
+              </label>
+              <input
+                id="epc-max-discount"
+                type="number"
+                min="0"
+                step="0.01"
+                value={maxDiscountAmount}
+                onChange={(e) => setMaxDiscountAmount(e.target.value)}
+                placeholder="Например: 2000"
+                className={fieldClass}
+              />
+            </div>
+          )}
+
+          {/* Date range */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-neutral-500" htmlFor="epc-starts">
+                Дата начала
+              </label>
+              <input
+                id="epc-starts"
+                type="date"
+                value={startsAt}
+                onChange={(e) => setStartsAt(e.target.value)}
+                className={fieldClass}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-neutral-500" htmlFor="epc-expires">
+                Дата окончания
+              </label>
+              <input
+                id="epc-expires"
+                type="date"
+                value={expiresAt}
+                onChange={(e) => setExpiresAt(e.target.value)}
+                className={fieldClass}
+              />
+            </div>
+          </div>
+
+          {/* Usage limits */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-neutral-500" htmlFor="epc-limit">
+                Общий лимит
+              </label>
+              <input
+                id="epc-limit"
+                type="number"
+                min="1"
+                step="1"
+                value={usageLimit}
+                onChange={(e) => setUsageLimit(e.target.value)}
+                placeholder="Без лимита"
+                className={fieldClass}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-neutral-500" htmlFor="epc-limit-user">
+                Лимит на пользователя
+              </label>
+              <input
+                id="epc-limit-user"
+                type="number"
+                min="1"
+                step="1"
+                value={usageLimitPerUser}
+                onChange={(e) => setUsageLimitPerUser(e.target.value)}
+                placeholder="Без лимита"
+                className={fieldClass}
+              />
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-neutral-500" htmlFor="epc-desc">
+              Описание — необязательно
+            </label>
+            <textarea
+              id="epc-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Внутренняя заметка об этом промокоде"
+              rows={2}
+              className={cn(fieldClass, 'resize-none')}
+            />
+          </div>
+
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="flex-1 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[var(--color-caramel)] px-4 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-caramel-hover)] transition-colors disabled:opacity-50"
+            >
+              {saving && <RefreshCw size={13} className="animate-spin" />}
+              {saving ? 'Сохранение...' : 'Сохранить'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ---------- Active toggle ----------
 
 interface ActiveToggleProps {
@@ -466,6 +768,7 @@ export default function AdminPromoCodesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editPromo, setEditPromo] = useState<PromoCode | null>(null);
 
   const load = useCallback(() => {
     setError(null);
@@ -480,6 +783,11 @@ export default function AdminPromoCodesPage() {
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  useEffect(() => {
+    const interval = setInterval(load, 60_000);
+    return () => clearInterval(interval);
   }, [load]);
 
   const handleToggleActive = (id: string, value: boolean) => {
@@ -498,14 +806,6 @@ export default function AdminPromoCodesPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold font-heading text-neutral-900">Промокоды</h1>
         <div className="flex items-center gap-2">
-          <button
-            onClick={load}
-            disabled={loading}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw size={14} className={cn(loading && 'animate-spin')} />
-            Обновить
-          </button>
           <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 bg-[var(--color-caramel)] text-white rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-caramel-hover)] transition-colors"
@@ -672,10 +972,19 @@ export default function AdminPromoCodesPage() {
 
                       {/* Actions */}
                       <td className="px-4 py-3">
-                        <DeactivateButton
-                          promoId={promo.id}
-                          onDeactivated={handleDeactivated}
-                        />
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setEditPromo(promo)}
+                            title="Редактировать промокод"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-300 hover:text-[var(--color-caramel)] hover:bg-neutral-100 transition-colors"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <DeactivateButton
+                            promoId={promo.id}
+                            onDeactivated={handleDeactivated}
+                          />
+                        </div>
                       </td>
                     </tr>
                   );
@@ -690,6 +999,14 @@ export default function AdminPromoCodesPage() {
         <AddPromoCodeModal
           onClose={() => setShowAddModal(false)}
           onCreated={load}
+        />
+      )}
+
+      {editPromo && (
+        <EditPromoCodeModal
+          promoCode={editPromo}
+          onClose={() => setEditPromo(null)}
+          onSaved={load}
         />
       )}
     </div>

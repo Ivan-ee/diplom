@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { ShoppingBag, Clock, TrendingUp, RefreshCw, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Clock, TrendingUp, ArrowRight } from 'lucide-react';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
 
@@ -114,19 +114,16 @@ export default function AdminDashboardPage() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    const interval = setInterval(load, 60_000);
+    return () => clearInterval(interval);
+  }, [load]);
+
   return (
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold font-heading text-neutral-900">Дашборд</h1>
-        <button
-          onClick={load}
-          disabled={loading}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw size={14} className={cn(loading && 'animate-spin')} />
-          Обновить
-        </button>
       </div>
 
       {error && (

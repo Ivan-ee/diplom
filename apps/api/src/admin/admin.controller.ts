@@ -23,9 +23,15 @@ import {
 } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { UpdateOrderStatusDto } from './dto/update-status.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
+import { CreateIngredientDto } from './dto/create-ingredient.dto';
+import { DeleteIngredientDto } from './dto/delete-ingredient.dto';
 import { QueryOrdersDto } from './dto/query-orders.dto';
+import { QueryUsersDto } from './dto/query-users.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { AddOrderItemDto } from './dto/add-order-item.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -86,6 +92,63 @@ export class AdminController {
     return this.adminService.updateOrderStatus(id, dto);
   }
 
+  @Put('orders/:id')
+  @ApiParam({ name: 'id', description: 'Order UUID' })
+  @ApiOperation({ summary: 'Update order details (admin)' })
+  @ApiResponse({ status: 200, description: 'Order updated' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  updateOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateOrderDto,
+  ) {
+    return this.adminService.updateOrder(id, dto);
+  }
+
+  @Post('orders/:orderId/items')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiParam({ name: 'orderId', description: 'Order UUID' })
+  @ApiOperation({ summary: 'Add item to order (admin)' })
+  @ApiResponse({ status: 201, description: 'Item added, total recalculated' })
+  @ApiResponse({ status: 404, description: 'Order or product not found' })
+  addOrderItem(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @Body() dto: AddOrderItemDto,
+  ) {
+    return this.adminService.addOrderItem(orderId, dto);
+  }
+
+  @Delete('orders/:orderId/items/:itemId')
+  @HttpCode(HttpStatus.OK)
+  @ApiParam({ name: 'orderId', description: 'Order UUID' })
+  @ApiParam({ name: 'itemId', description: 'Order item UUID' })
+  @ApiOperation({ summary: 'Remove item from order (admin)' })
+  @ApiResponse({ status: 200, description: 'Item removed, total recalculated' })
+  @ApiResponse({ status: 404, description: 'Order or item not found' })
+  deleteOrderItem(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @Param('itemId', ParseUUIDPipe) itemId: string,
+  ) {
+    return this.adminService.deleteOrderItem(orderId, itemId);
+  }
+
+  @Delete('orders/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiParam({ name: 'id', description: 'Order UUID' })
+  @ApiOperation({ summary: 'Cancel an order (admin)' })
+  @ApiResponse({ status: 200, description: 'Order cancelled' })
+  @ApiResponse({ status: 400, description: 'Cannot cancel completed/cancelled order' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  deleteOrder(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.deleteOrder(id);
+  }
+
+  @Get('categories')
+  @ApiOperation({ summary: 'List all product categories (admin)' })
+  @ApiResponse({ status: 200, description: 'Category list' })
+  getCategories() {
+    return this.adminService.getAllCategories();
+  }
+
   @Get('products')
   @ApiOperation({ summary: 'List all products with pagination (admin)' })
   @ApiResponse({ status: 200, description: 'Paginated product list' })
@@ -127,6 +190,35 @@ export class AdminController {
     return this.adminService.deleteProduct(id);
   }
 
+  @Get('constructor/ingredients')
+  @ApiOperation({ summary: 'Get all constructor ingredients including unavailable (admin)' })
+  @ApiResponse({ status: 200, description: 'All ingredients grouped by type' })
+  getAdminIngredients() {
+    return this.adminService.getAdminIngredients();
+  }
+
+  @Post('constructor/ingredients')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new constructor ingredient (admin)' })
+  @ApiResponse({ status: 201, description: 'Ingredient created' })
+  @ApiResponse({ status: 400, description: 'Invalid ingredient data' })
+  createIngredient(@Body() dto: CreateIngredientDto) {
+    return this.adminService.createIngredient(dto);
+  }
+
+  @Delete('constructor/ingredients/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiParam({ name: 'id', description: 'Ingredient UUID' })
+  @ApiOperation({ summary: 'Delete a constructor ingredient (admin)' })
+  @ApiResponse({ status: 200, description: 'Ingredient deleted' })
+  @ApiResponse({ status: 404, description: 'Ingredient not found' })
+  deleteIngredient(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: DeleteIngredientDto,
+  ) {
+    return this.adminService.deleteIngredient(id, dto);
+  }
+
   @Put('constructor/ingredients/:id')
   @ApiParam({ name: 'id', description: 'Ingredient UUID' })
   @ApiOperation({
@@ -137,5 +229,32 @@ export class AdminController {
   @ApiResponse({ status: 404, description: 'Ingredient not found' })
   updateIngredient(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateIngredientDto) {
     return this.adminService.updateIngredient(id, dto);
+  }
+
+  @Get('users')
+  @ApiOperation({ summary: 'List all users with pagination (admin)' })
+  @ApiQuery({ name: 'role', required: false, enum: ['user', 'admin'] })
+  @ApiQuery({ name: 'search', required: false })
+  @ApiResponse({ status: 200, description: 'Paginated user list' })
+  getAllUsers(@Query() query: QueryUsersDto) {
+    return this.adminService.getAllUsers(query);
+  }
+
+  @Get('users/:id')
+  @ApiParam({ name: 'id', description: 'User UUID' })
+  @ApiOperation({ summary: 'Get user details (admin)' })
+  @ApiResponse({ status: 200, description: 'User details with order count' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  getUserById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.getUserById(id);
+  }
+
+  @Put('users/:id')
+  @ApiParam({ name: 'id', description: 'User UUID' })
+  @ApiOperation({ summary: 'Update user role/name/phone (admin)' })
+  @ApiResponse({ status: 200, description: 'User updated' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserDto) {
+    return this.adminService.updateUser(id, dto);
   }
 }

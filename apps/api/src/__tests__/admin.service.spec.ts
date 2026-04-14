@@ -105,20 +105,23 @@ function buildGetStatsDb(options: {
 
 /**
  * Build a db mock for getAllOrders.
- * 2 successive .select() calls: paginated rows + count.
+ * 3 successive .select() calls: paginated rows + count + orderItems.
  */
 function buildGetAllOrdersDb(options: {
   rows?: unknown[];
   count?: number;
+  items?: unknown[];
 } = {}) {
   const {
     rows = [makeOrderRow()],
     count = 1,
+    items = [],
   } = options;
 
   const selectMock = vi.fn()
     .mockReturnValueOnce(terminal(rows))
-    .mockReturnValueOnce(terminal([{ count }]));
+    .mockReturnValueOnce(terminal([{ count }]))
+    .mockReturnValueOnce(terminal(items));
 
   return { select: selectMock };
 }
@@ -282,7 +285,7 @@ describe('AdminService.getAllOrders', () => {
 
     await service.getAllOrders(makePaginationQuery());
 
-    expect((db.select as ReturnType<typeof vi.fn>).mock.calls.length).toBe(2);
+    expect((db.select as ReturnType<typeof vi.fn>).mock.calls.length).toBe(3);
   });
 });
 
@@ -471,5 +474,105 @@ describe('AdminService — search index synchronization', () => {
     expect(searchService.removeProduct).toHaveBeenCalledOnce();
     expect(searchService.removeProduct).toHaveBeenCalledWith(PRODUCT_ID);
     expect(searchService.indexProduct).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AdminService.updateOrder
+// ---------------------------------------------------------------------------
+
+function buildUpdateOrderDb(order = makeOrderRow()) {
+  // 1. select existence check → [order]
+  // 2. update().set().where().returning() → [updated order]
+  const updateChain: Record<string, unknown> = {};
+  updateChain['set'] = vi.fn().mockReturnValue(updateChain);
+  updateChain['where'] = vi.fn().mockReturnValue(updateChain);
+  updateChain['returning'] = vi.fn().mockResolvedValue([order]);
+
+  const selectExistence = terminal([order]);
+
+  return {
+    select: vi.fn().mockReturnValueOnce(selectExistence),
+    update: vi.fn().mockReturnValue(updateChain),
+  };
+}
+
+describe('AdminService.updateOrder', () => {
+  it('updates order fields and returns updated order', async () => {
+    const updated = makeOrderRow({ comment: 'Новый комментарий' });
+    const db = buildUpdateOrderDb(updated);
+    const service = await buildService(db);
+
+    const result = await service.updateOrder(ORDER_ID, { comment: 'Новый комментарий' });
+
+    expect(result).toMatchObject({ comment: 'Новый комментарий' });
+  });
+
+  it('throws NotFoundException when order does not exist', async () => {
+    const db = {
+      select: vi.fn().mockReturnValueOnce(terminal([])),
+      update: vi.fn(),
+    };
+    const service = await buildService(db);
+
+    await expect(service.updateOrder('nonexistent-id', { comment: 'test' }))
+      .rejects.toThrow('not found');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AdminService.deleteOrder
+// ---------------------------------------------------------------------------
+
+function buildDeleteOrderDb(order = makeOrderRow()) {
+  const updateChain: Record<string, unknown> = {};
+  updateChain['set'] = vi.fn().mockReturnValue(updateChain);
+  updateChain['where'] = vi.fn().mockReturnValue(updateChain);
+  updateChain['returning'] = vi.fn().mockResolvedValue([{ ...order, status: 'cancelled' }]);
+
+  return {
+    select: vi.fn().mockReturnValueOnce(terminal([order])),
+    update: vi.fn().mockReturnValue(updateChain),
+  };
+}
+
+describe('AdminService.deleteOrder', () => {
+  it('cancels order and returns cancelled status', async () => {
+    const db = buildDeleteOrderDb(makeOrderRow({ status: 'created' }));
+    const service = await buildService(db);
+
+    const result = await service.deleteOrder(ORDER_ID);
+
+    expect(result).toMatchObject({ cancelled: true, id: ORDER_ID });
+  });
+
+  it('throws NotFoundException when order does not exist', async () => {
+    const db = {
+      select: vi.fn().mockReturnValueOnce(terminal([])),
+      update: vi.fn(),
+    };
+    const service = await buildService(db);
+
+    await expect(service.deleteOrder('nonexistent-id')).rejects.toThrow('not found');
+  });
+
+  it('throws BadRequestException when order is already completed', async () => {
+    const db = {
+      select: vi.fn().mockReturnValueOnce(terminal([makeOrderRow({ status: 'completed' })])),
+      update: vi.fn(),
+    };
+    const service = await buildService(db);
+
+    await expect(service.deleteOrder(ORDER_ID)).rejects.toThrow();
+  });
+
+  it('throws BadRequestException when order is already cancelled', async () => {
+    const db = {
+      select: vi.fn().mockReturnValueOnce(terminal([makeOrderRow({ status: 'cancelled' })])),
+      update: vi.fn(),
+    };
+    const service = await buildService(db);
+
+    await expect(service.deleteOrder(ORDER_ID)).rejects.toThrow();
   });
 });

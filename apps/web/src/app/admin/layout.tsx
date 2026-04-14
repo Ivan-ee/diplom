@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ShoppingCart, Package, Palette, Tag, LogOut } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Users, Palette, Tag, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/stores/auth-store';
 import { cn } from '@/lib/utils';
@@ -11,6 +11,7 @@ const navLinks = [
   { href: '/admin',             label: 'Дашборд',      icon: LayoutDashboard, exact: true },
   { href: '/admin/orders',      label: 'Заказы',        icon: ShoppingCart },
   { href: '/admin/products',    label: 'Товары',         icon: Package },
+  { href: '/admin/users',       label: 'Пользователи',  icon: Users },
   { href: '/admin/promo-codes', label: 'Промокоды',      icon: Tag },
   { href: '/admin/constructor', label: 'Конструктор',    icon: Palette },
 ];
