@@ -9,6 +9,8 @@ import { Chip, DrawerRoot, DrawerBackdrop, DrawerContent, DrawerDialog, DrawerBo
 import { useCartStore, type CartItem } from '@/stores/cart-store';
 import { useAuth } from '@/hooks/useAuth';
 import { formatPrice, cn } from '@/lib/utils';
+import { usePromoCode } from '@/hooks/usePromoCode';
+import { PromoCodeInput } from '@/components/cart/PromoCodeInput';
 
 /* ------------------------------------------------------------------ */
 /* Props                                                                */
@@ -31,6 +33,17 @@ export function CartDrawer({ isOpen, onOpenChange }: CartDrawerProps) {
 
   const totalPrice = getTotalPrice();
   const isEmpty = items.length === 0;
+
+  const {
+    promoCode,
+    setPromoCode,
+    promoLoading,
+    promoError,
+    promoResult,
+    finalPrice,
+    handleApplyPromo,
+    handleRemovePromo,
+  } = usePromoCode(totalPrice);
 
   function handleCheckout() {
     if (!isAuthenticated) {
@@ -91,13 +104,37 @@ export function CartDrawer({ isOpen, onOpenChange }: CartDrawerProps) {
 
               {/* Footer */}
               <div className="shrink-0 border-t border-[var(--border-default)] px-5 py-4 flex flex-col gap-3 bg-[var(--surface-elevated)]">
+                {/* Promo code input */}
+                <PromoCodeInput
+                  compact
+                  promoCode={promoCode}
+                  onPromoCodeChange={setPromoCode}
+                  promoLoading={promoLoading}
+                  promoError={promoError}
+                  promoResult={promoResult}
+                  onApply={handleApplyPromo}
+                  onRemove={handleRemovePromo}
+                />
+
+                {/* Discount line */}
+                {promoResult && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[var(--color-graphite-light)]">
+                      Скидка ({promoResult.code})
+                    </span>
+                    <span className="text-sm font-semibold text-green-600 tabular-nums">
+                      −{formatPrice(promoResult.discountAmount)}
+                    </span>
+                  </div>
+                )}
+
                 {/* Total */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-[var(--color-graphite-light)]">
-                    Итого
+                    {promoResult ? 'К оплате' : 'Итого'}
                   </span>
                   <span className="text-base font-bold text-[var(--color-graphite)] tabular-nums">
-                    {formatPrice(totalPrice)}
+                    {formatPrice(finalPrice)}
                   </span>
                 </div>
 
