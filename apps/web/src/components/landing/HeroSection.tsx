@@ -12,27 +12,20 @@ export function HeroSection({ heroImages }: HeroSectionProps) {
   const hasImages = heroImages && heroImages.length > 0;
 
   return (
-    <section className="relative overflow-hidden px-4 py-16 lg:py-24">
-      <div className="max-w-6xl mx-auto w-full">
+    <section className="relative overflow-hidden px-4 min-h-[calc(100dvh-72px)] flex items-center">
+      <div className="max-w-6xl mx-auto w-full py-8 lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
           {/* Right column (image) — rendered first in DOM so it appears above text on mobile */}
           <div className="order-first lg:order-none">
             {hasImages ? (
-              <div className="relative overflow-hidden aspect-[16/9] lg:aspect-square rounded-[var(--radius-hero)] bg-[var(--color-warm-ivory)]">
-                <Image
-                  src={heroImages[0].src}
-                  alt=""
-                  fill
-                  className="object-cover scale-110 blur-xl opacity-40"
-                  sizes="32px"
-                  aria-hidden="true"
-                />
+              <div className="relative w-full max-h-[calc(50dvh-36px)] lg:max-h-[calc(100dvh-72px-96px)] overflow-hidden rounded-[var(--radius-hero)]">
                 <Image
                   src={heroImages[0].src}
                   alt={heroImages[0].alt}
-                  fill
-                  className="object-contain relative z-10"
+                  width={800}
+                  height={800}
+                  className="w-full h-auto"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   priority
                   loading="eager"
@@ -43,7 +36,7 @@ export function HeroSection({ heroImages }: HeroSectionProps) {
                 </div>
               </div>
             ) : (
-              <div className="aspect-[16/9] lg:aspect-square rounded-[var(--radius-hero)] bg-gradient-to-br from-[var(--surface-secondary)] to-[var(--color-champagne)] flex items-center justify-center">
+              <div className="aspect-[4/3] max-h-[calc(50dvh-36px)] lg:max-h-none lg:aspect-square rounded-[var(--radius-hero)] bg-gradient-to-br from-[var(--surface-secondary)] to-[var(--color-champagne)] flex items-center justify-center">
                 <span className="text-8xl opacity-60">🎂</span>
               </div>
             )}
@@ -61,16 +54,16 @@ export function HeroSection({ heroImages }: HeroSectionProps) {
               Авторские торты, капкейки и десерты в Арзамасе. Каждый торт — произведение искусства.
             </p>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="grid grid-cols-2 gap-3 lg:flex lg:items-center">
               <Link
                 href="/catalog"
-                className="inline-flex items-center justify-center bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white rounded-full px-8 py-3.5 text-base font-medium transition-colors duration-200"
+                className="inline-flex items-center justify-center bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white rounded-full py-3.5 text-sm lg:text-base font-medium transition-colors duration-200 lg:px-8"
               >
                 Выбрать торт
               </Link>
               <Link
                 href="/constructor"
-                className="inline-flex items-center justify-center border border-[var(--border-default)] text-[var(--color-graphite)] hover:bg-[var(--surface-secondary)] rounded-full px-8 py-3.5 text-base font-medium transition-colors duration-200"
+                className="inline-flex items-center justify-center border border-[var(--border-default)] text-[var(--color-graphite)] hover:bg-[var(--surface-secondary)] rounded-full py-3.5 text-sm lg:text-base font-medium transition-colors duration-200 lg:px-8"
               >
                 Собрать в 3D
               </Link>
