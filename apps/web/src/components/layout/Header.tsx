@@ -260,11 +260,10 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
         <Menu size={21} className="text-[var(--color-graphite-light)]" />
       </DrawerTrigger>
 
-      <DrawerBackdrop isDismissable className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
-
-      <DrawerContent placement="bottom" className="outline-none">
-        <DrawerDialog className="bg-[var(--surface-elevated)] !p-0">
-        <DrawerBody className="flex flex-col h-full p-0">
+      <DrawerBackdrop isDismissable className="bg-black/40 backdrop-blur-sm">
+        <DrawerContent placement="bottom" className="outline-none">
+          <DrawerDialog className="bg-[var(--surface-elevated)] !p-0">
+            <DrawerBody className="flex flex-col h-full p-0">
           <DrawerHandle className="pt-3" />
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-default)]">
@@ -342,9 +341,10 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
               </button>
             )}
           </div>
-        </DrawerBody>
-        </DrawerDialog>
-      </DrawerContent>
+            </DrawerBody>
+          </DrawerDialog>
+        </DrawerContent>
+      </DrawerBackdrop>
     </DrawerRoot>
   );
 }
