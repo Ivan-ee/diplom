@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -34,6 +35,15 @@ export function CartDrawer({ isOpen, onOpenChange }: CartDrawerProps) {
   const totalPrice = getTotalPrice();
   const isEmpty = items.length === 0;
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 640px)');
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+
   const {
     promoCode,
     setPromoCode,
@@ -60,8 +70,13 @@ export function CartDrawer({ isOpen, onOpenChange }: CartDrawerProps) {
         isDismissable
         className="bg-black/30 backdrop-blur-sm"
       >
-        <DrawerContent placement="right">
-          <DrawerDialog className="bg-[var(--surface-elevated)] outline-none w-[380px] max-w-full flex flex-col shadow-[var(--shadow-elevated)] !p-0">
+        <DrawerContent placement={isMobile ? 'bottom' : 'right'}>
+          <DrawerDialog className={cn(
+            "bg-[var(--surface-elevated)] outline-none flex flex-col shadow-[var(--shadow-elevated)] !p-0",
+            isMobile
+              ? "w-full max-h-[85vh] rounded-t-2xl"
+              : "w-[380px] max-w-full"
+          )}>
             <DrawerBody className="flex flex-col h-full p-0 mx-0 overflow-hidden">
 
           {/* Header */}
