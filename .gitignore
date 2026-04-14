@@ -5,6 +5,7 @@ dist
 *.tsbuildinfo
 
 .playwright-mcp
+.superpowers
 
 # env
 .env

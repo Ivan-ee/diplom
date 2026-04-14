@@ -9,6 +9,7 @@ interface PriceRangeFilterProps {
   priceMax?: string;
   onUpdate: (params: { priceMin?: string; priceMax?: string }) => void;
   className?: string;
+  variant?: 'inline' | 'stacked';
 }
 
 /** Convert a ruble string from the input to a kopeck string for the API.
@@ -34,6 +35,7 @@ export function PriceRangeFilter({
   priceMax,
   onUpdate,
   className,
+  variant = 'inline',
 }: PriceRangeFilterProps) {
   const [minValue, setMinValue] = useState<string>(() => kopecksParamToRubles(priceMin));
   const [maxValue, setMaxValue] = useState<string>(() => kopecksParamToRubles(priceMax));
@@ -83,17 +85,14 @@ export function PriceRangeFilter({
   }
 
   const inputClass =
-    'w-16 border border-[var(--border-default)] rounded-lg px-2 py-1.5 text-sm text-center outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)]/30 transition-colors bg-white';
+    variant === 'stacked'
+      ? 'flex-1 h-[46px] rounded-[var(--radius-control)] border-[1.5px] border-[var(--border-default)] bg-[var(--surface-elevated)] text-sm text-center text-[var(--color-graphite)] outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)]/30 transition-colors duration-150 placeholder:text-[var(--color-graphite-light)]/50'
+      : 'w-[72px] h-[42px] rounded-[var(--radius-control)] border-[1.5px] border-[var(--border-default)] bg-[var(--surface-elevated)] text-sm text-center text-[var(--color-graphite)] outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)]/30 transition-colors duration-150 placeholder:text-[var(--color-graphite-light)]/50';
 
-  const labelClass = 'text-xs text-[var(--color-graphite-light)]';
+  const labelClass = 'text-sm text-[var(--color-graphite-light)]';
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-2 bg-[var(--surface-secondary)] border border-[var(--border-default)] rounded-xl px-3 py-2',
-        className,
-      )}
-    >
+    <div className={cn('flex items-center gap-2', className)}>
       <span className={labelClass}>Цена:</span>
 
       <input

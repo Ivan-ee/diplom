@@ -1,10 +1,12 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useCallback, useTransition } from 'react';
-import { motion } from 'framer-motion';
+import { useCallback, useTransition, useState } from 'react';
+import { SlidersHorizontal } from 'lucide-react';
 import { PriceRangeFilter } from './PriceRangeFilter';
 import { ActiveFilterChips } from './ActiveFilterChips';
+import { SortDropdown } from './SortDropdown';
+import { FilterDrawer } from './FilterDrawer';
 
 const categories = [
   { value: '', label: 'Все' },
@@ -19,7 +21,7 @@ const categories = [
 const sortOptions = [
   { value: 'pricePerKg:asc', label: 'По цене ↑' },
   { value: 'pricePerKg:desc', label: 'По цене ↓' },
-  { value: 'createdAt:desc', label: 'Сначала новые' },
+  { value: 'name:asc', label: 'По названию А–Я' },
 ];
 
 export function CatalogFilters() {
@@ -27,6 +29,7 @@ export function CatalogFilters() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const currentCategorySlug = searchParams.get('categorySlug') ?? '';
   const currentSort = `${searchParams.get('sort') ?? 'createdAt'}:${searchParams.get('order') ?? 'desc'}`;
@@ -81,6 +84,13 @@ export function CatalogFilters() {
     return String(Math.round(n / 100));
   }
 
+  const activeFilterCount = [
+    currentCategorySlug !== '',
+    currentSort !== 'createdAt:desc',
+    currentPriceMin !== '',
+    currentPriceMax !== '',
+  ].filter(Boolean).length;
+
   function buildActiveFilters() {
     const chips: { key: string; label: string; onRemove: () => void }[] = [];
 
@@ -109,6 +119,15 @@ export function CatalogFilters() {
       });
     }
 
+    if (currentSort !== 'createdAt:desc') {
+      const sortOpt = sortOptions.find((o) => o.value === currentSort);
+      chips.push({
+        key: 'sort',
+        label: sortOpt?.label ?? 'Сортировка',
+        onRemove: () => updateParam({ sort: null, order: null }),
+      });
+    }
+
     return chips;
   }
 
@@ -116,77 +135,108 @@ export function CatalogFilters() {
     <div
       className={`flex flex-col gap-3 max-w-7xl mx-auto px-4 transition-opacity duration-200 ${isPending ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}
     >
-      {/* Filter bar: categories + price + sort + reset */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        {/* Category tabs */}
-        <div
-          className="flex flex-wrap items-center gap-1 bg-[var(--surface-secondary)] border border-[var(--border-default)] rounded-[var(--radius-pill)] p-1"
-          role="group"
-          aria-label="Категория"
-        >
+      {/* ===== DESKTOP FILTERS (hidden on mobile) ===== */}
+      <div className="hidden sm:flex items-center gap-3 flex-wrap">
+        {/* Category buttons */}
+        <div className="flex flex-wrap gap-1.5">
           {categories.map((cat) => (
             <button
               key={cat.value}
+              type="button"
               onClick={() => handleCategory(cat.value)}
               aria-pressed={currentCategorySlug === cat.value}
-              className={`relative cursor-pointer px-3 py-1.5 rounded-[var(--radius-pill)] text-sm font-medium transition-colors duration-200 ${
+              className={`px-4 py-2.5 rounded-[var(--radius-control)] border-[1.5px] text-sm font-medium transition-all duration-150 cursor-pointer ${
                 currentCategorySlug === cat.value
-                  ? 'text-white'
-                  : 'text-[var(--color-graphite)] hover:text-[var(--color-graphite)]'
+                  ? 'bg-[var(--color-caramel)] text-white border-[var(--color-caramel)] shadow-sm'
+                  : 'bg-[var(--surface-elevated)] text-[var(--color-graphite)] border-[var(--border-default)] hover:border-[var(--color-caramel)] hover:text-[var(--color-caramel)]'
               }`}
             >
-              {currentCategorySlug === cat.value && (
-                <motion.div
-                  layoutId="category-pill"
-                  className="absolute inset-0 rounded-[var(--radius-pill)] bg-[var(--color-caramel)] shadow-sm"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">{cat.label}</span>
+              {cat.label}
             </button>
           ))}
         </div>
 
-        {/* Right side: price filter + sort + reset */}
-        <div className="flex items-center gap-3">
-          <PriceRangeFilter
-            priceMin={currentPriceMin || undefined}
-            priceMax={currentPriceMax || undefined}
-            onUpdate={(params) => {
-              updateParam({
-                priceMin: params.priceMin ?? null,
-                priceMax: params.priceMax ?? null,
-              });
-            }}
-            className="hidden sm:flex"
-          />
+        {/* Divider */}
+        <div className="w-px h-7 bg-[var(--border-default)] shrink-0" />
 
-          <select
-            value={currentSort}
-            onChange={(e) => handleSort(e.target.value)}
-            aria-label="Сортировка"
-            className="text-sm border border-[var(--border-default)] rounded-[var(--radius-control)] px-3 py-2 bg-[var(--surface-elevated)] text-[var(--color-graphite)] focus:outline-none focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)] cursor-pointer transition-colors duration-200"
+        {/* Price filter */}
+        <PriceRangeFilter
+          variant="inline"
+          priceMin={currentPriceMin || undefined}
+          priceMax={currentPriceMax || undefined}
+          onUpdate={(params) => {
+            updateParam({
+              priceMin: params.priceMin ?? null,
+              priceMax: params.priceMax ?? null,
+            });
+          }}
+        />
+
+        {/* Divider */}
+        <div className="w-px h-7 bg-[var(--border-default)] shrink-0" />
+
+        {/* Sort dropdown */}
+        <SortDropdown
+          options={sortOptions}
+          currentValue={currentSort}
+          defaultValue="createdAt:desc"
+          onSelect={handleSort}
+        />
+
+        {/* Reset button */}
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="text-sm text-[var(--color-graphite-light)]/60 hover:text-[var(--color-graphite)] transition-colors duration-150 whitespace-nowrap cursor-pointer"
+            aria-label="Сбросить фильтры"
           >
-            {sortOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-
-          {hasActiveFilters && (
-            <button
-              onClick={handleResetAll}
-              className="text-sm text-[var(--color-graphite-light)]/60 hover:text-[var(--color-graphite)] transition-colors duration-200 whitespace-nowrap"
-              aria-label="Сбросить фильтры"
-            >
-              Сбросить
-            </button>
-          )}
-        </div>
+            Сбросить
+          </button>
+        )}
       </div>
 
-      {/* Active filter chips */}
+      {/* ===== MOBILE FILTERS (hidden on desktop) ===== */}
+      <div className="sm:hidden flex flex-col gap-3">
+        {/* Filter trigger button */}
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          className="flex items-center justify-center gap-2 h-[42px] rounded-[var(--radius-control)] border-[1.5px] border-[var(--border-default)] bg-[var(--surface-elevated)] text-sm font-medium text-[var(--color-graphite)] cursor-pointer transition-colors duration-150 hover:border-[var(--color-caramel)]"
+        >
+          <SlidersHorizontal size={16} className="text-[var(--color-graphite-light)]" />
+          Фильтры и сортировка
+          {activeFilterCount > 0 && (
+            <span className="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-[var(--color-caramel)] text-white text-[11px] font-semibold leading-none">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+
+        {/* Filter drawer */}
+        <FilterDrawer
+          isOpen={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          currentCategorySlug={currentCategorySlug}
+          currentSort={currentSort}
+          currentPriceMin={currentPriceMin}
+          currentPriceMax={currentPriceMax}
+          onCategoryChange={(value) => handleCategory(value)}
+          onSortChange={handleSort}
+          onPriceChange={(params) => {
+            updateParam({
+              priceMin: params.priceMin ?? null,
+              priceMax: params.priceMax ?? null,
+            });
+          }}
+          onResetAll={handleResetAll}
+          categories={categories}
+          sortOptions={sortOptions}
+          defaultSort="createdAt:desc"
+        />
+      </div>
+
+      {/* Active filter chips (both desktop and mobile) */}
       <ActiveFilterChips
         filters={buildActiveFilters()}
         onResetAll={handleResetAll}
