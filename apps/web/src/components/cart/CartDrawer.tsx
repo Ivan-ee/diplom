@@ -73,9 +73,7 @@ export function CartDrawer({ isOpen, onOpenChange }: CartDrawerProps) {
         <DrawerContent placement={isMobile ? 'bottom' : 'right'}>
           <DrawerDialog className={cn(
             "bg-[var(--surface-elevated)] outline-none flex flex-col shadow-[var(--shadow-elevated)] !p-0",
-            isMobile
-              ? "w-full max-h-[85vh] rounded-t-2xl"
-              : "w-[380px] max-w-full"
+            !isMobile && "w-[380px] max-w-full"
           )}>
             <DrawerBody className="flex flex-col h-full p-0 mx-0 overflow-hidden">
 

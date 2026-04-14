@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ShoppingBag, User, Menu, Heart, ShoppingBag as OrdersIcon, LogOut, X, Search } from 'lucide-react';
-import { Drawer, DrawerRoot, DrawerTrigger, DrawerBackdrop, DrawerContent, DrawerBody, DrawerCloseTrigger, DrawerHandle, Popover, PopoverRoot, PopoverTrigger, PopoverContent, PopoverDialog } from '@heroui/react';
+import { Drawer, DrawerRoot, DrawerTrigger, DrawerBackdrop, DrawerContent, DrawerDialog, DrawerBody, DrawerCloseTrigger, DrawerHandle, Popover, PopoverRoot, PopoverTrigger, PopoverContent, PopoverDialog } from '@heroui/react';
 import { CartBadge } from './CartBadge';
 import { useAuth } from '@/hooks/useAuth';
 import { SearchDialog } from '@/components/search/SearchDialog';
@@ -262,7 +262,8 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
 
       <DrawerBackdrop isDismissable className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
 
-      <DrawerContent placement="bottom" className="bg-[var(--surface-elevated)] outline-none max-h-[85vh] rounded-t-2xl">
+      <DrawerContent placement="bottom" className="outline-none">
+        <DrawerDialog className="bg-[var(--surface-elevated)] !p-0">
         <DrawerBody className="flex flex-col h-full p-0">
           <DrawerHandle className="pt-3" />
           {/* Header */}
@@ -342,6 +343,7 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
             )}
           </div>
         </DrawerBody>
+        </DrawerDialog>
       </DrawerContent>
     </DrawerRoot>
   );
