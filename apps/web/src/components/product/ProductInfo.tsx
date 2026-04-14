@@ -202,15 +202,14 @@ export function ProductInfo({ product }: ProductInfoProps) {
           <Disclosure className="border-t border-[var(--color-champagne)]">
             <Disclosure.Heading>
               <Disclosure.Trigger>
-                <button
-                  type="button"
+                <div
                   className="flex w-full items-center justify-between py-4 text-sm font-semibold text-[var(--color-graphite)] hover:text-[var(--color-caramel)] transition-colors duration-200 cursor-pointer"
                 >
                   Состав и детали
                   <Disclosure.Indicator className="transition-transform duration-200 data-[open]:rotate-180">
                     <ChevronDown size={16} />
                   </Disclosure.Indicator>
-                </button>
+                </div>
               </Disclosure.Trigger>
             </Disclosure.Heading>
             <Disclosure.Content>
