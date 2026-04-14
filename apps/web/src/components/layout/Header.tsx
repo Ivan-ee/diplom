@@ -262,7 +262,7 @@ function MobileDrawer({ pathname, user, isAuthenticated, onLoginClick, onLogout 
 
       <DrawerBackdrop isDismissable className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
 
-      <DrawerContent placement="bottom" className="bg-[var(--surface-elevated)] outline-none">
+      <DrawerContent placement="bottom" className="bg-[var(--surface-elevated)] outline-none max-h-[85vh] rounded-t-2xl">
         <DrawerBody className="flex flex-col h-full p-0">
           <DrawerHandle className="pt-3" />
           {/* Header */}
