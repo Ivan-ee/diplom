@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { Test } from '@nestjs/testing';
 import { AdminService } from '../admin/admin.service';
 import { DRIZZLE } from '../database/drizzle.token';
+import { SearchService } from '../search/search.service';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -126,11 +127,14 @@ function buildGetAllOrdersDb(options: {
 // Service factory
 // ---------------------------------------------------------------------------
 
-async function buildService(db: unknown): Promise<AdminService> {
+async function buildService(db: unknown, searchService?: unknown): Promise<AdminService> {
   const module = await Test.createTestingModule({
     providers: [
       AdminService,
       { provide: DRIZZLE, useValue: db },
+      ...(searchService
+        ? [{ provide: SearchService, useValue: searchService }]
+        : [{ provide: SearchService, useValue: { indexProduct: vi.fn(), removeProduct: vi.fn() } }]),
     ],
   }).compile();
 
@@ -279,5 +283,193 @@ describe('AdminService.getAllOrders', () => {
     await service.getAllOrders(makePaginationQuery());
 
     expect((db.select as ReturnType<typeof vi.fn>).mock.calls.length).toBe(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Product CRUD fixtures
+// ---------------------------------------------------------------------------
+
+const PRODUCT_ID = 'aaaaaaaa-0000-0000-0000-000000000001';
+const CATEGORY_ID = 'bbbbbbbb-0000-0000-0000-000000000002';
+
+function makeProductRow(overrides: Record<string, unknown> = {}) {
+  return {
+    id: PRODUCT_ID,
+    slug: 'chocolate-cake',
+    name: 'Шоколадный торт',
+    description: 'Описание',
+    composition: null,
+    imageUrl: null,
+    images: [],
+    priceType: 'per_kg' as const,
+    pricePerKg: 80000,
+    pricePerUnit: null,
+    minWeight: '1.0',
+    maxWeight: '5.0',
+    weightStep: '0.5',
+    categoryId: CATEGORY_ID,
+    isAvailable: true,
+    isDeleted: false,
+    createdAt: new Date('2026-04-01T10:00:00.000Z'),
+    updatedAt: new Date('2026-04-01T10:00:00.000Z'),
+    ...overrides,
+  };
+}
+
+function makeSearchService() {
+  return {
+    indexProduct: vi.fn().mockResolvedValue(undefined),
+    removeProduct: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
+/**
+ * Builds a db mock for createProduct:
+ *   1. select({ id }) — slug conflict check → []
+ *   2. insert().values().returning() → [product]
+ *   3. select({ name }) from categories — getCategoryName → [{ name: 'Торты' }]
+ */
+function buildCreateProductDb(product = makeProductRow()) {
+  // insert chain
+  const insertChain: Record<string, unknown> = {};
+  insertChain['values'] = vi.fn().mockReturnValue(insertChain);
+  insertChain['returning'] = vi.fn().mockResolvedValue([product]);
+
+  const selectSlugConflict = terminal([]);            // no conflict
+  const selectCategoryName = terminal([{ name: 'Торты' }]);
+
+  const selectMock = vi.fn()
+    .mockReturnValueOnce(selectSlugConflict)
+    .mockReturnValueOnce(selectCategoryName);
+
+  return {
+    select: selectMock,
+    insert: vi.fn().mockReturnValue(insertChain),
+  };
+}
+
+/**
+ * Builds a db mock for updateProduct:
+ *   1. select({ id }) — existence check → [{ id }]
+ *   2. (optional slug check skipped — dto has no slug conflict)
+ *   3. update().set().where().returning() → [updated]
+ *   4. select({ name }) from categories — getCategoryName → [{ name: 'Торты' }]
+ */
+function buildUpdateProductDb(product = makeProductRow()) {
+  const updateChain: Record<string, unknown> = {};
+  updateChain['set'] = vi.fn().mockReturnValue(updateChain);
+  updateChain['where'] = vi.fn().mockReturnValue(updateChain);
+  updateChain['returning'] = vi.fn().mockResolvedValue([product]);
+
+  const selectExistence = terminal([{ id: PRODUCT_ID }]);
+  const selectCategoryName = terminal([{ name: 'Торты' }]);
+
+  const selectMock = vi.fn()
+    .mockReturnValueOnce(selectExistence)
+    .mockReturnValueOnce(selectCategoryName);
+
+  return {
+    select: selectMock,
+    update: vi.fn().mockReturnValue(updateChain),
+  };
+}
+
+/**
+ * Builds a db mock for deleteProduct:
+ *   1. select({ id, isDeleted }) — existence check → [{ id, isDeleted: false }]
+ *   2. update().set().where() — soft-delete (no .returning())
+ */
+function buildDeleteProductDb() {
+  const updateChain: Record<string, unknown> = {};
+  updateChain['set'] = vi.fn().mockReturnValue(updateChain);
+  updateChain['where'] = vi.fn().mockResolvedValue([]);
+
+  const selectExistence = terminal([{ id: PRODUCT_ID, isDeleted: false }]);
+
+  const selectMock = vi.fn().mockReturnValueOnce(selectExistence);
+
+  return {
+    select: selectMock,
+    update: vi.fn().mockReturnValue(updateChain),
+  };
+}
+
+const CREATE_DTO = {
+  slug: 'chocolate-cake',
+  name: 'Шоколадный торт',
+  pricePerKg: 80000,
+  categoryId: CATEGORY_ID,
+};
+
+const UPDATE_DTO = { name: 'Обновлённый торт' };
+
+// ---------------------------------------------------------------------------
+// AdminService — Search index synchronization
+// ---------------------------------------------------------------------------
+
+describe('AdminService — search index synchronization', () => {
+  it('createProduct calls searchService.indexProduct after insert', async () => {
+    const db = buildCreateProductDb();
+    const searchService = makeSearchService();
+    const service = await buildService(db, searchService);
+
+    await service.createProduct(CREATE_DTO as never);
+
+    expect(searchService.indexProduct).toHaveBeenCalledOnce();
+    expect(searchService.indexProduct).toHaveBeenCalledWith(
+      expect.objectContaining({ id: PRODUCT_ID, slug: 'chocolate-cake' }),
+    );
+  });
+
+  it('updateProduct calls searchService.indexProduct after update', async () => {
+    const db = buildUpdateProductDb();
+    const searchService = makeSearchService();
+    const service = await buildService(db, searchService);
+
+    await service.updateProduct(PRODUCT_ID, UPDATE_DTO as never);
+
+    expect(searchService.indexProduct).toHaveBeenCalledOnce();
+    expect(searchService.indexProduct).toHaveBeenCalledWith(
+      expect.objectContaining({ id: PRODUCT_ID }),
+    );
+  });
+
+  it('deleteProduct calls searchService.removeProduct after soft-delete', async () => {
+    const db = buildDeleteProductDb();
+    const searchService = makeSearchService();
+    const service = await buildService(db, searchService);
+
+    await service.deleteProduct(PRODUCT_ID);
+
+    expect(searchService.removeProduct).toHaveBeenCalledOnce();
+    expect(searchService.removeProduct).toHaveBeenCalledWith(PRODUCT_ID);
+  });
+
+  it('createProduct still returns product when search indexing throws', async () => {
+    const db = buildCreateProductDb();
+    const searchService = {
+      indexProduct: vi.fn().mockRejectedValue(new Error('Meilisearch unavailable')),
+      removeProduct: vi.fn(),
+    };
+    const service = await buildService(db, searchService);
+
+    const result = await service.createProduct(CREATE_DTO as never);
+
+    expect(result).toMatchObject({ id: PRODUCT_ID, slug: 'chocolate-cake' });
+    expect(searchService.indexProduct).toHaveBeenCalledOnce();
+  });
+
+  it('updateProduct calls removeProduct when isAvailable becomes false', async () => {
+    const unavailableProduct = makeProductRow({ isAvailable: false });
+    const db = buildUpdateProductDb(unavailableProduct);
+    const searchService = makeSearchService();
+    const service = await buildService(db, searchService);
+
+    await service.updateProduct(PRODUCT_ID, { isAvailable: false } as never);
+
+    expect(searchService.removeProduct).toHaveBeenCalledOnce();
+    expect(searchService.removeProduct).toHaveBeenCalledWith(PRODUCT_ID);
+    expect(searchService.indexProduct).not.toHaveBeenCalled();
   });
 });

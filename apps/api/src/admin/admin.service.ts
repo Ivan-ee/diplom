@@ -16,6 +16,7 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { UpdateOrderStatusDto, OrderStatus } from './dto/update-status.dto';
 import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 import { UpdateIngredientDto, IngredientType } from './dto/update-ingredient.dto';
+import { SearchService } from '../search/search.service';
 
 // Valid transitions: current status -> allowed next statuses
 const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
@@ -35,6 +36,7 @@ export class AdminService {
   constructor(
     @Inject(DRIZZLE)
     private readonly db: NodePgDatabase<typeof schema>,
+    private readonly searchService: SearchService,
   ) {}
 
   async getStats() {
@@ -370,6 +372,7 @@ export class AdminService {
       })
       .returning();
 
+    await this.syncProductToSearch(product);
     return product;
   }
 
@@ -421,6 +424,7 @@ export class AdminService {
       .where(eq(schema.products.id, id))
       .returning();
 
+    await this.syncProductToSearch(updated);
     return updated;
   }
 
@@ -444,7 +448,53 @@ export class AdminService {
       .set({ isDeleted: true, isAvailable: false, updatedAt: new Date() })
       .where(eq(schema.products.id, id));
 
+    await this.removeProductFromSearch(id);
     return { deleted: true, id };
+  }
+
+  private async getCategoryName(categoryId: string | null): Promise<string> {
+    if (!categoryId) return '';
+    const [cat] = await this.db
+      .select({ name: schema.categories.name })
+      .from(schema.categories)
+      .where(eq(schema.categories.id, categoryId))
+      .limit(1);
+    return cat?.name ?? '';
+  }
+
+  private async syncProductToSearch(product: typeof schema.products.$inferSelect): Promise<void> {
+    try {
+      if (!product.isAvailable || product.isDeleted) {
+        await this.searchService.removeProduct(product.id);
+        return;
+      }
+      const categoryName = await this.getCategoryName(product.categoryId);
+      await this.searchService.indexProduct({
+        id: product.id,
+        name: product.name,
+        description: product.description ?? '',
+        slug: product.slug,
+        imageUrl: product.imageUrl ?? null,
+        pricePerKg: product.pricePerKg ?? null,
+        pricePerUnit: product.pricePerUnit ?? null,
+        priceType: product.priceType,
+        category: categoryName,
+      });
+    } catch (err) {
+      this.logger.warn(
+        `Failed to sync product ${product.id} to search index: ${(err as Error).message}`,
+      );
+    }
+  }
+
+  private async removeProductFromSearch(id: string): Promise<void> {
+    try {
+      await this.searchService.removeProduct(id);
+    } catch (err) {
+      this.logger.warn(
+        `Failed to remove product ${id} from search index: ${(err as Error).message}`,
+      );
+    }
   }
 
   async updateIngredient(id: string, dto: UpdateIngredientDto) {
