@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
-import { ChevronDown, ChevronUp, Cake, RefreshCw, Pencil, Ban, Check, X, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Cake, RefreshCw, Pencil, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
@@ -12,6 +12,9 @@ import type { Order, OrderStatus, OrderItem, OrderItemConstructor } from '@/comp
 
 interface AdminOrder extends Omit<Order, 'customerName' | 'customerPhone'> {
   user?: { id: string; name: string; email: string; phone: string | null };
+  promoCode?: string | null;
+  discountAmount?: number | null;
+  originalPrice?: number | null;
 }
 
 interface AdminOrderItem {
@@ -80,6 +83,7 @@ function formatDate(iso: string): string {
 // ---------- Expanded row ----------
 
 function ExpandedOrderRow({ order }: { order: AdminOrder }) {
+  const items = order.items as unknown as AdminOrderItem[];
   return (
     <tr>
       <td colSpan={6} className="bg-neutral-50 px-4 py-3">
@@ -88,7 +92,7 @@ function ExpandedOrderRow({ order }: { order: AdminOrder }) {
             Состав заказа
           </p>
           <div className="space-y-2">
-            {order.items.map((item: OrderItem, idx: number) => (
+            {items.map((item: AdminOrderItem, idx: number) => (
               <div
                 key={idx}
                 className="flex items-start gap-3 rounded-xl border border-neutral-100 bg-white p-3"
@@ -150,10 +154,10 @@ function ExpandedOrderRow({ order }: { order: AdminOrder }) {
                     </>
                   ) : (
                     <>
-                      <p className="text-sm font-medium text-neutral-900">{item.name}</p>
+                      <p className="text-sm font-medium text-neutral-900">{item.productName ?? item.name ?? 'Товар'}</p>
                       <p className="text-xs text-neutral-500">
                         {`${parseFloat(String(item.weight)).toLocaleString('ru-RU')} кг`}
-                        {'quantity' in item && item.quantity > 1 ? ` × ${item.quantity}` : ''}
+                        {item.quantity > 1 ? ` × ${item.quantity}` : ''}
                       </p>
                     </>
                   )}
@@ -164,6 +168,25 @@ function ExpandedOrderRow({ order }: { order: AdminOrder }) {
               </div>
             ))}
           </div>
+          {/* Promo code info */}
+          {order.promoCode && (
+            <div className="rounded-xl border border-neutral-100 bg-white p-3 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1">Промокод</p>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-50 text-emerald-700">
+                  {order.promoCode}
+                </span>
+              </div>
+              <div className="text-right">
+                {order.originalPrice != null && (
+                  <p className="text-xs text-neutral-400 line-through">{formatPrice(order.originalPrice)}</p>
+                )}
+                {order.discountAmount != null && order.discountAmount > 0 && (
+                  <p className="text-sm font-medium text-emerald-600">−{formatPrice(order.discountAmount)}</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </td>
     </tr>
@@ -183,74 +206,6 @@ const TIME_SLOTS = [
 const fieldClass =
   'w-full rounded-xl border border-[var(--color-champagne)] bg-white px-4 py-3 text-sm text-[var(--color-graphite)] focus:border-[var(--color-caramel)] focus:outline-none focus:ring-1 focus:ring-[var(--color-caramel)]';
 
-// ---------- Status cell ----------
-
-interface StatusCellProps {
-  order: AdminOrder;
-  onUpdated: (id: string, status: OrderStatus) => void;
-}
-
-function StatusCell({ order, onUpdated }: StatusCellProps) {
-  const [selected, setSelected] = useState<OrderStatus>(order.status);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  const handleUpdate = async () => {
-    if (selected === order.status) return;
-    setSaving(true);
-    try {
-      await fetchClient(`/admin/orders/${order.id}/status`, {
-        method: 'PUT',
-        body: JSON.stringify({ status: selected }),
-      });
-      onUpdated(order.id, selected);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch {
-      toast.error('Не удалось обновить статус');
-      setSelected(order.status);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <select
-        value={selected}
-        onChange={(e) => setSelected(e.target.value as OrderStatus)}
-        className={fieldClass}
-      >
-        {ALL_STATUSES.map(([value, cfg]) => (
-          <option key={value} value={value}>
-            {cfg.label}
-          </option>
-        ))}
-      </select>
-      <button
-        onClick={() => void handleUpdate()}
-        disabled={saving || selected === order.status}
-        className={cn(
-          'shrink-0 px-3 py-2 rounded-xl text-sm font-medium transition-colors',
-          saved
-            ? 'text-emerald-600 bg-emerald-50'
-            : selected === order.status
-            ? 'text-neutral-300 cursor-default'
-            : 'text-white bg-[var(--color-caramel)] hover:opacity-90 disabled:opacity-50'
-        )}
-      >
-        {saving ? (
-          <RefreshCw size={13} className="animate-spin" />
-        ) : saved ? (
-          <Check size={13} />
-        ) : (
-          'Сохранить'
-        )}
-      </button>
-    </div>
-  );
-}
-
 // ---------- Edit order modal ----------
 
 interface EditOrderModalProps {
@@ -268,6 +223,7 @@ function EditOrderModal({ order, onClose, onSaved, onReload }: EditOrderModalPro
   const [pickupTimeSlot, setPickupTimeSlot] = useState(order.pickupTimeSlot ?? 'morning');
   const [phone, setPhone] = useState((order as AdminOrder & { phone?: string }).phone ?? '');
   const [comment, setComment] = useState(order.comment ?? '');
+  const [status, setStatus] = useState<OrderStatus>(order.status);
   const [saving, setSaving] = useState(false);
 
   // Items tab state
@@ -306,8 +262,14 @@ function EditOrderModal({ order, onClose, onSaved, onReload }: EditOrderModalPro
           comment: comment.trim() || undefined,
         }),
       });
+      if (status !== order.status) {
+        await fetchClient(`/admin/orders/${order.id}/status`, {
+          method: 'PUT',
+          body: JSON.stringify({ status }),
+        });
+      }
       toast.success('Заказ обновлён');
-      onSaved({ id: order.id, pickupDate, pickupTimeSlot, comment });
+      onSaved({ id: order.id, pickupDate, pickupTimeSlot, comment, status });
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Не удалось обновить заказ');
@@ -442,17 +404,42 @@ function EditOrderModal({ order, onClose, onSaved, onReload }: EditOrderModalPro
                 <span className="text-neutral-500">Сумма заказа</span>
                 <span className="font-bold font-heading text-neutral-900">{formatPrice(order.totalPrice)}</span>
               </div>
+              {order.promoCode && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-500">Промокод</span>
+                    <span className="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      {order.promoCode}
+                    </span>
+                  </div>
+                  {order.originalPrice != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-500">Цена до скидки</span>
+                      <span className="text-neutral-400 line-through">{formatPrice(order.originalPrice)}</span>
+                    </div>
+                  )}
+                  {order.discountAmount != null && order.discountAmount > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-500">Скидка</span>
+                      <span className="font-medium text-emerald-600">−{formatPrice(order.discountAmount)}</span>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Status */}
             <div className="mb-5">
-              <div className="flex items-center gap-2 mb-3">
-                <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', statusCfg.color)}>
-                  {statusCfg.label}
-                </span>
-                <span className="text-xs text-neutral-400">текущий статус</span>
-              </div>
-              <StatusCell order={order} onUpdated={() => { /* handled via onReload */ }} />
+              <label className="mb-1.5 block text-xs font-medium text-neutral-600">Статус</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as OrderStatus)}
+                className={fieldClass}
+              >
+                {ALL_STATUSES.map(([value, cfg]) => (
+                  <option key={value} value={value}>{cfg.label}</option>
+                ))}
+              </select>
             </div>
 
             {/* Editable fields */}
@@ -686,67 +673,6 @@ function EditOrderModal({ order, onClose, onSaved, onReload }: EditOrderModalPro
   );
 }
 
-// ---------- Cancel button ----------
-
-interface CancelButtonProps {
-  orderId: string;
-  status: OrderStatus;
-  onCancelled: (id: string) => void;
-}
-
-function CancelButton({ orderId, status, onCancelled }: CancelButtonProps) {
-  const [confirming, setConfirming] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
-
-  if (status === 'completed' || status === 'cancelled') return null;
-
-  const handleCancel = async () => {
-    setCancelling(true);
-    try {
-      await fetchClient(`/admin/orders/${orderId}`, { method: 'DELETE' });
-      onCancelled(orderId);
-      toast.success('Заказ отменён');
-    } catch {
-      toast.error('Не удалось отменить заказ');
-      setConfirming(false);
-    } finally {
-      setCancelling(false);
-    }
-  };
-
-  if (confirming) {
-    return (
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => void handleCancel()}
-          disabled={cancelling}
-          title="Подтвердить отмену"
-          className="flex h-6 w-6 items-center justify-center rounded text-red-600 hover:bg-red-50 disabled:opacity-50"
-        >
-          {cancelling ? <RefreshCw size={11} className="animate-spin" /> : <Check size={13} />}
-        </button>
-        <button
-          onClick={() => setConfirming(false)}
-          className="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100"
-          title="Нет"
-        >
-          <X size={13} />
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <button
-      onClick={() => setConfirming(true)}
-      title="Отменить заказ"
-      className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-300 hover:text-red-400 hover:bg-red-50 transition-colors"
-    >
-      <Ban size={14} />
-    </button>
-  );
-}
-
 // ---------- Skeleton ----------
 
 function TableSkeleton() {
@@ -797,12 +723,6 @@ export default function AdminOrdersPage() {
   const handleStatusUpdated = (id: string, status: OrderStatus) => {
     setOrders((prev) =>
       prev.map((o) => (o.id === id ? { ...o, status } : o))
-    );
-  };
-
-  const handleOrderCancelled = (id: string) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, status: 'cancelled' as OrderStatus } : o))
     );
   };
 
@@ -949,11 +869,6 @@ export default function AdminOrdersPage() {
                             >
                               <Pencil size={14} />
                             </button>
-                            <CancelButton
-                              orderId={order.id}
-                              status={order.status}
-                              onCancelled={handleOrderCancelled}
-                            />
                             <button
                               onClick={() => setExpandedId(isExpanded ? null : order.id)}
                               className="flex items-center gap-1 text-xs font-medium text-neutral-400 hover:text-neutral-700 transition-colors"

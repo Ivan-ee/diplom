@@ -24,16 +24,6 @@ import { QueryUsersDto } from './dto/query-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AddOrderItemDto } from './dto/add-order-item.dto';
 
-// Valid transitions: current status -> allowed next statuses
-const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  [OrderStatus.CREATED]: [OrderStatus.ACCEPTED, OrderStatus.CANCELLED],
-  [OrderStatus.ACCEPTED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
-  [OrderStatus.PREPARING]: [OrderStatus.READY, OrderStatus.CANCELLED],
-  [OrderStatus.READY]: [OrderStatus.PICKED_UP, OrderStatus.CANCELLED],
-  [OrderStatus.PICKED_UP]: [OrderStatus.COMPLETED, OrderStatus.CANCELLED],
-  [OrderStatus.COMPLETED]: [],
-  [OrderStatus.CANCELLED]: [],
-};
 
 @Injectable()
 export class AdminService {
@@ -200,15 +190,21 @@ export class AdminService {
           pickupDate: schema.orders.pickupDate,
           pickupTimeSlot: schema.orders.pickupTimeSlot,
           comment: schema.orders.comment,
+          phone: schema.orders.phone,
           createdAt: schema.orders.createdAt,
           updatedAt: schema.orders.updatedAt,
           userId: schema.orders.userId,
           userName: schema.users.name,
           userEmail: schema.users.email,
           userPhone: schema.users.phone,
+          promoCodeId: schema.orders.promoCodeId,
+          discountAmount: schema.orders.discountAmount,
+          originalPrice: schema.orders.originalPrice,
+          promoCode: schema.promoCodes.code,
         })
         .from(schema.orders)
         .leftJoin(schema.users, eq(schema.orders.userId, schema.users.id))
+        .leftJoin(schema.promoCodes, eq(schema.orders.promoCodeId, schema.promoCodes.id))
         .where(where)
         .orderBy(orderExpr)
         .limit(limit)
@@ -259,6 +255,7 @@ export class AdminService {
       pickupDate: row.pickupDate,
       pickupTimeSlot: row.pickupTimeSlot,
       comment: row.comment,
+      phone: row.phone ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       user: {
@@ -267,6 +264,9 @@ export class AdminService {
         email: row.userEmail,
         phone: row.userPhone,
       },
+      promoCode: row.promoCode ?? null,
+      discountAmount: row.discountAmount ?? null,
+      originalPrice: row.originalPrice ?? null,
       items: itemsByOrderId.get(row.id) ?? [],
     }));
 
@@ -283,15 +283,21 @@ export class AdminService {
         pickupDate: schema.orders.pickupDate,
         pickupTimeSlot: schema.orders.pickupTimeSlot,
         comment: schema.orders.comment,
+        phone: schema.orders.phone,
         createdAt: schema.orders.createdAt,
         updatedAt: schema.orders.updatedAt,
         userId: schema.orders.userId,
         userName: schema.users.name,
         userEmail: schema.users.email,
         userPhone: schema.users.phone,
+        promoCodeId: schema.orders.promoCodeId,
+        discountAmount: schema.orders.discountAmount,
+        originalPrice: schema.orders.originalPrice,
+        promoCode: schema.promoCodes.code,
       })
       .from(schema.orders)
       .leftJoin(schema.users, eq(schema.orders.userId, schema.users.id))
+      .leftJoin(schema.promoCodes, eq(schema.orders.promoCodeId, schema.promoCodes.id))
       .where(eq(schema.orders.id, id))
       .limit(1);
 
@@ -326,6 +332,7 @@ export class AdminService {
       pickupDate: order.pickupDate,
       pickupTimeSlot: order.pickupTimeSlot,
       comment: order.comment,
+      phone: order.phone ?? null,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
       user: {
@@ -334,6 +341,9 @@ export class AdminService {
         email: order.userEmail,
         phone: order.userPhone,
       },
+      promoCode: order.promoCode ?? null,
+      discountAmount: order.discountAmount ?? null,
+      originalPrice: order.originalPrice ?? null,
       items,
     };
   }
@@ -351,14 +361,6 @@ export class AdminService {
 
     const currentStatus = order.status as OrderStatus;
     const nextStatus = dto.status;
-    const allowedTransitions = STATUS_TRANSITIONS[currentStatus] ?? [];
-
-    if (!allowedTransitions.includes(nextStatus)) {
-      throw new BadRequestException(
-        `Cannot transition order from "${currentStatus}" to "${nextStatus}". ` +
-          `Allowed transitions: ${allowedTransitions.join(', ') || 'none'}`,
-      );
-    }
 
     const [updated] = await this.db
       .update(schema.orders)
