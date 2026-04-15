@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { RefreshCw, X } from 'lucide-react';
+import { RefreshCw, X, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -178,7 +178,7 @@ function TableSkeleton() {
     <>
       {Array.from({ length: 5 }).map((_, i) => (
         <tr key={i} className="border-b border-neutral-100 last:border-0">
-          {Array.from({ length: 5 }).map((_, j) => (
+          {Array.from({ length: 6 }).map((_, j) => (
             <td key={j} className="px-4 py-3">
               <div className="h-4 animate-pulse rounded-lg bg-neutral-100" />
             </td>
@@ -287,6 +287,9 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                   Дата регистрации
                 </th>
+                <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
+                  Действия
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -295,7 +298,7 @@ export default function AdminUsersPage() {
               ) : filtered.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-12 text-center text-sm text-neutral-400"
                   >
                     Пользователей нет
@@ -305,8 +308,7 @@ export default function AdminUsersPage() {
                 filtered.map((user) => (
                   <tr
                     key={user.id}
-                    onClick={() => setEditUser(user)}
-                    className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors cursor-pointer"
+                    className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors"
                   >
                     <td className="px-4 py-3 font-medium text-neutral-900">
                       {user.name}
@@ -335,6 +337,15 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-4 py-3 text-neutral-600">
                       {formatDate(user.createdAt)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => setEditUser(user)}
+                        title="Редактировать пользователя"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-300 hover:text-[var(--color-caramel)] hover:bg-neutral-100 transition-colors"
+                      >
+                        <Pencil size={14} />
+                      </button>
                     </td>
                   </tr>
                 ))
