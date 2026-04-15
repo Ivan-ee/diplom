@@ -11,8 +11,10 @@ export interface CakeConfigData {
     coatingId: string;
     glazeVariant: string;
     withDrips: boolean;
+    colorMode?: string;
+    secondaryGlazeVariant?: string;
   };
-  decorVariant: string | null;
+  activeDecorations: string[];
   hasCandle: boolean;
   inscription?: string;
 }

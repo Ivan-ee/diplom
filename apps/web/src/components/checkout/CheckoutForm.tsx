@@ -25,7 +25,7 @@ function cakeConfigToDto(cakeConfig: NonNullable<CartItem['cakeConfig']>) {
       weight: Math.round(l.weight / 100),
     })),
     coatingId: cakeConfig.coating.coatingId,
-    ...(cakeConfig.decorVariant && { decorVariant: cakeConfig.decorVariant }),
+    ...(cakeConfig.activeDecorations.length > 0 && { decorations: cakeConfig.activeDecorations }),
     ...(cakeConfig.hasCandle && { hasCandle: true }),
     ...(cakeConfig.inscription && { inscription: cakeConfig.inscription }),
   };

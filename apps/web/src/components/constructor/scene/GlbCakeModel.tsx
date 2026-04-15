@@ -18,7 +18,7 @@ interface FadingCakeGroupProps {
   config: ShapeTierConfig;
   layers: CakeLayer[];
   coating: CakeCoating;
-  decorVariant: string | null;
+  activeDecorations: string[];
   hasCandle: boolean;
   ingredients: ConstructorCatalog | null;
   direction: 'in' | 'out';
@@ -53,7 +53,7 @@ function FadingCakeGroup({
   config,
   layers,
   coating,
-  decorVariant,
+  activeDecorations,
   hasCandle,
   ingredients,
   direction,
@@ -91,15 +91,18 @@ function FadingCakeGroup({
         glazeVariant={coating.glazeVariant}
         withDrips={coating.withDrips}
         yOffset={0}
+        colorMode={coating.colorMode}
+        secondaryGlazeVariant={coating.secondaryGlazeVariant}
       />
 
-      {decorVariant && (
+      {activeDecorations.map((variantId, i) => (
         <GlbDecoration
+          key={variantId}
           shape={config.shape}
-          decorVariant={decorVariant}
-          yOffset={0}
+          decorVariant={variantId}
+          yOffset={i * 0.002}
         />
-      )}
+      ))}
 
       {hasCandle && (
         <GlbCandle
@@ -116,7 +119,7 @@ export function GlbCakeModel() {
   const tierCount = useConstructorStore((s) => s.tierCount);
   const layers = useConstructorStore((s) => s.layers);
   const coating = useConstructorStore((s) => s.coating);
-  const decorVariant = useConstructorStore((s) => s.decorVariant);
+  const activeDecorations = useConstructorStore((s) => s.activeDecorations);
   const hasCandle = useConstructorStore((s) => s.hasCandle);
   const ingredients = useConstructorStore((s) => s.ingredients);
 
@@ -168,7 +171,7 @@ export function GlbCakeModel() {
           onRest={clearPrev}
           layers={layers}
           coating={coating}
-          decorVariant={decorVariant}
+          activeDecorations={activeDecorations}
           hasCandle={hasCandle}
           ingredients={ingredients}
         />
@@ -179,7 +182,7 @@ export function GlbCakeModel() {
         direction="in"
         layers={layers}
         coating={coating}
-        decorVariant={decorVariant}
+        activeDecorations={activeDecorations}
         hasCandle={hasCandle}
         ingredients={ingredients}
       />

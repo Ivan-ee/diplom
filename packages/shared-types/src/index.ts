@@ -61,8 +61,8 @@ export interface CakeConfigData {
   shape: string;
   tierCount: number;
   layers: Array<{ baseId: string; fillingId: string; weight: number }>;
-  coating: { type: string; coatingId: string; glazeVariant: string; withDrips: boolean };
-  decorVariant: string | null;
+  coating: { type: string; coatingId: string; glazeVariant: string; withDrips: boolean; colorMode?: string; secondaryGlazeVariant?: string };
+  activeDecorations: string[];
   hasCandle: boolean;
   inscription?: string;
 }

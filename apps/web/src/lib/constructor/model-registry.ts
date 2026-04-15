@@ -310,6 +310,14 @@ export function getAvailableGlazes(shape: CakeShape): GlazeOption[] {
   );
 }
 
+/**
+ * Returns the hex color of a glaze variant (for shader uniforms).
+ */
+export function getGlazeColor(glazeVariant: string): string {
+  const meta = GLAZE_META[glazeVariant as GlazeVariant];
+  return meta?.color ?? '#FFF5E0';
+}
+
 export interface DecoOption {
   id: string;
   label: string;

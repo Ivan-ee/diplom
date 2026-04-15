@@ -64,13 +64,13 @@ export default function ConstructorClient() {
   const loadIngredients = useConstructorStore((s) => s.loadIngredients);
   const currentStep = useConstructorStore((s) => s.currentStep);
   const layers = useConstructorStore((s) => s.layers);
-  const decorVariant = useConstructorStore((s) => s.decorVariant);
+  const activeDecorations = useConstructorStore((s) => s.activeDecorations);
   const inscription = useConstructorStore((s) => s.inscription);
 
   const isDirty =
     currentStep > 1 ||
     layers.some((l) => l.baseId !== '' || l.fillingId !== '') ||
-    decorVariant !== null ||
+    activeDecorations.length > 0 ||
     inscription.trim() !== '';
 
   useEffect(() => {

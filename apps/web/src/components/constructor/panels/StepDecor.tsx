@@ -9,85 +9,104 @@ import { cn } from '@/lib/utils';
 
 export function StepDecor() {
   const shape = useConstructorStore((s) => s.shape);
-  const decorVariant = useConstructorStore((s) => s.decorVariant);
+  const activeDecorations = useConstructorStore((s) => s.activeDecorations);
   const hasCandle = useConstructorStore((s) => s.hasCandle);
   const inscription = useConstructorStore((s) => s.inscription);
-  const setDecorVariant = useConstructorStore((s) => s.setDecorVariant);
+  const addDecoration = useConstructorStore((s) => s.addDecoration);
+  const removeDecoration = useConstructorStore((s) => s.removeDecoration);
+  const clearDecorations = useConstructorStore((s) => s.clearDecorations);
   const setHasCandle = useConstructorStore((s) => s.setHasCandle);
   const setInscription = useConstructorStore((s) => s.setInscription);
   const getConfig = useConstructorStore((s) => s.getConfig);
 
   const decoOptions = getAvailableDecos(shape as CakeShape);
   const maxLength = getConfig()?.maxInscriptionLength ?? 50;
+  const maxDecorations = getConfig()?.maxDecorations ?? 3;
+  const isMaxReached = activeDecorations.length >= maxDecorations;
 
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm mb-3 uppercase tracking-wide">
-          Стиль украшения
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm uppercase tracking-wide">
+            Украшения
+          </h3>
+          <span
+            className={cn(
+              'text-xs font-medium px-2 py-0.5 rounded-full transition-colors',
+              isMaxReached
+                ? 'bg-[var(--color-caramel)]/10 text-[var(--color-caramel)]'
+                : 'text-[var(--color-graphite-light)]'
+            )}
+          >
+            {activeDecorations.length}/{maxDecorations}
+          </span>
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           {decoOptions.map((option) => {
-            const isActive = decorVariant === option.id;
+            const isActive = activeDecorations.includes(option.id);
+            const handleClick = () => {
+              if (isActive) {
+                removeDecoration(option.id);
+              } else {
+                addDecoration(option.id);
+              }
+            };
+
             return (
-              <button
+              <motion.button
                 key={option.id}
-                onClick={() => setDecorVariant(option.id)}
+                onClick={handleClick}
+                disabled={!isActive && isMaxReached}
                 className={cn(
-                  'relative flex flex-col items-start gap-1 p-3 rounded-xl border-2 text-left transition-all duration-150 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
+                  'relative flex flex-col items-start gap-1 p-3 rounded-xl border-2 text-left transition-all duration-150 ease-out cursor-pointer',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                   isActive
                     ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5 shadow-sm'
-                    : 'border-[var(--color-champagne)] hover:border-[var(--color-caramel)]/40'
+                    : isMaxReached
+                      ? 'border-[var(--color-champagne)] opacity-40 cursor-not-allowed'
+                      : 'border-[var(--color-champagne)] hover:border-[var(--color-caramel)]/40'
                 )}
+                whileTap={!isMaxReached || isActive ? { scale: 0.985 } : undefined}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="deco-variant"
-                    className="absolute inset-0 rounded-xl bg-[var(--color-caramel)]/5"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <div className="relative z-10 flex items-start justify-between w-full gap-1">
+                <div className="flex items-start justify-between w-full gap-1">
                   <span className="text-xs font-semibold text-[var(--color-graphite)] leading-tight">
                     {option.label}
                   </span>
-                  {isActive && (
-                    <div className="w-4 h-4 rounded-full bg-[var(--color-caramel)] flex items-center justify-center flex-shrink-0">
-                      <Check size={9} className="text-white" strokeWidth={3} />
-                    </div>
-                  )}
+                  <div
+                    className={cn(
+                      'w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border transition-colors',
+                      isActive
+                        ? 'bg-[var(--color-caramel)] border-[var(--color-caramel)]'
+                        : 'border-[var(--color-champagne)] bg-transparent'
+                    )}
+                  >
+                    {isActive && <Check size={9} className="text-white" strokeWidth={3} />}
+                  </div>
                 </div>
-                <span className="relative z-10 text-[10px] text-[var(--color-graphite-light)] leading-tight">
+                <span className="text-[10px] text-[var(--color-graphite-light)] leading-tight">
                   {option.description}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
 
           <button
-            onClick={() => setDecorVariant(null)}
+            onClick={clearDecorations}
+            disabled={activeDecorations.length === 0}
             className={cn(
-              'relative col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-150 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
-              decorVariant === null
-                ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5 shadow-sm'
+              'col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-150 ease-out cursor-pointer',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
+              activeDecorations.length === 0
+                ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5 shadow-sm opacity-40 cursor-not-allowed'
                 : 'border-[var(--color-champagne)] hover:border-[var(--color-caramel)]/40'
             )}
           >
-            {decorVariant === null && (
-              <motion.div
-                layoutId="deco-variant"
-                className="absolute inset-0 rounded-xl bg-[var(--color-caramel)]/5"
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              />
-            )}
-            <span className="relative z-10 text-xs font-semibold text-[var(--color-graphite)]">
-              Без украшений
+            <X size={12} className="text-[var(--color-graphite-light)]" />
+            <span className="text-xs font-semibold text-[var(--color-graphite)]">
+              Убрать все украшения
             </span>
-            {decorVariant === null && (
-              <div className="relative z-10 w-4 h-4 rounded-full bg-[var(--color-caramel)] flex items-center justify-center">
-                <Check size={9} className="text-white" strokeWidth={3} />
-              </div>
-            )}
           </button>
         </div>
       </div>
@@ -111,8 +130,8 @@ export function StepDecor() {
               inscription.length >= maxLength
                 ? 'text-red-500'
                 : inscription.length > maxLength * 0.8
-                ? 'text-orange-500'
-                : 'text-[var(--color-graphite-light)]'
+                  ? 'text-orange-500'
+                  : 'text-[var(--color-graphite-light)]'
             )}
           >
             {inscription.length}/{maxLength}

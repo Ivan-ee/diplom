@@ -62,7 +62,7 @@ export function StepNavigation() {
   const shape = useConstructorStore((s) => s.shape);
   const tierCount = useConstructorStore((s) => s.tierCount);
   const coating = useConstructorStore((s) => s.coating);
-  const decorVariant = useConstructorStore((s) => s.decorVariant);
+  const activeDecorations = useConstructorStore((s) => s.activeDecorations);
   const hasCandle = useConstructorStore((s) => s.hasCandle);
   const inscription = useConstructorStore((s) => s.inscription);
   const ingredients = useConstructorStore((s) => s.ingredients);
@@ -148,7 +148,7 @@ export function StepNavigation() {
         tierCount,
         layers,
         coating,
-        decorVariant,
+        activeDecorations,
         hasCandle,
         inscription,
       },
