@@ -9,16 +9,11 @@ export interface CakeConfigData {
   coating: {
     type: string;
     coatingId: string;
-    color: string;
-    gradient?: unknown;
-    drips?: unknown;
+    glazeVariant: string;
+    withDrips: boolean;
   };
-  decorations: Array<{
-    id: string;
-    decorationId: string;
-    position: number[];
-    normal?: number[];
-  }>;
+  decorVariant: string | null;
+  hasCandle: boolean;
   inscription?: string;
 }
 

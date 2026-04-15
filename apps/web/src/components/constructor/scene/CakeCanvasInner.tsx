@@ -4,8 +4,7 @@ import { Suspense, useEffect } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SceneSetup } from './SceneSetup';
-import { CakeModel } from './CakeModel';
-import { DecorationDropHandler } from './DecorationDropHandler';
+import { GlbCakeModel } from './GlbCakeModel';
 import { glRef } from '@/lib/screenshot-ref';
 
 function CakeLoadingFallback() {
@@ -38,7 +37,7 @@ export default function CakeCanvasInner() {
         preserveDrawingBuffer: true,
         antialias: true,
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 1.1,
+        toneMappingExposure: 0.9,
       }}
       camera={{ position: [0, 3, 6], fov: 45 }}
       shadows
@@ -47,9 +46,8 @@ export default function CakeCanvasInner() {
       <GlRegistrar />
       <SceneSetup />
       <Suspense fallback={<CakeLoadingFallback />}>
-        <CakeModel />
+        <GlbCakeModel />
       </Suspense>
-      <DecorationDropHandler />
     </Canvas>
   );
 }

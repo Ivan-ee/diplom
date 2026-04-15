@@ -42,6 +42,8 @@ export interface OrderItemConstructor {
     coatingName?: string;
     inscription?: string;
     decorations?: string[];
+    decorVariant?: string | null;
+    hasCandle?: boolean;
   };
 }
 
@@ -152,9 +154,11 @@ function ConstructorItemRow({ item }: { item: OrderItemConstructor }) {
             ))}
             {cfg.coatingName && <li>Покрытие: {cfg.coatingName}</li>}
             {cfg.inscription && <li>Надпись: «{cfg.inscription}»</li>}
-            {cfg.decorations && cfg.decorations.length > 0 && (
+            {cfg.decorVariant ? (
+              <li>Декор: {cfg.decorVariant}{cfg.hasCandle ? ', свеча' : ''}</li>
+            ) : cfg.decorations && cfg.decorations.length > 0 ? (
               <li>Декор: {cfg.decorations.join(', ')}</li>
-            )}
+            ) : null}
           </ul>
         )}
       </div>

@@ -46,7 +46,7 @@ function useStepValid(): boolean {
     case 3:
       return layers.every((l) => !!l.fillingId);
     case 4:
-      return !!coating.coatingId && !!coating.color;
+      return !!coating.coatingId && !!coating.glazeVariant;
     case 5:
       return true;
     default:
@@ -62,7 +62,8 @@ export function StepNavigation() {
   const shape = useConstructorStore((s) => s.shape);
   const tierCount = useConstructorStore((s) => s.tierCount);
   const coating = useConstructorStore((s) => s.coating);
-  const decorations = useConstructorStore((s) => s.decorations);
+  const decorVariant = useConstructorStore((s) => s.decorVariant);
+  const hasCandle = useConstructorStore((s) => s.hasCandle);
   const inscription = useConstructorStore((s) => s.inscription);
   const ingredients = useConstructorStore((s) => s.ingredients);
   const reset = useConstructorStore((s) => s.reset);
@@ -147,7 +148,8 @@ export function StepNavigation() {
         tierCount,
         layers,
         coating,
-        decorations,
+        decorVariant,
+        hasCandle,
         inscription,
       },
     });

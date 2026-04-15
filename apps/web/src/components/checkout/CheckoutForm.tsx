@@ -17,15 +17,6 @@ import { formatPrice, cn } from '@/lib/utils';
 // ── cakeConfig → API DTO adapter ─────────────────────────────────────────────
 
 function cakeConfigToDto(cakeConfig: NonNullable<CartItem['cakeConfig']>) {
-  const decorationCounts: Record<string, number> = {};
-  for (const d of cakeConfig.decorations) {
-    decorationCounts[d.decorationId] = (decorationCounts[d.decorationId] ?? 0) + 1;
-  }
-  const decorations = Object.entries(decorationCounts).map(([decorationId, quantity]) => ({
-    decorationId,
-    quantity,
-  }));
-
   return {
     shape: cakeConfig.shape,
     tiers: cakeConfig.layers.map((l) => ({
@@ -34,7 +25,8 @@ function cakeConfigToDto(cakeConfig: NonNullable<CartItem['cakeConfig']>) {
       weight: Math.round(l.weight / 100),
     })),
     coatingId: cakeConfig.coating.coatingId,
-    ...(decorations.length > 0 && { decorations }),
+    ...(cakeConfig.decorVariant && { decorVariant: cakeConfig.decorVariant }),
+    ...(cakeConfig.hasCandle && { hasCandle: true }),
     ...(cakeConfig.inscription && { inscription: cakeConfig.inscription }),
   };
 }

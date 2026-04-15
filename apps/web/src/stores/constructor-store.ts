@@ -13,31 +13,11 @@ export interface CakeLayer {
   weight: number;
 }
 
-export interface CoatingGradient {
-  enabled: boolean;
-  gradientEndColor: string;
-  direction: 'vertical' | 'horizontal';
-}
-
-export interface CoatingDrips {
-  enabled: boolean;
-  color: string;
-  intensity: number;
-}
-
 export interface CakeCoating {
   type: CoatingType;
   coatingId: string;
-  color: string;
-  gradient: CoatingGradient | null;
-  drips: CoatingDrips | null;
-}
-
-export interface PlacedDecoration {
-  id: string;
-  decorationId: string;
-  position: [number, number, number];
-  normal: [number, number, number];
+  glazeVariant: string;
+  withDrips: boolean;
 }
 
 export interface IngredientBase {
@@ -118,15 +98,12 @@ export interface ConstructorState {
   tierCount: TierCount;
   layers: CakeLayer[];
   coating: CakeCoating;
-  decorations: PlacedDecoration[];
+  decorVariant: string | null;
+  hasCandle: boolean;
   inscription: string;
   ingredients: ConstructorCatalog | null;
   totalPrice: number;
   isLoading: boolean;
-
-  /** ID of the decoration type currently being placed via click-to-place mode. Null when idle. */
-  placingDecorationId: string | null;
-  setPlacingDecorationId: (id: string | null) => void;
 
   setStep: (step: ConstructorStep) => void;
   setShape: (shape: CakeShape) => void;
@@ -135,13 +112,11 @@ export interface ConstructorState {
   setLayerFilling: (tierIndex: number, fillingId: string) => void;
   setLayerWeight: (tierIndex: number, weight: number) => void;
   setCoatingType: (type: CoatingType) => void;
-  setCoatingColor: (color: string) => void;
   setCoatingId: (id: string) => void;
-  setGradient: (gradient: CoatingGradient | null) => void;
-  setDrips: (drips: CoatingDrips | null) => void;
-  addDecoration: (decorationId: string, position: [number, number, number], normal: [number, number, number]) => void;
-  removeDecoration: (id: string) => void;
-  moveDecoration: (id: string, position: [number, number, number], normal: [number, number, number]) => void;
+  setGlazeVariant: (variant: string) => void;
+  setWithDrips: (withDrips: boolean) => void;
+  setDecorVariant: (variant: string | null) => void;
+  setHasCandle: (hasCandle: boolean) => void;
   setInscription: (text: string) => void;
   loadIngredients: () => Promise<void>;
   recalculatePrice: () => void;
@@ -158,9 +133,8 @@ const DEFAULT_LAYER: CakeLayer = {
 const DEFAULT_COATING: CakeCoating = {
   type: 'cream',
   coatingId: '',
-  color: '#FFFFFF',
-  gradient: null,
-  drips: null,
+  glazeVariant: 'cream',
+  withDrips: false,
 };
 
 const buildLayers = (count: TierCount, existing: CakeLayer[]): CakeLayer[] => {
@@ -202,19 +176,17 @@ export const useConstructorStore = create<ConstructorState>()(
     tierCount: 1,
     layers: [{ ...DEFAULT_LAYER }],
     coating: { ...DEFAULT_COATING },
-    decorations: [],
+    decorVariant: null,
+    hasCandle: false,
     inscription: '',
     ingredients: null,
     totalPrice: 0,
     isLoading: false,
-    placingDecorationId: null,
-
-    setPlacingDecorationId: (id) => set({ placingDecorationId: id }),
 
     setStep: (step) => set({ currentStep: step }),
 
     setShape: (shape) => {
-      set({ shape });
+      set({ shape, decorVariant: null, hasCandle: false });
       get().recalculatePrice();
     },
 
@@ -264,47 +236,27 @@ export const useConstructorStore = create<ConstructorState>()(
       get().recalculatePrice();
     },
 
-    setCoatingColor: (color) => {
-      set((state) => ({ coating: { ...state.coating, color } }));
-    },
-
     setCoatingId: (id) => {
       set((state) => ({ coating: { ...state.coating, coatingId: id } }));
       get().recalculatePrice();
     },
 
-    setGradient: (gradient) => {
-      set((state) => ({ coating: { ...state.coating, gradient } }));
+    setGlazeVariant: (variant) => {
+      set((state) => ({ coating: { ...state.coating, glazeVariant: variant } }));
     },
 
-    setDrips: (drips) => {
-      set((state) => ({ coating: { ...state.coating, drips } }));
+    setWithDrips: (withDrips) => {
+      set((state) => ({ coating: { ...state.coating, withDrips } }));
     },
 
-    addDecoration: (decorationId, position, normal) => {
-      const config = get().getConfig();
-      const max = config?.maxDecorations ?? 20;
-      if (get().decorations.length >= max) return;
-      const id = `${decorationId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-      set((state) => ({
-        decorations: [...state.decorations, { id, decorationId, position, normal }],
-      }));
+    setDecorVariant: (variant) => {
+      set({ decorVariant: variant });
       get().recalculatePrice();
     },
 
-    removeDecoration: (id) => {
-      set((state) => ({
-        decorations: state.decorations.filter((d) => d.id !== id),
-      }));
+    setHasCandle: (hasCandle) => {
+      set({ hasCandle });
       get().recalculatePrice();
-    },
-
-    moveDecoration: (id, position, normal) => {
-      set((state) => ({
-        decorations: state.decorations.map((d) =>
-          d.id === id ? { ...d, position, normal } : d,
-        ),
-      }));
     },
 
     setInscription: (text) => {
@@ -321,6 +273,19 @@ export const useConstructorStore = create<ConstructorState>()(
         const catalog: ConstructorCatalog = (
           (envelope as { data?: ConstructorCatalog }).data ?? (envelope as ConstructorCatalog)
         );
+        // Normalize API field name (API returns isAvailable, mock returns available)
+        if (catalog.bases) {
+          catalog.bases = catalog.bases.map((b: any) => ({ ...b, available: b.available ?? b.isAvailable ?? true }));
+        }
+        if (catalog.fillings) {
+          catalog.fillings = catalog.fillings.map((f: any) => ({ ...f, available: f.available ?? f.isAvailable ?? true }));
+        }
+        if (catalog.coatings) {
+          catalog.coatings = catalog.coatings.map((c: any) => ({ ...c, available: c.available ?? c.isAvailable ?? true }));
+        }
+        if (catalog.decorations) {
+          catalog.decorations = catalog.decorations.map((d: any) => ({ ...d, available: d.available ?? d.isAvailable ?? true }));
+        }
         set({ ingredients: catalog, isLoading: false });
       } catch (err) {
         console.error('Failed to load constructor ingredients, using mock data:', err);
@@ -343,7 +308,7 @@ export const useConstructorStore = create<ConstructorState>()(
 
     recalculatePrice: () => {
       const state = get();
-      const { ingredients, layers, shape, tierCount, coating, decorations } = state;
+      const { ingredients, layers, shape, tierCount, coating } = state;
       if (!ingredients) {
         set({ totalPrice: 0 });
         return;
@@ -364,13 +329,17 @@ export const useConstructorStore = create<ConstructorState>()(
         runningTotal += (totalWeight * coatingIngredient.pricePerKg) / 1000;
       }
 
-      const decorationCounts: Record<string, number> = {};
-      for (const d of decorations) {
-        decorationCounts[d.decorationId] = (decorationCounts[d.decorationId] ?? 0) + 1;
+      if (state.decorVariant) {
+        const decoIngredient = ingredients.decorations[0];
+        if (decoIngredient) {
+          runningTotal += decoIngredient.pricePerUnit;
+        }
       }
-      for (const [decorId, count] of Object.entries(decorationCounts)) {
-        const decor = ingredients.decorations.find((d) => d.id === decorId);
-        if (decor) runningTotal += decor.pricePerUnit * count;
+      if (state.hasCandle) {
+        const candleIngredient = ingredients.decorations.find(d => d.category === 'candle' || d.name.toLowerCase().includes('свеч'));
+        if (candleIngredient) {
+          runningTotal += candleIngredient.pricePerUnit;
+        }
       }
 
       const shapeInfo = ingredients.shapes.find((s) => s.id === shape);
@@ -390,7 +359,8 @@ export const useConstructorStore = create<ConstructorState>()(
         tierCount: 1,
         layers: [{ ...DEFAULT_LAYER }],
         coating: { ...DEFAULT_COATING },
-        decorations: [],
+        decorVariant: null,
+        hasCandle: false,
         inscription: '',
         totalPrice: 0,
       });
@@ -416,7 +386,8 @@ export const useConstructorStore = create<ConstructorState>()(
       tierCount: state.tierCount,
       layers: state.layers,
       coating: state.coating,
-      decorations: state.decorations,
+      decorVariant: state.decorVariant,
+      hasCandle: state.hasCandle,
       inscription: state.inscription,
     }) as unknown as ConstructorState,
   }

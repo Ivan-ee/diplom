@@ -58,7 +58,8 @@ export function PriceCalculator() {
   const totalPrice = useConstructorStore((s) => s.totalPrice);
   const layers = useConstructorStore((s) => s.layers);
   const coating = useConstructorStore((s) => s.coating);
-  const decorations = useConstructorStore((s) => s.decorations);
+  const decorVariant = useConstructorStore((s) => s.decorVariant);
+  const hasCandle = useConstructorStore((s) => s.hasCandle);
   const shape = useConstructorStore((s) => s.shape);
   const tierCount = useConstructorStore((s) => s.tierCount);
   const ingredients = useConstructorStore((s) => s.ingredients);
@@ -89,14 +90,14 @@ export function PriceCalculator() {
       if (coatingCost > 0) breakdown.push({ label: 'Покрытие', value: Math.round(coatingCost) });
     }
 
-    const countMap: Record<string, number> = {};
-    for (const d of decorations) {
-      countMap[d.decorationId] = (countMap[d.decorationId] ?? 0) + 1;
-    }
     let decorCost = 0;
-    for (const [decorId, count] of Object.entries(countMap)) {
-      const decor = ingredients.decorations.find((d) => d.id === decorId);
-      if (decor) decorCost += decor.pricePerUnit * count;
+    if (decorVariant) {
+      const decoIngredient = ingredients.decorations[0];
+      if (decoIngredient) decorCost += decoIngredient.pricePerUnit;
+    }
+    if (hasCandle) {
+      const candleIngredient = ingredients.decorations.find(d => d.name.toLowerCase().includes('свеч'));
+      if (candleIngredient) decorCost += candleIngredient.pricePerUnit;
     }
     if (decorCost > 0) breakdown.push({ label: 'Декорации', value: Math.round(decorCost) });
 

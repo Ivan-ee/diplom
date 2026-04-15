@@ -61,8 +61,9 @@ export interface CakeConfigData {
   shape: string;
   tierCount: number;
   layers: Array<{ baseId: string; fillingId: string; weight: number }>;
-  coating: { type: string; color: string };
-  decorations: Array<{ decorationId: string; position: number[] }>;
+  coating: { type: string; coatingId: string; glazeVariant: string; withDrips: boolean };
+  decorVariant: string | null;
+  hasCandle: boolean;
   inscription?: string;
 }
 
@@ -103,27 +104,12 @@ export interface CakeLayer {
   weight: number;
 }
 
-/** Gradient coating option. */
-export interface CoatingGradient {
-  enabled: boolean;
-  gradientEndColor: string;
-  direction: 'vertical' | 'horizontal';
-}
-
-/** Drip decoration on top of the coating. */
-export interface CoatingDrips {
-  enabled: boolean;
-  color: string;
-  intensity: number;
-}
-
 /** Full coating configuration for one cake. */
 export interface CakeCoating {
   type: CoatingType;
   coatingId: string;
-  color: string;
-  gradient: CoatingGradient | null;
-  drips: CoatingDrips | null;
+  glazeVariant: string;
+  withDrips: boolean;
 }
 
 /** A placed decoration instance on the 3-D canvas. */
