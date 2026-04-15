@@ -4,18 +4,6 @@ import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import { useConstructorStore } from '@/stores/constructor-store';
 
-// Dynamically import the layout with SSR disabled — it contains WebGL canvas
-const ConstructorLayout = dynamic(
-  () =>
-    import('@/components/constructor/ConstructorLayout').then(
-      (mod) => mod.ConstructorLayout
-    ),
-  {
-    ssr: false,
-    loading: () => <ConstructorPageSkeleton />,
-  }
-);
-
 function ConstructorPageSkeleton() {
   return (
     <div className="hidden lg:grid lg:grid-cols-[3fr_2fr] h-[calc(100dvh-64px)] animate-pulse">
@@ -67,15 +55,18 @@ function ConstructorPageSkeleton() {
   );
 }
 
-export default function ConstructorPage() {
+const ConstructorLayout = dynamic(
+  () => import('./ConstructorLayout').then((mod) => mod.ConstructorLayout),
+  { ssr: false, loading: () => <ConstructorPageSkeleton /> }
+);
+
+export default function ConstructorClient() {
   const loadIngredients = useConstructorStore((s) => s.loadIngredients);
   const currentStep = useConstructorStore((s) => s.currentStep);
   const layers = useConstructorStore((s) => s.layers);
   const decorations = useConstructorStore((s) => s.decorations);
   const inscription = useConstructorStore((s) => s.inscription);
 
-  // Config is considered dirty when the user has progressed beyond step 1,
-  // selected any layer ingredient, added decorations, or typed an inscription.
   const isDirty =
     currentStep > 1 ||
     layers.some((l) => l.baseId !== '' || l.fillingId !== '') ||
@@ -98,8 +89,8 @@ export default function ConstructorPage() {
   }, [isDirty]);
 
   return (
-    <main className="overflow-hidden">
+    <div className="overflow-hidden">
       <ConstructorLayout />
-    </main>
+    </div>
   );
 }
