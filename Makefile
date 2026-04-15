@@ -9,6 +9,7 @@ COMPOSE       := docker compose -f $(COMPOSE_FILE)
         lint format type-check \
         docker-up docker-down docker-restart docker-logs \
         db-generate db-migrate db-push db-seed db-studio db-reset \
+        photos-upload db-seed-full \
         clean
 
 .DEFAULT_GOAL := help
@@ -109,6 +110,12 @@ db-reset: ## Полный сброс БД: дропнуть, пересозда�
 	@echo "Заполняем базу тестовыми данными..."
 	@$(PNPM) --filter @bakery/db seed
 	@echo "БД пересоздана."
+
+photos-upload: ## Upload local photos to MinIO
+	@$(PNPM) --filter @bakery/db photos:upload
+
+db-seed-full: docker-up photos-upload db-seed ## Full seed: Docker + photos + DB data
+	@echo "Full seed complete"
 
 # ─── ОЧИСТКА ──────────────────────────────────────────────────────────────────
 

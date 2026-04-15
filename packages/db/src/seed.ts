@@ -20,6 +20,7 @@ import {
   productSchema,
 } from '../seed-data/schemas';
 import { z } from 'zod';
+import { buildImageUrl } from './build-image-url';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -62,6 +63,9 @@ async function seed() {
   const productsData    = loadJson(productSchema,               'seed-data/products.json');
 
   console.log('✓ JSON validated — starting transaction');
+
+  const minioBase = process.env.MINIO_PUBLIC_URL ?? 'http://localhost:9000';
+  const minioBucket = process.env.MINIO_BUCKET_PRODUCTS ?? 'products';
 
   await db.transaction(async (tx) => {
     // ── 1. Categories ──────────────────────────────────────────────────────
@@ -176,8 +180,8 @@ async function seed() {
         name:        p.name,
         description: p.description,
         composition: p.composition,
-        imageUrl:    p.imageUrl ?? null,
-        images:      p.images ?? [],
+        imageUrl:    p.photoPath ? buildImageUrl(p.photoPath, minioBase, minioBucket) : null,
+        images:      (p.galleryPaths ?? []).map((gp: string) => buildImageUrl(gp, minioBase, minioBucket)),
         priceType:   p.priceType as typeof schema.products.$inferInsert['priceType'],
         pricePerKg:  p.priceType === 'per_kg'   ? p.pricePerKg   : null,
         pricePerUnit: p.priceType === 'per_unit' ? p.pricePerUnit : null,

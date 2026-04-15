@@ -103,10 +103,8 @@ export const productSchema = z.object({
   minWeight: z.string().regex(/^\d+(\.\d)?$/), // numeric(4,1) as string, e.g. "1.0", "2.5"
   maxWeight: z.string().regex(/^\d+(\.\d)?$/),
   weightStep: z.string().regex(/^\d+(\.\d)?$/),
-  imageKey: z.string().min(1), // links to vk-photos.json key (wedding/kids/bento/cupcakes/trifles/classic)
-  imageIndex: z.number().int().nonnegative(),
-  imageUrl: z.string().url().optional(),   // injected by vk:assign script
-  images: z.array(z.string().url()).optional(), // gallery URLs, injected by vk:assign script
+  photoPath: z.string().min(1),            // relative path e.g. "wedding/0.jpg"
+  galleryPaths: z.array(z.string()).default([]), // relative paths for gallery
   isAvailable: z.boolean().default(true),
 }).refine(
   (p) => {

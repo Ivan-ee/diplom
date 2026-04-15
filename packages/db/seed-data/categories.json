@@ -1,8 +1,8 @@
 [
-  { "slug": "wedding",  "name": "Свадебные торты" },
-  { "slug": "kids",     "name": "Детские торты" },
-  { "slug": "bento",    "name": "Бенто-торты" },
-  { "slug": "cupcakes", "name": "Капкейки" },
-  { "slug": "trifles",  "name": "Трайфлы" },
-  { "slug": "classic",  "name": "Классические торты" }
+  { "slug": "wedding",   "name": "Свадебные торты" },
+  { "slug": "kids",      "name": "Детские торты" },
+  { "slug": "bento",     "name": "Бенто-торты" },
+  { "slug": "cupcakes",  "name": "Капкейки" },
+  { "slug": "trifles",   "name": "Трайфлы" },
+  { "slug": "avtorskie", "name": "Авторские торты" }
 ]

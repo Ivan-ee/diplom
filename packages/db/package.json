@@ -14,8 +14,8 @@
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
     "seed": "tsx src/seed.ts",
-    "vk:download": "tsx scripts/download-vk-photos.ts",
-    "vk:assign": "tsx scripts/assign-photos.ts"
+    "photos:upload": "tsx scripts/upload-photos.ts",
+    "seed:full": "tsx scripts/upload-photos.ts && tsx src/seed.ts"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",

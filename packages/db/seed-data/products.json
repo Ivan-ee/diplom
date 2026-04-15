@@ -1,1178 +1,801 @@
 [
   {
-    "slug": "svadebnyj-belyj-kaskad",
-    "name": "Свадебный торт «Белый каскад»",
-    "description": "Трёхъярусный торт для главного дня — воздушный белый бисквит с крем-чизом и свежими ягодами.",
-    "composition": "Белый бисквит, крем-чиз, клубника, голубика, белый шоколад",
+    "slug": "svadebnyj-golubye-strekozy",
+    "name": "Свадебный торт «Голубые стрекозы»",
+    "description": "Трёхъярусный шестигранный торт в нежно-голубых тонах с золотыми рельефными панелями, каскадами жемчужных бусин и элегантными стрекозами из мастики.",
+    "composition": "Ванильный бисквит, крем-чиз, белый шоколад, мастика, сахарные жемчужины",
     "categorySlug": "wedding",
-    "occasionSlugs": [
-      "wedding",
-      "anniversary"
-    ],
+    "occasionSlugs": ["wedding", "anniversary"],
     "priceType": "per_kg",
     "pricePerKg": 320000,
     "pricePerUnit": null,
     "minWeight": "3.0",
     "maxWeight": "8.0",
     "weightStep": "0.5",
-    "imageKey": "wedding",
-    "imageIndex": 0,
-    "imageUrl": "http://localhost:9000/products/vk/wedding/0.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/wedding/1.jpg",
-      "http://localhost:9000/products/vk/wedding/2.jpg",
-      "http://localhost:9000/products/vk/wedding/3.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "wedding/0.jpg",
+    "galleryPaths": ["wedding/1.jpg", "wedding/2.jpg", "wedding/3.jpg"]
   },
   {
-    "slug": "svadebnyj-zhemchug",
-    "name": "Свадебный торт «Жемчуг»",
-    "description": "Элегантный двухъярусный торт с жемчужным декором и нежным ванильным кремом.",
-    "composition": "Ванильный бисквит, ванильный крем, маскарпоне, белый шоколад, съедобный жемчуг",
+    "slug": "svadebnyj-monogramma",
+    "name": "Свадебный торт «Монограмма»",
+    "description": "Элегантный двухъярусный торт с текстурным декором и нежными пудровыми розами. Серебряные листья и персональная монограмма добавляют изысканности.",
+    "composition": "Ванильный бисквит, ванильный крем, маскарпоне, мастика, серебряный декор",
     "categorySlug": "wedding",
-    "occasionSlugs": [
-      "wedding"
-    ],
+    "occasionSlugs": ["wedding"],
     "priceType": "per_kg",
     "pricePerKg": 350000,
     "pricePerUnit": null,
     "minWeight": "3.0",
     "maxWeight": "8.0",
     "weightStep": "0.5",
-    "imageKey": "wedding",
-    "imageIndex": 1,
-    "imageUrl": "http://localhost:9000/products/vk/wedding/1.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/wedding/2.jpg",
-      "http://localhost:9000/products/vk/wedding/3.jpg",
-      "http://localhost:9000/products/vk/wedding/4.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "wedding/1.jpg",
+    "galleryPaths": ["wedding/2.jpg", "wedding/3.jpg", "wedding/4.jpg"]
   },
   {
-    "slug": "svadebnyj-rozovyj-sad",
-    "name": "Свадебный торт «Розовый сад»",
-    "description": "Романтичный торт украшен живыми розами и нежными лепестками в пастельных тонах.",
-    "composition": "Миндальный бисквит, малиновый конфи, крем-чиз, живые цветы",
+    "slug": "svadebnyj-belye-lilii",
+    "name": "Свадебный торт «Белые лилии»",
+    "description": "Роскошный трёхъярусный торт с рельефными завитками и каскадом сахарных лилий и роз в белых и кремовых тонах с золотыми листьями.",
+    "composition": "Миндальный бисквит, малиновый конфи, крем-чиз, сахарные цветы",
     "categorySlug": "wedding",
-    "occasionSlugs": [
-      "wedding",
-      "anniversary",
-      "valentines"
-    ],
+    "occasionSlugs": ["wedding", "anniversary", "valentines"],
     "priceType": "per_kg",
     "pricePerKg": 340000,
     "pricePerUnit": null,
     "minWeight": "3.0",
     "maxWeight": "8.0",
     "weightStep": "0.5",
-    "imageKey": "wedding",
-    "imageIndex": 2,
-    "imageUrl": "http://localhost:9000/products/vk/wedding/2.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/wedding/3.jpg",
-      "http://localhost:9000/products/vk/wedding/4.jpg",
-      "http://localhost:9000/products/vk/wedding/5.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "wedding/2.jpg",
+    "galleryPaths": ["wedding/3.jpg", "wedding/4.jpg", "wedding/5.jpg"]
   },
   {
-    "slug": "svadebnyj-vanilnoe-utro",
-    "name": "Свадебный торт «Ванильное утро»",
-    "description": "Лёгкий и воздушный торт с ванильным кремом и свежей клубникой — нежность в каждом кусочке.",
+    "slug": "svadebnyj-piony",
+    "name": "Свадебный торт «Пионы»",
+    "description": "Изящный двухъярусный торт с текстурой горизонтальных линий, украшенный живыми белыми и розовыми пионами и веточками эвкалипта.",
     "composition": "Ванильный бисквит, крем-брюле, клубника, ваниль Бурбон",
     "categorySlug": "wedding",
-    "occasionSlugs": [
-      "wedding"
-    ],
+    "occasionSlugs": ["wedding"],
     "priceType": "per_kg",
     "pricePerKg": 280000,
     "pricePerUnit": null,
     "minWeight": "3.0",
     "maxWeight": "8.0",
     "weightStep": "0.5",
-    "imageKey": "wedding",
-    "imageIndex": 3,
-    "imageUrl": "http://localhost:9000/products/vk/wedding/3.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/wedding/4.jpg",
-      "http://localhost:9000/products/vk/wedding/5.jpg",
-      "http://localhost:9000/products/vk/wedding/6.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "wedding/3.jpg",
+    "galleryPaths": ["wedding/4.jpg", "wedding/5.jpg", "wedding/6.jpg"]
   },
   {
-    "slug": "svadebnyj-klassicheskij-yarus",
-    "name": "Свадебный торт «Классический ярус»",
-    "description": "Классический ярусный торт с белоснежным покрытием и золотым декором для торжественного события.",
-    "composition": "Шифоновый бисквит, масляный крем, белый фондан, золотой кандурин",
+    "slug": "svadebnyj-korallovye-rozy",
+    "name": "Свадебный торт «Коралловые розы»",
+    "description": "Воздушный трёхъярусный торт на стеклянных подставках с каскадом коралловых роз и зелени.",
+    "composition": "Шифоновый бисквит, масляный крем, белый фондан, живые цветы",
     "categorySlug": "wedding",
-    "occasionSlugs": [
-      "wedding",
-      "anniversary"
-    ],
+    "occasionSlugs": ["wedding", "anniversary"],
     "priceType": "per_kg",
     "pricePerKg": 300000,
     "pricePerUnit": null,
     "minWeight": "4.0",
     "maxWeight": "8.0",
     "weightStep": "0.5",
-    "imageKey": "wedding",
-    "imageIndex": 4,
-    "imageUrl": "http://localhost:9000/products/vk/wedding/4.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/wedding/5.jpg",
-      "http://localhost:9000/products/vk/wedding/6.jpg",
-      "http://localhost:9000/products/vk/wedding/7.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "wedding/4.jpg",
+    "galleryPaths": ["wedding/5.jpg", "wedding/6.jpg", "wedding/7.jpg"]
   },
   {
-    "slug": "svadebnyj-nezhnoe-oblako",
-    "name": "Свадебный торт «Нежное облако»",
-    "description": "Невесомый торт с облачным декором из итальянской меренги и лёгким лимонным кремом.",
-    "composition": "Лимонный бисквит, лимонный курд, итальянская меренга, ягоды",
+    "slug": "svadebnyj-zolotaya-nezhnost",
+    "name": "Свадебный торт «Золотая нежность»",
+    "description": "Утончённый трёхъярусный торт с сусальным золотом и живыми пионами — идеальное сочетание роскоши и природной красоты.",
+    "composition": "Лимонный бисквит, лимонный курд, итальянская меренга, живые цветы",
     "categorySlug": "wedding",
-    "occasionSlugs": [
-      "wedding"
-    ],
+    "occasionSlugs": ["wedding"],
     "priceType": "per_kg",
     "pricePerKg": 260000,
     "pricePerUnit": null,
     "minWeight": "3.0",
     "maxWeight": "7.0",
     "weightStep": "0.5",
-    "imageKey": "wedding",
-    "imageIndex": 5,
-    "imageUrl": "http://localhost:9000/products/vk/wedding/5.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/wedding/6.jpg",
-      "http://localhost:9000/products/vk/wedding/7.jpg",
-      "http://localhost:9000/products/vk/wedding/8.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "wedding/5.jpg",
+    "galleryPaths": ["wedding/6.jpg", "wedding/7.jpg", "wedding/8.jpg"]
   },
   {
-    "slug": "detskij-raduga",
-    "name": "Детский торт «Радуга»",
-    "description": "Яркий многоцветный торт с радужными слоями — настоящий праздник для маленького именинника.",
-    "composition": "Ванильный бисквит, цветной крем-чиз, посыпка, маршмеллоу",
+    "slug": "detskij-shchenok",
+    "name": "Детский торт «Щенок»",
+    "description": "Очаровательный торт в виде мордочки щенка из крема — бело-коричневый пёсик с бабочкой порадует маленького именинника.",
+    "composition": "Ванильный бисквит, крем-чиз, шоколадный крем, посыпка",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 220000,
     "pricePerUnit": null,
     "minWeight": "1.5",
     "maxWeight": "5.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 0,
-    "imageUrl": "http://localhost:9000/products/vk/kids/0.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/1.jpg",
-      "http://localhost:9000/products/vk/kids/2.jpg",
-      "http://localhost:9000/products/vk/kids/3.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/0.jpg",
+    "galleryPaths": ["kids/1.jpg", "kids/2.jpg", "kids/3.jpg"]
   },
   {
-    "slug": "detskij-sinij-traktor",
-    "name": "Детский торт «Синий трактор»",
-    "description": "Торт с любимым персонажем в виде трактора — восторг для маленьких поклонников мультфильма.",
-    "composition": "Шоколадный бисквит, шоколадный крем, мастика, сахарный декор",
+    "slug": "detskij-shchenyachij-patrul",
+    "name": "Детский торт «Щенячий патруль»",
+    "description": "Яркий торт с героями мультфильма «Щенячий патруль» — Гонщик, Маршал и вся команда спасателей на вашем празднике.",
+    "composition": "Ванильный бисквит, крем-чиз, сахарная фотопечать",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 250000,
     "pricePerUnit": null,
     "minWeight": "2.0",
     "maxWeight": "5.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 1,
-    "imageUrl": "http://localhost:9000/products/vk/kids/1.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/2.jpg",
-      "http://localhost:9000/products/vk/kids/3.jpg",
-      "http://localhost:9000/products/vk/kids/4.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/1.jpg",
+    "galleryPaths": ["kids/2.jpg", "kids/3.jpg", "kids/4.jpg"]
   },
   {
-    "slug": "detskij-edinorog",
-    "name": "Детский торт «Единорог»",
-    "description": "Волшебный торт с единорогом из мастики — мечта каждой маленькой принцессы.",
-    "composition": "Ванильный бисквит, крем-чиз, мастика, цветная посыпка, золотой рог",
+    "slug": "detskij-1-sentyabrya",
+    "name": "Детский торт «1 Сентября»",
+    "description": "Торт в виде школьного портфеля с линейкой, карандашами и осенними листьями — отличный подарок к началу учебного года.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, сахарный декор",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 260000,
     "pricePerUnit": null,
     "minWeight": "1.5",
     "maxWeight": "5.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 2,
-    "imageUrl": "http://localhost:9000/products/vk/kids/2.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/3.jpg",
-      "http://localhost:9000/products/vk/kids/4.jpg",
-      "http://localhost:9000/products/vk/kids/5.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/2.jpg",
+    "galleryPaths": ["kids/3.jpg", "kids/4.jpg", "kids/5.jpg"]
   },
   {
-    "slug": "detskij-zoopark",
-    "name": "Детский торт «Зоопарк»",
-    "description": "Весёлый торт с фигурками животных из мастики — настоящий зоопарк на вашем столе.",
-    "composition": "Ванильный бисквит, клубничный джем, крем-чиз, мастика животных",
+    "slug": "detskij-futbolnaya-polyana",
+    "name": "Детский торт «Футбольная поляна»",
+    "description": "Торт-поляна с зелёной травой из крема, футбольным мячом и красным мотоциклом.",
+    "composition": "Шоколадный бисквит, шоколадный крем, мастика, крем-чиз",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 240000,
     "pricePerUnit": null,
     "minWeight": "2.0",
     "maxWeight": "5.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 3,
-    "imageUrl": "http://localhost:9000/products/vk/kids/3.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/4.jpg",
-      "http://localhost:9000/products/vk/kids/5.jpg",
-      "http://localhost:9000/products/vk/kids/6.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/3.jpg",
+    "galleryPaths": ["kids/4.jpg", "kids/5.jpg", "kids/6.jpg"]
   },
   {
-    "slug": "detskij-kosmos",
-    "name": "Детский торт «Космос»",
-    "description": "Торт в космической теме с планетами и звёздами — для будущего исследователя вселенной.",
-    "composition": "Шоколадный бисквит, черничный крем, мастика, съедобные звёзды",
+    "slug": "detskij-angelochek",
+    "name": "Детский торт «Ангелочек»",
+    "description": "Нежный белый торт со спящим ангелочком и голубыми цветами — трогательный подарок для особого дня малыша.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, сахарные жемчужины",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 270000,
     "pricePerUnit": null,
     "minWeight": "2.0",
     "maxWeight": "5.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 4,
-    "imageUrl": "http://localhost:9000/products/vk/kids/4.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/5.jpg",
-      "http://localhost:9000/products/vk/kids/6.jpg",
-      "http://localhost:9000/products/vk/kids/7.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/4.jpg",
+    "galleryPaths": ["kids/5.jpg", "kids/6.jpg", "kids/7.jpg"]
   },
   {
-    "slug": "detskij-mishka",
-    "name": "Детский торт «Мишка»",
-    "description": "Мягкий и тёплый торт с медвежонком из мастики — идеальный подарок для малыша.",
-    "composition": "Карамельный бисквит, варёная сгущёнка, крем-чиз, мастика",
+    "slug": "detskij-pervyj-godik",
+    "name": "Детский торт «Первый годик»",
+    "description": "Торт-цифра «1» в розовом цвете с данными рождения — вес, рост, дата и время.",
+    "composition": "Ванильный бисквит, клубничный джем, крем-чиз, мастика",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 230000,
     "pricePerUnit": null,
     "minWeight": "1.5",
     "maxWeight": "4.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 5,
-    "imageUrl": "http://localhost:9000/products/vk/kids/5.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/6.jpg",
-      "http://localhost:9000/products/vk/kids/7.jpg",
-      "http://localhost:9000/products/vk/kids/8.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/5.jpg",
+    "galleryPaths": ["kids/6.jpg", "kids/7.jpg", "kids/8.jpg"]
   },
   {
-    "slug": "detskij-futbolnyj-myach",
-    "name": "Детский торт «Футбольный мяч»",
-    "description": "Торт в форме футбольного мяча — победный подарок для маленького спортсмена.",
-    "composition": "Ванильный бисквит, крем-чиз, мастика чёрно-белая, шоколадный декор",
+    "slug": "detskij-vspysh",
+    "name": "Детский торт «Вспыш»",
+    "description": "Объёмный торт в виде красного монстр-трака Вспыша из мастики — мечта маленького гонщика.",
+    "composition": "Шоколадный бисквит, шоколадный крем, мастика",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 245000,
     "pricePerUnit": null,
     "minWeight": "2.0",
     "maxWeight": "4.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 6,
-    "imageUrl": "http://localhost:9000/products/vk/kids/6.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/7.jpg",
-      "http://localhost:9000/products/vk/kids/8.jpg",
-      "http://localhost:9000/products/vk/kids/9.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/6.jpg",
+    "galleryPaths": ["kids/7.jpg", "kids/8.jpg", "kids/9.jpg"]
   },
   {
-    "slug": "detskij-princessa",
-    "name": "Детский торт «Принцесса»",
-    "description": "Роскошный торт для маленькой принцессы с розовым кремом и короной из шоколада.",
-    "composition": "Ванильный бисквит, клубничный крем-чиз, розовая мастика, шоколадная корона",
+    "slug": "detskij-pervoklassnik",
+    "name": "Детский торт «Первоклассник»",
+    "description": "Круглый торт с яркой надписью «1 Сентября», линейкой, карандашами и осенними листьями.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, сахарный декор",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 255000,
     "pricePerUnit": null,
     "minWeight": "1.5",
     "maxWeight": "5.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 7,
-    "imageUrl": "http://localhost:9000/products/vk/kids/7.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/8.jpg",
-      "http://localhost:9000/products/vk/kids/9.jpg",
-      "http://localhost:9000/products/vk/kids/10.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/7.jpg",
+    "galleryPaths": ["kids/8.jpg", "kids/9.jpg", "kids/10.jpg"]
   },
   {
-    "slug": "detskij-rusalochka",
-    "name": "Детский торт «Русалочка»",
-    "description": "Сказочный торт с русалочкой и морскими волнами — погружение в подводный мир.",
-    "composition": "Ванильный бисквит, черничный крем, бирюзовая мастика, ракушки из шоколада",
+    "slug": "detskij-futbolnyj-myach",
+    "name": "Детский торт «Футбольный мяч»",
+    "description": "Торт в виде футбольного мяча на зелёном поле из крема — победный подарок для спортсмена.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика чёрно-белая",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 265000,
     "pricePerUnit": null,
     "minWeight": "2.0",
     "maxWeight": "5.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 8,
-    "imageUrl": "http://localhost:9000/products/vk/kids/8.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/9.jpg",
-      "http://localhost:9000/products/vk/kids/10.jpg",
-      "http://localhost:9000/products/vk/kids/11.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/8.jpg",
+    "galleryPaths": ["kids/9.jpg", "kids/10.jpg", "kids/11.jpg"]
   },
   {
-    "slug": "detskij-supergero",
-    "name": "Детский торт «Супергерой»",
-    "description": "Мощный торт с символикой супергероя — для маленького защитника вселенной.",
-    "composition": "Шоколадный бисквит, шоколадный ганаш, мастика, съедобная печать",
+    "slug": "detskij-mashinka",
+    "name": "Детский торт «Машинка»",
+    "description": "Весёлый торт в виде голубой машинки с глазками из крема — для маленького автолюбителя.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, пищевые красители",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 250000,
     "pricePerUnit": null,
     "minWeight": "2.0",
     "maxWeight": "5.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 9,
-    "imageUrl": "http://localhost:9000/products/vk/kids/9.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/10.jpg",
-      "http://localhost:9000/products/vk/kids/11.jpg",
-      "http://localhost:9000/products/vk/kids/12.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/9.jpg",
+    "galleryPaths": ["kids/10.jpg", "kids/11.jpg", "kids/12.jpg"]
   },
   {
-    "slug": "detskij-dinozavr",
-    "name": "Детский торт «Динозавр»",
-    "description": "Доисторический торт с динозавром из мастики — приключение юрского периода на вашем столе.",
-    "composition": "Шоколадный бисквит, карамельный крем, зелёная мастика, сахарные камни",
+    "slug": "detskij-lvyonok",
+    "name": "Детский торт «Львёнок»",
+    "description": "Яркий торт в виде милого львёнка с оранжевой гривой — солнечный подарок для именинника.",
+    "composition": "Карамельный бисквит, варёная сгущёнка, крем-чиз, мастика",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 240000,
     "pricePerUnit": null,
     "minWeight": "1.5",
     "maxWeight": "4.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 10,
-    "imageUrl": "http://localhost:9000/products/vk/kids/10.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/11.jpg",
-      "http://localhost:9000/products/vk/kids/12.jpg",
-      "http://localhost:9000/products/vk/kids/13.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/10.jpg",
+    "galleryPaths": ["kids/11.jpg", "kids/12.jpg", "kids/13.jpg"]
   },
   {
-    "slug": "detskij-mikki-maus",
-    "name": "Детский торт «Микки Маус»",
-    "description": "Знаменитый Микки Маус на торте — радость и улыбки для каждого маленького гостя праздника.",
-    "composition": "Ванильный бисквит, крем-чиз, чёрно-красная мастика, сахарный декор",
+    "slug": "detskij-sinij-traktor",
+    "name": "Детский торт «Синий трактор»",
+    "description": "Торт с синим трактором и прицепом на зелёной поляне с берёзками — по мотивам любимого мультфильма.",
+    "composition": "Шоколадный бисквит, крем-чиз, мастика, пищевые красители",
     "categorySlug": "kids",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_kg",
     "pricePerKg": 280000,
     "pricePerUnit": null,
     "minWeight": "2.0",
     "maxWeight": "5.0",
     "weightStep": "0.5",
-    "imageKey": "kids",
-    "imageIndex": 11,
-    "imageUrl": "http://localhost:9000/products/vk/kids/11.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/kids/12.jpg",
-      "http://localhost:9000/products/vk/kids/13.jpg",
-      "http://localhost:9000/products/vk/kids/14.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "kids/11.jpg",
+    "galleryPaths": ["kids/12.jpg", "kids/13.jpg", "kids/14.jpg"]
   },
   {
-    "slug": "bento-s-lyubovyu",
-    "name": "Бенто-торт «С любовью»",
-    "description": "Миниатюрный торт с трогательной надписью и цветочным декором — тёплый подарок от сердца.",
-    "composition": "Ванильный бисквит, крем-чиз, ягодное конфи, цветочный декор",
+    "slug": "bento-nabor-23-fevralya",
+    "name": "Бенто-набор «23 Февраля»",
+    "description": "Шоколадный бенто-торт с капкейками ко Дню защитника Отечества — с танками и тематическими надписями.",
+    "composition": "Шоколадный бисквит, шоколадный крем, голубика, мастика",
     "categorySlug": "bento",
-    "occasionSlugs": [
-      "birthday",
-      "valentines",
-      "anniversary"
-    ],
+    "occasionSlugs": ["army-farewell"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 170000,
     "minWeight": "0.5",
     "maxWeight": "0.5",
     "weightStep": "0.5",
-    "imageKey": "bento",
-    "imageIndex": 0,
-    "imageUrl": "http://localhost:9000/products/vk/bento/0.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/bento/1.jpg",
-      "http://localhost:9000/products/vk/bento/2.jpg",
-      "http://localhost:9000/products/vk/bento/3.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "bento/0.jpg",
+    "galleryPaths": ["bento/1.jpg", "bento/2.jpg", "bento/3.jpg"]
   },
   {
-    "slug": "bento-mini-nezhnost",
-    "name": "Бенто-торт «Мини нежность»",
-    "description": "Нежный мини-торт с фисташковым кремом и малиной — маленькое удовольствие для большого праздника.",
-    "composition": "Фисташковый бисквит, фисташковый крем, малина, белый шоколад",
+    "slug": "bento-tort-mishka",
+    "name": "Бенто-торт «Мишка»",
+    "description": "Милый бенто-торт с весёлым мишкой в праздничном колпаке на голубом фоне с конфетти.",
+    "composition": "Ванильный бисквит, крем-чиз, ягодное конфи, пищевые красители",
     "categorySlug": "bento",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 185000,
     "minWeight": "0.5",
     "maxWeight": "0.5",
     "weightStep": "0.5",
-    "imageKey": "bento",
-    "imageIndex": 1,
-    "imageUrl": "http://localhost:9000/products/vk/bento/1.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/bento/2.jpg",
-      "http://localhost:9000/products/vk/bento/3.jpg",
-      "http://localhost:9000/products/vk/bento/4.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "bento/1.jpg",
+    "galleryPaths": ["bento/2.jpg", "bento/3.jpg", "bento/4.jpg"]
   },
   {
-    "slug": "bento-shokoladnyj-mini",
-    "name": "Бенто-торт «Шоколадный мини»",
-    "description": "Насыщенный шоколадный бенто-торт с ганашем и карамелью — для истинных шокоголиков.",
-    "composition": "Шоколадный бисквит, шоколадный ганаш, солёная карамель, какао-порошок",
+    "slug": "bento-tort-luchshemu-bossu",
+    "name": "Бенто-торт «Лучшему боссу»",
+    "description": "Минималистичный бенто-торт с шуточной надписью — идеальный подарок коллеге.",
+    "composition": "Шоколадный бисквит, шоколадный ганаш, солёная карамель",
     "categorySlug": "bento",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 160000,
     "minWeight": "0.5",
     "maxWeight": "0.5",
     "weightStep": "0.5",
-    "imageKey": "bento",
-    "imageIndex": 2,
-    "imageUrl": "http://localhost:9000/products/vk/bento/2.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/bento/3.jpg",
-      "http://localhost:9000/products/vk/bento/4.jpg",
-      "http://localhost:9000/products/vk/bento/5.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "bento/2.jpg",
+    "galleryPaths": ["bento/3.jpg", "bento/4.jpg", "bento/5.jpg"]
   },
   {
-    "slug": "bento-myatnyj",
-    "name": "Бенто-торт «Мятный»",
-    "description": "Освежающий бенто-торт с мятным кремом и шоколадными акцентами — яркий и неожиданный вкус.",
-    "composition": "Шоколадный бисквит, мятный крем-чиз, тёмный шоколад, листья мяты",
+    "slug": "bento-nabor-snezhinki",
+    "name": "Бенто-набор «Снежинки»",
+    "description": "Зимний набор — голубой бенто-торт с капкейками, украшенными серебряными снежинками.",
+    "composition": "Ванильный бисквит, крем-чиз, белый шоколад, сахарные снежинки",
     "categorySlug": "bento",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 155000,
     "minWeight": "0.5",
     "maxWeight": "0.5",
     "weightStep": "0.5",
-    "imageKey": "bento",
-    "imageIndex": 3,
-    "imageUrl": "http://localhost:9000/products/vk/bento/3.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/bento/4.jpg",
-      "http://localhost:9000/products/vk/bento/5.jpg",
-      "http://localhost:9000/products/vk/bento/6.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "bento/3.jpg",
+    "galleryPaths": ["bento/4.jpg", "bento/5.jpg", "bento/6.jpg"]
   },
   {
-    "slug": "bento-serdechko",
+    "slug": "bento-tort-serdechko",
     "name": "Бенто-торт «Сердечко»",
-    "description": "Миниатюрный торт в форме сердца — идеальный сюрприз для любимого человека в особый день.",
-    "composition": "Шоколадный бисквит, крем-чиз, малиновое конфи, шоколадный декор",
+    "description": "Белый бенто-торт в форме сердца с красными сердечками — нежный сюрприз для любимого.",
+    "composition": "Шоколадный бисквит, крем-чиз, малиновое конфи",
     "categorySlug": "bento",
-    "occasionSlugs": [
-      "valentines",
-      "anniversary"
-    ],
+    "occasionSlugs": ["birthday", "valentines"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 180000,
     "minWeight": "0.5",
     "maxWeight": "0.5",
     "weightStep": "0.5",
-    "imageKey": "bento",
-    "imageIndex": 4,
-    "imageUrl": "http://localhost:9000/products/vk/bento/4.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/bento/5.jpg",
-      "http://localhost:9000/products/vk/bento/6.jpg",
-      "http://localhost:9000/products/vk/bento/7.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "bento/4.jpg",
+    "galleryPaths": ["bento/5.jpg", "bento/6.jpg", "bento/7.jpg"]
   },
   {
-    "slug": "bento-8-marta",
-    "name": "Бенто-торт «8 марта»",
-    "description": "Праздничный бенто-торт с весенними цветами и нежным кремом — лучший подарок на женский день.",
-    "composition": "Ванильный бисквит, клубничный крем, цветочный сахарный декор, розовая глазурь",
+    "slug": "bento-nabor-novogodnij",
+    "name": "Бенто-набор «Новогодний»",
+    "description": "Набор с бенто-тортом Дедом Морозом и капкейками с рождественскими венками из крема.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, зелёный крем",
     "categorySlug": "bento",
-    "occasionSlugs": [
-      "march-8"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 175000,
     "minWeight": "0.5",
     "maxWeight": "0.5",
     "weightStep": "0.5",
-    "imageKey": "bento",
-    "imageIndex": 5,
-    "imageUrl": "http://localhost:9000/products/vk/bento/5.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/bento/6.jpg",
-      "http://localhost:9000/products/vk/bento/7.jpg",
-      "http://localhost:9000/products/vk/bento/8.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "bento/5.jpg",
+    "galleryPaths": ["bento/6.jpg", "bento/7.jpg", "bento/8.jpg"]
   },
   {
-    "slug": "bento-krasnyj-bant",
-    "name": "Бенто-торт «Красный бант»",
-    "description": "Изысканный бенто-торт с шоколадным бантом и ягодным кремом — красиво и вкусно одновременно.",
-    "composition": "Красный бисквит, крем-чиз, вишнёвое конфи, шоколадный бант",
+    "slug": "bento-tort-s-yumorom",
+    "name": "Бенто-торт «С юмором»",
+    "description": "Шуточный бенто-торт с забавной надписью — оригинальный подарок с чувством юмора.",
+    "composition": "Ванильный бисквит, фисташковый крем, шоколадный ганаш",
     "categorySlug": "bento",
-    "occasionSlugs": [
-      "birthday",
-      "valentines"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 190000,
     "minWeight": "0.5",
     "maxWeight": "0.5",
     "weightStep": "0.5",
-    "imageKey": "bento",
-    "imageIndex": 6,
-    "imageUrl": "http://localhost:9000/products/vk/bento/6.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/bento/7.jpg",
-      "http://localhost:9000/products/vk/bento/8.jpg",
-      "http://localhost:9000/products/vk/bento/9.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "bento/6.jpg",
+    "galleryPaths": ["bento/7.jpg", "bento/8.jpg", "bento/9.jpg"]
   },
   {
-    "slug": "bento-mama-ya-tebya-lyublyu",
-    "name": "Бенто-торт «Мама, я тебя люблю»",
-    "description": "Нежный торт с трогательной надписью для самой лучшей мамы в мире — сюрприз от всего сердца.",
-    "composition": "Ванильный бисквит, малиновый крем, белый шоколад, цветочный декор",
+    "slug": "bento-tort-ne-starenkij",
+    "name": "Бенто-торт «Не старенький»",
+    "description": "Бенто-торт с забавным рисунком и мотивирующей надписью — весёлый подарок на день рождения.",
+    "composition": "Ванильный бисквит, крем-чиз, ягодное конфи, посыпка",
     "categorySlug": "bento",
-    "occasionSlugs": [
-      "birthday",
-      "march-8"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 165000,
     "minWeight": "0.5",
     "maxWeight": "0.5",
     "weightStep": "0.5",
-    "imageKey": "bento",
-    "imageIndex": 7,
-    "imageUrl": "http://localhost:9000/products/vk/bento/7.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/bento/8.jpg",
-      "http://localhost:9000/products/vk/bento/9.jpg",
-      "http://localhost:9000/products/vk/bento/10.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "bento/7.jpg",
+    "galleryPaths": ["bento/8.jpg", "bento/9.jpg", "bento/10.jpg"]
   },
   {
-    "slug": "kapkejki-assorti-raduga",
-    "name": "Капкейки «Ассорти радуга»",
-    "description": "Набор разноцветных капкейков с разными вкусами — яркое угощение для весёлой компании.",
-    "composition": "Ванильный бисквит, разноцветный крем-чиз, посыпка, съедобные украшения",
+    "slug": "kapkejki-shokoladnoe-assorti",
+    "name": "Капкейки «Шоколадное ассорти»",
+    "description": "Набор из 12 капкейков с воздушным кремом, кусочками шоколада, клубникой и розмарином.",
+    "composition": "Ванильный бисквит, крем-чиз, шоколад, клубника, розмарин",
     "categorySlug": "cupcakes",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 108000,
     "minWeight": "0.4",
     "maxWeight": "0.4",
     "weightStep": "0.4",
-    "imageKey": "cupcakes",
-    "imageIndex": 0,
-    "imageUrl": "http://localhost:9000/products/vk/cupcakes/0.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/cupcakes/1.jpg",
-      "http://localhost:9000/products/vk/cupcakes/2.jpg",
-      "http://localhost:9000/products/vk/cupcakes/3.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "cupcakes/1.jpg",
+    "galleryPaths": ["cupcakes/2.jpg", "cupcakes/3.jpg", "cupcakes/4.jpg"]
   },
   {
-    "slug": "kapkejki-vanilnyj-nabor",
-    "name": "Капкейки «Ванильный набор»",
-    "description": "Классические ванильные капкейки с шапочкой из нежного крема — вневременная классика.",
-    "composition": "Ванильный бисквит, ванильный крем-чиз, ваниль Бурбон, сахарный декор",
+    "slug": "kapkejki-belyj-shokolad",
+    "name": "Капкейки «Белый шоколад»",
+    "description": "Нежные капкейки с ванильным кремом, белым и рубиновым шоколадом и хрустящими вафлями.",
+    "composition": "Ванильный бисквит, ванильный крем, белый шоколад, рубиновый шоколад, вафли",
     "categorySlug": "cupcakes",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 115000,
     "minWeight": "0.4",
     "maxWeight": "0.4",
     "weightStep": "0.4",
-    "imageKey": "cupcakes",
-    "imageIndex": 1,
-    "imageUrl": "http://localhost:9000/products/vk/cupcakes/1.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/cupcakes/2.jpg",
-      "http://localhost:9000/products/vk/cupcakes/3.jpg",
-      "http://localhost:9000/products/vk/cupcakes/4.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "cupcakes/2.jpg",
+    "galleryPaths": ["cupcakes/3.jpg", "cupcakes/4.jpg", "cupcakes/6.jpg"]
   },
   {
-    "slug": "kapkejki-shokoladnyj-nabor",
-    "name": "Капкейки «Шоколадный набор»",
-    "description": "Интенсивные шоколадные капкейки с шоколадным ганашем — настоящий рай для шокоголика.",
-    "composition": "Шоколадный бисквит, шоколадный ганаш, какао, шоколадная стружка",
+    "slug": "kapkejki-gudzhitsu",
+    "name": "Капкейки «Гуджитсу»",
+    "description": "Детские капкейки с героями «Heroes of Goo Jit Zu» — яркий сюрприз для маленького фаната.",
+    "composition": "Ванильный бисквит, крем-чиз, сахарная фотопечать",
     "categorySlug": "cupcakes",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 120000,
     "minWeight": "0.4",
     "maxWeight": "0.4",
     "weightStep": "0.4",
-    "imageKey": "cupcakes",
-    "imageIndex": 2,
-    "imageUrl": "http://localhost:9000/products/vk/cupcakes/2.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/cupcakes/3.jpg",
-      "http://localhost:9000/products/vk/cupcakes/4.jpg",
-      "http://localhost:9000/products/vk/cupcakes/5.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "cupcakes/3.jpg",
+    "galleryPaths": ["cupcakes/4.jpg", "cupcakes/6.jpg", "cupcakes/7.jpg"]
   },
   {
-    "slug": "kapkejki-yagodnyj-miks",
-    "name": "Капкейки «Ягодный микс»",
-    "description": "Свежие капкейки с ягодным кремом и натуральными ягодами — летнее настроение круглый год.",
-    "composition": "Ванильный бисквит, ягодный крем-чиз, клубника, малина, черника",
+    "slug": "kapkejki-klubnika-i-smorodina",
+    "name": "Капкейки «Клубника и смородина»",
+    "description": "Свежие капкейки с воздушным кремом, клубникой и красной смородиной — лёгкий ягодный десерт.",
+    "composition": "Ванильный бисквит, сливочный крем, клубника, красная смородина",
     "categorySlug": "cupcakes",
-    "occasionSlugs": [
-      "birthday",
-      "march-8"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 125000,
     "minWeight": "0.4",
     "maxWeight": "0.4",
     "weightStep": "0.4",
-    "imageKey": "cupcakes",
-    "imageIndex": 3,
-    "imageUrl": "http://localhost:9000/products/vk/cupcakes/3.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/cupcakes/4.jpg",
-      "http://localhost:9000/products/vk/cupcakes/5.jpg",
-      "http://localhost:9000/products/vk/cupcakes/6.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "cupcakes/4.jpg",
+    "galleryPaths": ["cupcakes/6.jpg", "cupcakes/7.jpg", "cupcakes/8.jpg"]
   },
   {
-    "slug": "kapkejki-karamel",
-    "name": "Капкейки «Карамель»",
-    "description": "Нежные капкейки с солёной карамелью и масляным кремом — неожиданное сочетание вкусов.",
-    "composition": "Карамельный бисквит, масляный крем, солёная карамель, морская соль",
+    "slug": "kapkejki-cherepashki-nindzya",
+    "name": "Капкейки «Черепашки-ниндзя»",
+    "description": "Весёлые капкейки с зелёным кремом и фигурками черепашек-ниндзя.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, зелёный пищевой краситель",
     "categorySlug": "cupcakes",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 130000,
     "minWeight": "0.4",
     "maxWeight": "0.4",
     "weightStep": "0.4",
-    "imageKey": "cupcakes",
-    "imageIndex": 4,
-    "imageUrl": "http://localhost:9000/products/vk/cupcakes/4.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/cupcakes/5.jpg",
-      "http://localhost:9000/products/vk/cupcakes/6.jpg",
-      "http://localhost:9000/products/vk/cupcakes/7.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "cupcakes/6.jpg",
+    "galleryPaths": ["cupcakes/7.jpg", "cupcakes/8.jpg", "cupcakes/9.jpg"]
   },
   {
-    "slug": "kapkejki-nabor-8-marta",
-    "name": "Капкейки «Набор 8 марта»",
-    "description": "Праздничные капкейки с весенними цветами из крема — нежный подарок для любимых женщин.",
-    "composition": "Ванильный бисквит, розовый крем-чиз, цветочный декор, съедобные жемчужины",
+    "slug": "nabor-lyubimoj-tyote",
+    "name": "Набор «Любимой тёте»",
+    "description": "Набор — бенто-торт с золотой надписью и капкейки с лавандовым кремом и золотыми жемчужинами.",
+    "composition": "Ванильный бисквит, крем-чиз, золотой кандурин, сахарные жемчужины",
     "categorySlug": "cupcakes",
-    "occasionSlugs": [
-      "march-8"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 135000,
     "minWeight": "0.4",
     "maxWeight": "0.4",
     "weightStep": "0.4",
-    "imageKey": "cupcakes",
-    "imageIndex": 5,
-    "imageUrl": "http://localhost:9000/products/vk/cupcakes/5.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/cupcakes/6.jpg",
-      "http://localhost:9000/products/vk/cupcakes/7.jpg",
-      "http://localhost:9000/products/vk/cupcakes/8.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "cupcakes/7.jpg",
+    "galleryPaths": ["cupcakes/8.jpg", "cupcakes/9.jpg", "cupcakes/10.jpg"]
   },
   {
-    "slug": "kapkejki-s-dnem-rozhdeniya",
-    "name": "Капкейки «С днём рождения»",
-    "description": "Праздничные капкейки с именной надписью и свечами — обязательный атрибут дня рождения.",
-    "composition": "Ванильный бисквит, разноцветный крем, свечи, посыпка, сахарные цифры",
+    "slug": "kapkejki-edinorogi",
+    "name": "Капкейки «Единороги»",
+    "description": "Волшебные капкейки в розово-голубых тонах с золотыми рожками — мечта маленькой принцессы.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, золотой рог, пищевые красители",
     "categorySlug": "cupcakes",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 140000,
     "minWeight": "0.4",
     "maxWeight": "0.4",
     "weightStep": "0.4",
-    "imageKey": "cupcakes",
-    "imageIndex": 6,
-    "imageUrl": "http://localhost:9000/products/vk/cupcakes/6.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/cupcakes/7.jpg",
-      "http://localhost:9000/products/vk/cupcakes/8.jpg",
-      "http://localhost:9000/products/vk/cupcakes/9.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "cupcakes/11.jpg",
+    "galleryPaths": ["cupcakes/12.jpg", "cupcakes/13.jpg", "cupcakes/14.jpg"]
   },
   {
-    "slug": "kapkejki-detskij-nabor",
-    "name": "Капкейки «Детский набор»",
-    "description": "Весёлые капкейки с мультяшными фигурками — идеальное угощение для детского праздника.",
-    "composition": "Ванильный бисквит, цветной крем-чиз, мастика животных, посыпка",
+    "slug": "kapkejki-yagodnyj-miks",
+    "name": "Капкейки «Ягодный микс»",
+    "description": "Изысканные капкейки с белым и ягодным кремом, клубникой, голубикой и розмарином.",
+    "composition": "Ванильный бисквит, крем-чиз, ягодный крем, клубника, голубика, розмарин",
     "categorySlug": "cupcakes",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 150000,
     "minWeight": "0.4",
     "maxWeight": "0.4",
     "weightStep": "0.4",
-    "imageKey": "cupcakes",
-    "imageIndex": 7,
-    "imageUrl": "http://localhost:9000/products/vk/cupcakes/7.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/cupcakes/8.jpg",
-      "http://localhost:9000/products/vk/cupcakes/9.jpg",
-      "http://localhost:9000/products/vk/cupcakes/10.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "cupcakes/13.jpg",
+    "galleryPaths": ["cupcakes/14.jpg", "cupcakes/1.jpg", "cupcakes/2.jpg"]
   },
   {
-    "slug": "trifl-klubnichnyj",
-    "name": "Трайфл «Клубничный»",
-    "description": "Нежный трайфл со свежей клубникой и ванильным кремом в прозрачном стакане — красота и вкус.",
-    "composition": "Бисквит, ванильный крем, свежая клубника, клубничный джем",
+    "slug": "trajfly-majnkraft",
+    "name": "Трайфлы «Майнкрафт»",
+    "description": "Набор трайфлов с героями Minecraft — нежный десерт в стакане для юного геймера.",
+    "composition": "Ванильный бисквит, крем-чиз, ягодное конфи, сахарная фотопечать",
     "categorySlug": "trifles",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 35000,
     "minWeight": "0.2",
     "maxWeight": "0.2",
     "weightStep": "0.2",
-    "imageKey": "trifles",
-    "imageIndex": 0,
-    "imageUrl": "http://localhost:9000/products/vk/trifles/0.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/trifles/1.jpg",
-      "http://localhost:9000/products/vk/trifles/2.jpg",
-      "http://localhost:9000/products/vk/trifles/3.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "trifles/0.jpg",
+    "galleryPaths": ["trifles/1.jpg", "trifles/2.jpg", "trifles/4.jpg"]
   },
   {
-    "slug": "trifl-tiramisu",
-    "name": "Трайфл «Тирамису»",
-    "description": "Классический итальянский тирамису в стакане с кофейным бисквитом и кремом маскарпоне.",
-    "composition": "Савоярди, маскарпоне, эспрессо, какао-порошок, ликёр (без алкоголя — детский вариант)",
+    "slug": "trajfly-yagodnye",
+    "name": "Трайфлы «Ягодные»",
+    "description": "Нежные трайфлы с розовым и мятным кремом, свежей клубникой и голубикой.",
+    "composition": "Ванильный бисквит, ягодный крем, клубника, голубика",
     "categorySlug": "trifles",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 38000,
     "minWeight": "0.2",
     "maxWeight": "0.2",
     "weightStep": "0.2",
-    "imageKey": "trifles",
-    "imageIndex": 1,
-    "imageUrl": "http://localhost:9000/products/vk/trifles/1.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/trifles/2.jpg",
-      "http://localhost:9000/products/vk/trifles/3.jpg",
-      "http://localhost:9000/products/vk/trifles/4.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "trifles/1.jpg",
+    "galleryPaths": ["trifles/2.jpg", "trifles/4.jpg", "trifles/5.jpg"]
   },
   {
-    "slug": "trifl-malina-maskarpone",
-    "name": "Трайфл «Малина-маскарпоне»",
-    "description": "Воздушный трайфл с малиновым конфи и нежным кремом маскарпоне — летнее настроение в стакане.",
-    "composition": "Ванильный бисквит, маскарпоне, малиновое конфи, свежая малина",
+    "slug": "trajfly-golubika",
+    "name": "Трайфлы «Голубика»",
+    "description": "Классические трайфлы с воздушным белым кремом, свежей голубикой и клубникой.",
+    "composition": "Ванильный бисквит, сливочный крем, голубика, клубника",
     "categorySlug": "trifles",
-    "occasionSlugs": [
-      "birthday",
-      "march-8"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 40000,
     "minWeight": "0.2",
     "maxWeight": "0.2",
     "weightStep": "0.2",
-    "imageKey": "trifles",
-    "imageIndex": 2,
-    "imageUrl": "http://localhost:9000/products/vk/trifles/2.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/trifles/3.jpg",
-      "http://localhost:9000/products/vk/trifles/4.jpg",
-      "http://localhost:9000/products/vk/trifles/5.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "trifles/2.jpg",
+    "galleryPaths": ["trifles/4.jpg", "trifles/5.jpg", "trifles/6.jpg"]
   },
   {
-    "slug": "trifl-fistashkovyj",
-    "name": "Трайфл «Фисташковый»",
-    "description": "Изысканный фисташковый трайфл с насыщенным ореховым кремом и хрустящим бисквитом.",
-    "composition": "Фисташковый бисквит, фисташковый крем, дроблёные фисташки, белый шоколад",
+    "slug": "trajfly-prazdnichnye",
+    "name": "Трайфлы «Праздничные»",
+    "description": "Ассорти трайфлов — с голубикой и с розовыми сердечками. Набор с поздравительной табличкой.",
+    "composition": "Ванильный бисквит, крем-чиз, голубика, розовый крем, сахарные сердечки",
     "categorySlug": "trifles",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 40000,
     "minWeight": "0.2",
     "maxWeight": "0.2",
     "weightStep": "0.2",
-    "imageKey": "trifles",
-    "imageIndex": 3,
-    "imageUrl": "http://localhost:9000/products/vk/trifles/3.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/trifles/4.jpg",
-      "http://localhost:9000/products/vk/trifles/5.jpg",
-      "http://localhost:9000/products/vk/trifles/6.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "trifles/4.jpg",
+    "galleryPaths": ["trifles/5.jpg", "trifles/6.jpg", "trifles/7.jpg"]
   },
   {
-    "slug": "trifl-snikers",
-    "name": "Трайфл «Сникерс»",
-    "description": "Трайфл в стиле любимого батончика — шоколад, карамель, арахис и нуга в одном стакане.",
-    "composition": "Шоколадный бисквит, карамель, арахисовый крем, нуга, шоколадный соус",
+    "slug": "trajfly-mini-nabor",
+    "name": "Трайфлы «Мини-набор»",
+    "description": "Компактный набор из 4 трайфлов с белым кремом и свежей голубикой.",
+    "composition": "Шоколадный бисквит, сливочный крем, голубика",
     "categorySlug": "trifles",
-    "occasionSlugs": [
-      "birthday"
-    ],
+    "occasionSlugs": ["birthday"],
     "priceType": "per_unit",
     "pricePerKg": null,
     "pricePerUnit": 38000,
     "minWeight": "0.2",
     "maxWeight": "0.2",
     "weightStep": "0.2",
-    "imageKey": "trifles",
-    "imageIndex": 4,
-    "imageUrl": "http://localhost:9000/products/vk/trifles/4.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/trifles/5.jpg",
-      "http://localhost:9000/products/vk/trifles/6.jpg",
-      "http://localhost:9000/products/vk/trifles/7.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "trifles/5.jpg",
+    "galleryPaths": ["trifles/6.jpg", "trifles/7.jpg", "trifles/8.jpg"]
   },
   {
-    "slug": "trifl-shokoladnyj",
-    "name": "Трайфл «Шоколадный»",
-    "description": "Насыщенный шоколадный трайфл с тёмным ганашем и шоколадными крошками — мечта шокоголика.",
-    "composition": "Шоколадный бисквит, шоколадный ганаш, тёмный шоколад, какао-порошок",
-    "categorySlug": "trifles",
-    "occasionSlugs": [
-      "birthday"
-    ],
-    "priceType": "per_unit",
-    "pricePerKg": null,
-    "pricePerUnit": 35000,
-    "minWeight": "0.2",
-    "maxWeight": "0.2",
-    "weightStep": "0.2",
-    "imageKey": "trifles",
-    "imageIndex": 5,
-    "imageUrl": "http://localhost:9000/products/vk/trifles/5.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/trifles/6.jpg",
-      "http://localhost:9000/products/vk/trifles/7.jpg",
-      "http://localhost:9000/products/vk/trifles/8.jpg"
-    ]
-  },
-  {
-    "slug": "klassika-krasnyj-barhat",
-    "name": "Торт «Красный бархат»",
-    "description": "Легендарный торт с красным бисквитом и нежным крем-чизом — роскошная классика в каждом срезе.",
-    "composition": "Красный бисквит, крем-чиз, сливки, какао, красный краситель",
-    "categorySlug": "classic",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary",
-      "valentines"
-    ],
-    "priceType": "per_kg",
-    "pricePerKg": 240000,
-    "pricePerUnit": null,
-    "minWeight": "1.5",
-    "maxWeight": "5.0",
-    "weightStep": "0.5",
-    "imageKey": "classic",
-    "imageIndex": 0,
-    "imageUrl": "http://localhost:9000/products/vk/classic/0.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/classic/1.jpg",
-      "http://localhost:9000/products/vk/classic/2.jpg",
-      "http://localhost:9000/products/vk/classic/3.jpg"
-    ]
-  },
-  {
-    "slug": "klassika-medovik",
-    "name": "Торт «Медовик»",
-    "description": "Любимый с детства медовик с тонкими коржами и нежной сметанно-карамельной пропиткой.",
-    "composition": "Медовые коржи, сметанный крем, варёная сгущёнка, грецкий орех",
-    "categorySlug": "classic",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary"
-    ],
-    "priceType": "per_kg",
-    "pricePerKg": 200000,
-    "pricePerUnit": null,
-    "minWeight": "1.5",
-    "maxWeight": "5.0",
-    "weightStep": "0.5",
-    "imageKey": "classic",
-    "imageIndex": 1,
-    "imageUrl": "http://localhost:9000/products/vk/classic/1.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/classic/2.jpg",
-      "http://localhost:9000/products/vk/classic/3.jpg",
-      "http://localhost:9000/products/vk/classic/4.jpg"
-    ]
-  },
-  {
-    "slug": "klassika-napoleon",
-    "name": "Торт «Наполеон»",
-    "description": "Классический Наполеон со слоистыми хрустящими коржами и сливочным заварным кремом.",
-    "composition": "Слоёное тесто, заварной крем, сливочное масло, ваниль",
-    "categorySlug": "classic",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary"
-    ],
-    "priceType": "per_kg",
-    "pricePerKg": 210000,
-    "pricePerUnit": null,
-    "minWeight": "1.5",
-    "maxWeight": "5.0",
-    "weightStep": "0.5",
-    "imageKey": "classic",
-    "imageIndex": 2,
-    "imageUrl": "http://localhost:9000/products/vk/classic/2.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/classic/3.jpg",
-      "http://localhost:9000/products/vk/classic/4.jpg",
-      "http://localhost:9000/products/vk/classic/5.jpg"
-    ]
-  },
-  {
-    "slug": "klassika-snikers",
-    "name": "Торт «Сникерс»",
-    "description": "Торт по мотивам знаменитого батончика — шоколадный бисквит, карамель, арахис и нуга.",
-    "composition": "Шоколадный бисквит, карамельный крем, арахис, шоколадный ганаш, нуга",
-    "categorySlug": "classic",
-    "occasionSlugs": [
-      "birthday"
-    ],
-    "priceType": "per_kg",
-    "pricePerKg": 230000,
-    "pricePerUnit": null,
-    "minWeight": "1.5",
-    "maxWeight": "5.0",
-    "weightStep": "0.5",
-    "imageKey": "classic",
-    "imageIndex": 3,
-    "imageUrl": "http://localhost:9000/products/vk/classic/3.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/classic/4.jpg",
-      "http://localhost:9000/products/vk/classic/5.jpg",
-      "http://localhost:9000/products/vk/classic/6.jpg"
-    ]
-  },
-  {
-    "slug": "klassika-molochnaya-devochka",
-    "name": "Торт «Молочная девочка»",
-    "description": "Нежнейший торт из тонких молочных коржей со сливочным кремом и свежими ягодами.",
-    "composition": "Молочные коржи на сгущёнке, сливочный крем, клубника, черника",
-    "categorySlug": "classic",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary",
-      "march-8"
-    ],
-    "priceType": "per_kg",
-    "pricePerKg": 220000,
-    "pricePerUnit": null,
-    "minWeight": "1.5",
-    "maxWeight": "5.0",
-    "weightStep": "0.5",
-    "imageKey": "classic",
-    "imageIndex": 4,
-    "imageUrl": "http://localhost:9000/products/vk/classic/4.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/classic/5.jpg",
-      "http://localhost:9000/products/vk/classic/6.jpg",
-      "http://localhost:9000/products/vk/classic/8.jpg"
-    ]
-  },
-  {
-    "slug": "klassika-ptiche-moloko",
-    "name": "Торт «Птичье молоко»",
-    "description": "Советская классика с нежным суфле и тонким шоколадным покрытием — вкус настоящего детства.",
-    "composition": "Шоколадный корж, суфле на агар-агаре, тёмный шоколад, сливочное масло",
-    "categorySlug": "classic",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary"
-    ],
-    "priceType": "per_kg",
-    "pricePerKg": 190000,
-    "pricePerUnit": null,
-    "minWeight": "1.5",
-    "maxWeight": "5.0",
-    "weightStep": "0.5",
-    "imageKey": "classic",
-    "imageIndex": 5,
-    "imageUrl": "http://localhost:9000/products/vk/classic/5.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/classic/6.jpg",
-      "http://localhost:9000/products/vk/classic/8.jpg",
-      "http://localhost:9000/products/vk/classic/9.jpg"
-    ]
-  },
-  {
-    "slug": "klassika-zaher",
-    "name": "Торт «Захер»",
-    "description": "Венская легенда с шоколадным бисквитом, абрикосовым джемом и тёмной шоколадной глазурью.",
-    "composition": "Шоколадный бисквит, абрикосовый джем, тёмная шоколадная глазурь, сливки",
-    "categorySlug": "classic",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary"
-    ],
-    "priceType": "per_kg",
-    "pricePerKg": 250000,
-    "pricePerUnit": null,
-    "minWeight": "1.5",
-    "maxWeight": "5.0",
-    "weightStep": "0.5",
-    "imageKey": "classic",
-    "imageIndex": 6,
-    "imageUrl": "http://localhost:9000/products/vk/classic/6.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/classic/8.jpg",
-      "http://localhost:9000/products/vk/classic/9.jpg",
-      "http://localhost:9000/products/vk/classic/10.jpg"
-    ]
-  },
-  {
-    "slug": "klassika-tri-shokolada",
-    "name": "Торт «Три шоколада»",
-    "description": "Трёхслойный мусс из белого, молочного и тёмного шоколада — шоколадная симфония в каждом кусочке.",
-    "composition": "Тёмный мусс, молочный мусс, белый мусс, шоколадный бисквит, шоколадное зеркало",
-    "categorySlug": "classic",
-    "occasionSlugs": [
-      "birthday",
-      "anniversary"
-    ],
+    "slug": "avtorskij-chemodanchik",
+    "name": "Авторский торт «Чемоданчик»",
+    "description": "Торт в виде кожаного чемодана с деньгами — оригинальный подарок для делового человека.",
+    "composition": "Шоколадный бисквит, шоколадный ганаш, мастика",
+    "categorySlug": "avtorskie",
+    "occasionSlugs": ["birthday", "anniversary"],
     "priceType": "per_kg",
     "pricePerKg": 280000,
     "pricePerUnit": null,
     "minWeight": "2.0",
-    "maxWeight": "5.0",
+    "maxWeight": "6.0",
     "weightStep": "0.5",
-    "imageKey": "classic",
-    "imageIndex": 7,
-    "imageUrl": "http://localhost:9000/products/vk/classic/8.jpg",
-    "images": [
-      "http://localhost:9000/products/vk/classic/9.jpg",
-      "http://localhost:9000/products/vk/classic/10.jpg",
-      "http://localhost:9000/products/vk/classic/11.jpg"
-    ]
+    "isAvailable": true,
+    "photoPath": "classic/2.jpg",
+    "galleryPaths": ["classic/3.jpg", "classic/4.jpg", "classic/5.jpg"]
+  },
+  {
+    "slug": "avtorskij-princessa",
+    "name": "Авторский торт «Принцесса»",
+    "description": "Элегантный торт с ажурным тёмно-синим узором и надписью на белом фоне.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, пищевой краситель",
+    "categorySlug": "avtorskie",
+    "occasionSlugs": ["birthday"],
+    "priceType": "per_kg",
+    "pricePerKg": 260000,
+    "pricePerUnit": null,
+    "minWeight": "2.0",
+    "maxWeight": "6.0",
+    "weightStep": "0.5",
+    "isAvailable": true,
+    "photoPath": "classic/3.jpg",
+    "galleryPaths": ["classic/4.jpg", "classic/5.jpg", "classic/8.jpg"]
+  },
+  {
+    "slug": "avtorskij-pesochnica",
+    "name": "Авторский торт «Песочница»",
+    "description": "Яркий торт-песочница с игрушками, пирамидкой и плюшевым мишкой из мастики.",
+    "composition": "Карамельный бисквит, варёная сгущёнка, мастика",
+    "categorySlug": "avtorskie",
+    "occasionSlugs": ["birthday"],
+    "priceType": "per_kg",
+    "pricePerKg": 270000,
+    "pricePerUnit": null,
+    "minWeight": "2.0",
+    "maxWeight": "6.0",
+    "weightStep": "0.5",
+    "isAvailable": true,
+    "photoPath": "classic/4.jpg",
+    "galleryPaths": ["classic/5.jpg", "classic/8.jpg", "classic/9.jpg"]
+  },
+  {
+    "slug": "avtorskij-stomatolog",
+    "name": "Авторский торт «Стоматолог»",
+    "description": "Торт в виде зуба с анатомической схемой и фигуркой врача — подарок для стоматолога.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, сахарный декор",
+    "categorySlug": "avtorskie",
+    "occasionSlugs": ["birthday"],
+    "priceType": "per_kg",
+    "pricePerKg": 300000,
+    "pricePerUnit": null,
+    "minWeight": "2.0",
+    "maxWeight": "6.0",
+    "weightStep": "0.5",
+    "isAvailable": true,
+    "photoPath": "classic/5.jpg",
+    "galleryPaths": ["classic/8.jpg", "classic/9.jpg", "classic/10.jpg"]
+  },
+  {
+    "slug": "avtorskij-teplica",
+    "name": "Авторский торт «Теплица»",
+    "description": "Торт в виде дачной теплицы с ведром овощей и лопатой — для заядлого садовода.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, сахарные овощи",
+    "categorySlug": "avtorskie",
+    "occasionSlugs": ["birthday", "anniversary"],
+    "priceType": "per_kg",
+    "pricePerKg": 280000,
+    "pricePerUnit": null,
+    "minWeight": "2.0",
+    "maxWeight": "6.0",
+    "weightStep": "0.5",
+    "isAvailable": true,
+    "photoPath": "classic/8.jpg",
+    "galleryPaths": ["classic/9.jpg", "classic/10.jpg", "classic/11.jpg"]
+  },
+  {
+    "slug": "avtorskij-glamur",
+    "name": "Авторский торт «Гламур»",
+    "description": "Розовый торт с туфелькой на каблуке, жемчужным ожерельем и белыми розами.",
+    "composition": "Ванильный бисквит, малиновый крем, мастика, сахарные розы",
+    "categorySlug": "avtorskie",
+    "occasionSlugs": ["birthday", "march-8"],
+    "priceType": "per_kg",
+    "pricePerKg": 300000,
+    "pricePerUnit": null,
+    "minWeight": "2.0",
+    "maxWeight": "6.0",
+    "weightStep": "0.5",
+    "isAvailable": true,
+    "photoPath": "classic/9.jpg",
+    "galleryPaths": ["classic/10.jpg", "classic/11.jpg", "classic/12.jpg"]
+  },
+  {
+    "slug": "avtorskij-cheburashka",
+    "name": "Авторский торт «Чебурашка»",
+    "description": "Белый торт с фигуркой Чебурашки и трогательной надписью — ностальгический подарок с любовью.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, пищевые красители",
+    "categorySlug": "avtorskie",
+    "occasionSlugs": ["birthday", "march-8"],
+    "priceType": "per_kg",
+    "pricePerKg": 260000,
+    "pricePerUnit": null,
+    "minWeight": "2.0",
+    "maxWeight": "6.0",
+    "weightStep": "0.5",
+    "isAvailable": true,
+    "photoPath": "classic/10.jpg",
+    "galleryPaths": ["classic/11.jpg", "classic/12.jpg", "classic/13.jpg"]
+  },
+  {
+    "slug": "avtorskij-love-is",
+    "name": "Авторский торт «Love Is»",
+    "description": "Торт-сердце в стиле «Love is...» — пара на скамейке под звёздным небом.",
+    "composition": "Ванильный бисквит, крем-чиз, мастика, пищевые красители",
+    "categorySlug": "avtorskie",
+    "occasionSlugs": ["valentines", "anniversary"],
+    "priceType": "per_kg",
+    "pricePerKg": 280000,
+    "pricePerUnit": null,
+    "minWeight": "2.0",
+    "maxWeight": "6.0",
+    "weightStep": "0.5",
+    "isAvailable": true,
+    "photoPath": "classic/12.jpg",
+    "galleryPaths": ["classic/13.jpg", "classic/0.jpg", "classic/2.jpg"]
   }
 ]
