@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
 import type { Product } from '@/components/catalog/ProductCard';
+import { ProductPhotoManager } from '@/components/admin/ProductPhotoManager';
 
 // ---------- Category interface ----------
 
@@ -47,9 +48,10 @@ function AddProductModal({ categories, onClose, onCreated }: AddProductModalProp
   const [description, setDescription] = useState('');
   const [pricePerKg, setPricePerKg] = useState('');
   const [categoryId, setCategoryId] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
   const [isAvailable, setIsAvailable] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'info' | 'photos'>('info');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +71,8 @@ function AddProductModal({ categories, onClose, onCreated }: AddProductModalProp
           description: description.trim() || undefined,
           pricePerKg: Math.round(parsed * 100),
           categoryId: categoryId || undefined,
-          imageUrl: imageUrl.trim() || undefined,
+          imageUrl: photos[0] || undefined,
+          images: photos.length > 0 ? photos : undefined,
           isAvailable,
         }),
       });
@@ -107,96 +110,117 @@ function AddProductModal({ categories, onClose, onCreated }: AddProductModalProp
           </button>
         </div>
 
+        <div className="flex gap-1 border-b border-neutral-100 mb-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab('info')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
+              activeTab === 'info'
+                ? 'border-[var(--color-caramel)] text-[var(--color-caramel)]'
+                : 'border-transparent text-neutral-400 hover:text-neutral-600'
+            )}
+          >
+            Информация
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('photos')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
+              activeTab === 'photos'
+                ? 'border-[var(--color-caramel)] text-[var(--color-caramel)]'
+                : 'border-transparent text-neutral-400 hover:text-neutral-600'
+            )}
+          >
+            Фотографии ({photos.length})
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-name">
-              Название
-            </label>
-            <input
-              id="ap-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Например: Медовик классический"
-              className={fieldClass}
-              required
-            />
-          </div>
+          {activeTab === 'info' && (
+            <>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-name">
+                  Название
+                </label>
+                <input
+                  id="ap-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Например: Медовик классический"
+                  className={fieldClass}
+                  required
+                />
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-desc">
-              Описание
-            </label>
-            <textarea
-              id="ap-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Краткое описание товара"
-              rows={3}
-              className={cn(fieldClass, 'resize-none')}
-            />
-          </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-desc">
+                  Описание
+                </label>
+                <textarea
+                  id="ap-desc"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Краткое описание товара"
+                  rows={3}
+                  className={cn(fieldClass, 'resize-none')}
+                />
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-price">
-              Цена за кг (руб.)
-            </label>
-            <input
-              id="ap-price"
-              type="number"
-              min="1"
-              step="0.01"
-              value={pricePerKg}
-              onChange={(e) => setPricePerKg(e.target.value)}
-              placeholder="Например: 1500"
-              className={fieldClass}
-              required
-            />
-          </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-price">
+                  Цена за кг (руб.)
+                </label>
+                <input
+                  id="ap-price"
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  value={pricePerKg}
+                  onChange={(e) => setPricePerKg(e.target.value)}
+                  placeholder="Например: 1500"
+                  className={fieldClass}
+                  required
+                />
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-image">
-              URL изображения
-            </label>
-            <input
-              id="ap-image"
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
-              className={fieldClass}
-            />
-          </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-category">
+                  Категория
+                </label>
+                <select
+                  id="ap-category"
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className={fieldClass}
+                >
+                  <option value="">Без категории</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ap-category">
-              Категория
-            </label>
-            <select
-              id="ap-category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className={fieldClass}
-            >
-              <option value="">Без категории</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
+              <div className="flex items-center gap-2">
+                <input
+                  id="ap-available"
+                  type="checkbox"
+                  checked={isAvailable}
+                  onChange={(e) => setIsAvailable(e.target.checked)}
+                  className="h-4 w-4 rounded border-neutral-200 accent-[var(--color-caramel)]"
+                />
+                <label htmlFor="ap-available" className="text-sm text-neutral-700">
+                  Доступен для заказа
+                </label>
+              </div>
+            </>
+          )}
 
-          <div className="flex items-center gap-2">
-            <input
-              id="ap-available"
-              type="checkbox"
-              checked={isAvailable}
-              onChange={(e) => setIsAvailable(e.target.checked)}
-              className="h-4 w-4 rounded border-neutral-200 accent-[var(--color-caramel)]"
-            />
-            <label htmlFor="ap-available" className="text-sm text-neutral-700">
-              Доступен для заказа
-            </label>
-          </div>
+          {activeTab === 'photos' && (
+            <ProductPhotoManager photos={photos} onChange={setPhotos} disabled={saving} />
+          )}
 
           <div className="flex gap-3 pt-1">
             <button
@@ -257,9 +281,19 @@ function EditProductModal({ product, categories, onClose, onSaved }: EditProduct
       ''
     );
   });
-  const [imageUrl, setImageUrl] = useState(product.imageUrl ?? '');
+  const [photos, setPhotos] = useState<string[]>(() => {
+    const all: string[] = [];
+    if (product.imageUrl) all.push(product.imageUrl);
+    if (product.images?.length) {
+      for (const img of product.images) {
+        if (!all.includes(img)) all.push(img);
+      }
+    }
+    return all;
+  });
   const [isAvailable, setIsAvailable] = useState(product.isAvailable !== false);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'info' | 'photos'>('info');
 
   const fieldClass =
     'w-full rounded-xl border border-[var(--color-champagne)] bg-white px-4 py-3 text-sm text-[var(--color-graphite)] focus:border-[var(--color-caramel)] focus:outline-none focus:ring-1 focus:ring-[var(--color-caramel)]';
@@ -283,7 +317,8 @@ function EditProductModal({ product, categories, onClose, onSaved }: EditProduct
           maxWeight: maxWeight,
           weightStep: weightStep,
           categoryId: categoryId || undefined,
-          imageUrl: imageUrl.trim() || undefined,
+          imageUrl: photos[0] || undefined,
+          images: photos,
           isAvailable,
         }),
       });
@@ -318,155 +353,176 @@ function EditProductModal({ product, categories, onClose, onSaved }: EditProduct
           </button>
         </div>
 
+        <div className="flex gap-1 border-b border-neutral-100 mb-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab('info')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
+              activeTab === 'info'
+                ? 'border-[var(--color-caramel)] text-[var(--color-caramel)]'
+                : 'border-transparent text-neutral-400 hover:text-neutral-600'
+            )}
+          >
+            Информация
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('photos')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
+              activeTab === 'photos'
+                ? 'border-[var(--color-caramel)] text-[var(--color-caramel)]'
+                : 'border-transparent text-neutral-400 hover:text-neutral-600'
+            )}
+          >
+            Фотографии ({photos.length})
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-name">
-              Название
-            </label>
-            <input
-              id="ep-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Например: Медовик классический"
-              className={fieldClass}
-              required
-            />
-          </div>
+          {activeTab === 'info' && (
+            <>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-name">
+                  Название
+                </label>
+                <input
+                  id="ep-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Например: Медовик классический"
+                  className={fieldClass}
+                  required
+                />
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-desc">
-              Описание
-            </label>
-            <textarea
-              id="ep-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Краткое описание товара"
-              rows={3}
-              className={cn(fieldClass, 'resize-none')}
-            />
-          </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-desc">
+                  Описание
+                </label>
+                <textarea
+                  id="ep-desc"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Краткое описание товара"
+                  rows={3}
+                  className={cn(fieldClass, 'resize-none')}
+                />
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-composition">
-              Состав
-            </label>
-            <textarea
-              id="ep-composition"
-              value={composition}
-              onChange={(e) => setComposition(e.target.value)}
-              placeholder="Состав изделия"
-              rows={2}
-              className={cn(fieldClass, 'resize-none')}
-            />
-          </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-composition">
+                  Состав
+                </label>
+                <textarea
+                  id="ep-composition"
+                  value={composition}
+                  onChange={(e) => setComposition(e.target.value)}
+                  placeholder="Состав изделия"
+                  rows={2}
+                  className={cn(fieldClass, 'resize-none')}
+                />
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-price">
-              Цена за кг (руб.)
-            </label>
-            <input
-              id="ep-price"
-              type="number"
-              min="1"
-              step="0.01"
-              value={pricePerKg}
-              onChange={(e) => setPricePerKg(e.target.value)}
-              placeholder="Например: 1500"
-              className={fieldClass}
-              required
-            />
-          </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-price">
+                  Цена за кг (руб.)
+                </label>
+                <input
+                  id="ep-price"
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  value={pricePerKg}
+                  onChange={(e) => setPricePerKg(e.target.value)}
+                  placeholder="Например: 1500"
+                  className={fieldClass}
+                  required
+                />
+              </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-minweight">
-                Мин. вес (кг)
-              </label>
-              <input
-                id="ep-minweight"
-                type="number"
-                min="0.1"
-                step="0.1"
-                value={minWeight}
-                onChange={(e) => setMinWeight(e.target.value)}
-                className={fieldClass}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-maxweight">
-                Макс. вес (кг)
-              </label>
-              <input
-                id="ep-maxweight"
-                type="number"
-                min="0.1"
-                step="0.1"
-                value={maxWeight}
-                onChange={(e) => setMaxWeight(e.target.value)}
-                className={fieldClass}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-weightstep">
-                Шаг (кг)
-              </label>
-              <input
-                id="ep-weightstep"
-                type="number"
-                min="0.1"
-                step="0.1"
-                value={weightStep}
-                onChange={(e) => setWeightStep(e.target.value)}
-                className={fieldClass}
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-minweight">
+                    Мин. вес (кг)
+                  </label>
+                  <input
+                    id="ep-minweight"
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value={minWeight}
+                    onChange={(e) => setMinWeight(e.target.value)}
+                    className={fieldClass}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-maxweight">
+                    Макс. вес (кг)
+                  </label>
+                  <input
+                    id="ep-maxweight"
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value={maxWeight}
+                    onChange={(e) => setMaxWeight(e.target.value)}
+                    className={fieldClass}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-weightstep">
+                    Шаг (кг)
+                  </label>
+                  <input
+                    id="ep-weightstep"
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value={weightStep}
+                    onChange={(e) => setWeightStep(e.target.value)}
+                    className={fieldClass}
+                  />
+                </div>
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-image">
-              URL изображения
-            </label>
-            <input
-              id="ep-image"
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
-              className={fieldClass}
-            />
-          </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-category">
+                  Категория
+                </label>
+                <select
+                  id="ep-category"
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className={fieldClass}
+                >
+                  <option value="">Без категории</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-500" htmlFor="ep-category">
-              Категория
-            </label>
-            <select
-              id="ep-category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className={fieldClass}
-            >
-              <option value="">Без категории</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
+              <div className="flex items-center gap-2">
+                <input
+                  id="ep-available"
+                  type="checkbox"
+                  checked={isAvailable}
+                  onChange={(e) => setIsAvailable(e.target.checked)}
+                  className="h-4 w-4 rounded border-neutral-200 accent-[var(--color-caramel)]"
+                />
+                <label htmlFor="ep-available" className="text-sm text-neutral-700">
+                  Доступен для заказа
+                </label>
+              </div>
+            </>
+          )}
 
-          <div className="flex items-center gap-2">
-            <input
-              id="ep-available"
-              type="checkbox"
-              checked={isAvailable}
-              onChange={(e) => setIsAvailable(e.target.checked)}
-              className="h-4 w-4 rounded border-neutral-200 accent-[var(--color-caramel)]"
-            />
-            <label htmlFor="ep-available" className="text-sm text-neutral-700">
-              Доступен для заказа
-            </label>
-          </div>
+          {activeTab === 'photos' && (
+            <ProductPhotoManager photos={photos} onChange={setPhotos} disabled={saving} />
+          )}
 
           <div className="flex gap-3 pt-1">
             <button
