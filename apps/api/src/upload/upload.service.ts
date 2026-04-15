@@ -30,6 +30,7 @@ export class UploadService implements OnModuleInit {
     );
 
     await this.ensureBucketExists('screenshots');
+    await this.ensureBucketExists('products');
   }
 
   async presignUrl(dto: PresignDto): Promise<{
