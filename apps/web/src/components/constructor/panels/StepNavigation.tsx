@@ -8,19 +8,11 @@ import { useConstructorStore, type ConstructorStep } from '@/stores/constructor-
 import { useCartStore } from '@/stores/cart-store';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { fetchClient } from '@/lib/api';
+import { uploadFileToMinio } from '@/lib/upload';
 import { glRef } from '@/lib/screenshot-ref';
 import { ConstructorSuccessModal } from '@/components/constructor/ConstructorSuccessModal';
 
 const SCREENSHOT_FALLBACK = '/images/custom-cake.jpg';
-
-interface PresignData {
-  uploadUrl: string;
-  fileUrl: string;
-  objectName: string;
-  bucket: string;
-  expiresIn: number;
-}
 
 /**
  * Takes a screenshot of the current R3F canvas, uploads it to MinIO via the
@@ -32,32 +24,11 @@ async function captureAndUpload(): Promise<string> {
   if (!renderer) throw new Error('WebGL renderer not available');
 
   const dataUrl = renderer.domElement.toDataURL('image/png');
-
-  // Convert data URL to Blob
   const res = await fetch(dataUrl);
   const blob = await res.blob();
+  const file = new File([blob], `cake-screenshot-${Date.now()}.png`, { type: 'image/png' });
 
-  const filename = `cake-screenshot-${Date.now()}.png`;
-
-  // Get presigned PUT URL from our backend
-  const presignRes = await fetchClient<PresignData>('/upload/presign', {
-    method: 'POST',
-    body: JSON.stringify({ filename, bucket: 'screenshots' }),
-  });
-
-  const { uploadUrl, fileUrl } = presignRes.data;
-
-  // PUT the blob directly to MinIO — no auth header needed for presigned URLs
-  const uploadRes = await fetch(uploadUrl, {
-    method: 'PUT',
-    body: blob,
-    headers: { 'Content-Type': 'image/png' },
-  });
-
-  if (!uploadRes.ok) {
-    throw new Error(`MinIO upload failed: ${uploadRes.status}`);
-  }
-
+  const { fileUrl } = await uploadFileToMinio({ file, bucket: 'screenshots' });
   return fileUrl;
 }
 
