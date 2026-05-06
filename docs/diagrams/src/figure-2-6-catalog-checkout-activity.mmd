@@ -1,0 +1,47 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Times New Roman",
+    "fontSize": "15px",
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#111111",
+    "primaryBorderColor": "#222222",
+    "lineColor": "#333333",
+    "textColor": "#111111",
+    "mainBkg": "#ffffff",
+    "clusterBkg": "#fafafa",
+    "clusterBorder": "#888888",
+    "edgeLabelBackground": "#ffffff",
+    "nodeTextColor": "#111111"
+  },
+  "flowchart": {
+    "htmlLabels": true,
+    "curve": "linear",
+    "nodeSpacing": 24,
+    "rankSpacing": 26,
+    "padding": 4
+  }
+}}%%
+flowchart TD
+  START((" ")):::initial
+  CATALOG["Просмотр каталога,<br/>фильтры, поиск,<br/>выбор товара"]:::action
+  ADD["Добавление позиции<br/>в корзину"]:::action
+  MORE{"Продолжить<br/>покупки?"}:::decision
+  CHECKOUT["Оформление заказа:<br/>авторизация, дата, слот,<br/>контакты, промокод"]:::step
+  SUBMIT["Отправка и серверная<br/>валидация заказа"]:::action
+  VALID{"Проверка<br/>и пересчёт<br/>успешны?"}:::decision
+  ERROR["Сообщение<br/>об ошибке"]:::action
+  SAVE["Сохранение заказа<br/>и подтверждение"]:::action
+  END(((" "))):::final
+
+  START --> CATALOG --> ADD --> MORE
+  MORE -- "да" --> CATALOG
+  MORE -- "нет" --> CHECKOUT --> SUBMIT --> VALID
+  VALID -- "нет" --> ERROR --> CHECKOUT
+  VALID -- "да" --> SAVE --> END
+
+  classDef initial fill:#111111,stroke:#111111,color:#111111;
+  classDef final   fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+  classDef action  fill:#ffffff,stroke:#222222,stroke-width:1.2px,color:#111111;
+  classDef step    fill:#f4f4f4,stroke:#222222,stroke-width:1.2px,color:#111111;
+  classDef decision fill:#ffffff,stroke:#222222,stroke-width:1.4px,color:#111111;

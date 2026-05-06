@@ -1,0 +1,73 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Times New Roman",
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#111111",
+
+    "primaryBorderColor": "#222222",
+    "actorBorder": "#222222",
+    "actorBkg": "#ffffff",
+    "activationBorderColor": "#555555",
+    "activationBkgColor": "#f7f7f7",
+    "sequenceNumberColor": "#111111",
+    "lineColor": "#333333",
+    "signalColor": "#333333",
+    "signalTextColor": "#111111",
+    "noteBkgColor": "#f7f7f7",
+    "noteTextColor": "#111111",
+    "noteBorderColor": "#555555"
+  },
+  "sequence": {
+    "mirrorActors": false,
+    "showSequenceNumbers": false,
+    "actorMargin": 72,
+    "boxMargin": 12,
+    "messageMargin": 34,
+    "rightAngles": false
+  }
+}}%%
+sequenceDiagram
+  actor U as Пользователь
+  participant C as Клиентская часть
+  participant S as Серверная часть
+  participant F as Файловое хранилище
+  participant D as Реляционное хранилище
+
+  Note over U,C: Предварительная оценка стоимости на клиенте<br/>повторяется при каждом изменении параметра шага
+
+  U->>C: выбирает значение параметра конфигурации
+  activate C
+  C->>C: обновляет состояние и пересчитывает<br/>предварительную стоимость
+  C-->>U: показывает обновлённую сцену<br/>и предварительную стоимость
+  deactivate C
+
+  Note over U,F: Подтверждение конфигурации и сохранение результата
+
+  U->>C: подтверждает собранную конфигурацию торта
+  activate C
+  C->>C: формирует скриншот трёхмерной сцены
+  C->>F: запрашивает сохранение изображения
+  activate F
+  F-->>C: возвращает ссылку на изображение
+  deactivate F
+  C->>C: добавляет позицию в корзину<br/>(конфигурация торта и ссылка на изображение)
+  C-->>U: подтверждает добавление позиции
+  deactivate C
+
+  Note over U,D: Передача конфигурации в заказ и окончательный расчёт
+
+  U->>C: запускает оформление заказа
+  activate C
+  C->>S: передаёт список позиций корзины и параметры заказа
+  activate S
+  S->>S: повторно рассчитывает стоимость каждой позиции<br/>по её конфигурации
+  S->>S: проверяет допустимость промокода и итоговой суммы
+  S->>D: сохраняет заказ и его позиции в транзакции
+  activate D
+  D-->>S: подтверждает сохранение
+  deactivate D
+  S-->>C: возвращает итоговые данные оформленного заказа
+  deactivate S
+  C-->>U: показывает подтверждение оформления заказа
+  deactivate C

@@ -1,0 +1,81 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Times New Roman",
+    "fontSize": "14px",
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#111111",
+    "primaryBorderColor": "#222222",
+    "lineColor": "#333333",
+    "textColor": "#111111",
+    "mainBkg": "#ffffff",
+    "clusterBkg": "#fafafa",
+    "clusterBorder": "#888888",
+    "edgeLabelBackground": "#ffffff",
+    "nodeTextColor": "#111111"
+  },
+  "flowchart": {
+    "htmlLabels": true,
+    "curve": "basis",
+    "nodeSpacing": 32,
+    "rankSpacing": 60,
+    "padding": 8
+  }
+}}%%
+flowchart LR
+
+  ACTOR(["Пользователь"]):::actor
+
+  subgraph SOURCES ["Источники каталога ингредиентов"]
+    direction TB
+    API["Серверный каталог<br/>ингредиентов"]:::external
+    FALLBACK["Локальный резервный<br/>набор данных"]:::external
+  end
+
+  subgraph CORE ["Хранилище состояния — единый источник истины"]
+    direction TB
+    STATE["<b>Объект состояния конструктора</b><br/>форма&nbsp;·&nbsp;количество ярусов<br/>ярусы [ основа, начинка, вес ]<br/>покрытие { тип, материал,<br/>вариант глазури,<br/>режим окраски, вторичный цвет }<br/>список украшений<br/>свеча&nbsp;·&nbsp;текст надписи"]:::state
+  end
+
+  SS[("Сохранение состояния<br/>в сессии браузера")]:::storage
+
+  subgraph CONSUMERS ["Реактивные потребители состояния"]
+    direction TB
+    PANEL["Панель шагов<br/>мастера"]:::ui
+    PRICE["Блок предварительной<br/>стоимости"]:::ui
+    NAV["Элементы<br/>навигации"]:::ui
+  end
+
+  subgraph PIPE ["Преобразование состояния в трёхмерную сцену"]
+    direction TB
+    INTERP["Слой интерпретации<br/>параметры → модели и материалы"]:::pipeline
+    GLB[("Реестр<br/>трёхмерных моделей")]:::storage
+    SCENE["Трёхмерная сцена"]:::scene
+    INTERP -- "выбор модели" --> GLB
+    INTERP -- "построение сцены" --> SCENE
+  end
+
+  SERVER["Серверный модуль<br/>окончательного расчёта стоимости"]:::external
+
+  ACTOR -- "выбор параметров шага" --> PANEL
+  PANEL -- "ввод параметров" --> STATE
+  STATE -- "состояние текущего шага" --> PANEL
+
+  API -- "нормализация" --> STATE
+  FALLBACK -. "при недоступности каталога" .-> STATE
+
+  STATE <-- "сохранение и восстановление" --> SS
+
+  STATE -- "подписка" --> PRICE
+  STATE -- "подписка" --> NAV
+  STATE -- "подписка" --> INTERP
+
+  STATE -. "передача конфигурации в заказ" .-> SERVER
+
+  classDef actor    fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+  classDef state    fill:#f4f4f4,stroke:#111111,stroke-width:1.6px,color:#111111;
+  classDef ui       fill:#ffffff,stroke:#222222,stroke-width:1.2px,color:#111111;
+  classDef external fill:#ffffff,stroke:#222222,stroke-width:1.2px,stroke-dasharray:4 3,color:#111111;
+  classDef storage  fill:#fafafa,stroke:#222222,stroke-width:1.2px,color:#111111;
+  classDef pipeline fill:#ffffff,stroke:#222222,stroke-width:1.2px,color:#111111;
+  classDef scene    fill:#f4f4f4,stroke:#222222,stroke-width:1.4px,color:#111111;
