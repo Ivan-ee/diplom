@@ -605,6 +605,25 @@ describe('ConstructorService.calculatePrice', () => {
       expect(result.totalPrice).toBe(44_000);
     });
 
+    it('accepts hasCandle as visual order metadata without changing price', async () => {
+      const db = buildDbMock(
+        [makeBase()],
+        [makeFilling()],
+        [makeCoating()],
+        [],
+      );
+      const service = buildService(db);
+
+      const result = await service.calculatePrice({
+        shape: 'circle',
+        tiers: [{ baseId: BASE_ID, fillingId: FILLING_ID, weight: 10 }],
+        coatingId: COATING_ID,
+        hasCandle: true,
+      });
+
+      expect(result.totalPrice).toBe(35_000);
+    });
+
     /**
      * Coating cost scales with total weight across all tiers.
      * 2 tiers × weight=10 → totalWeightKg=2.0

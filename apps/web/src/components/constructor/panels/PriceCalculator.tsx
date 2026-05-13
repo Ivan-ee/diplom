@@ -59,6 +59,7 @@ export function PriceCalculator() {
   const layers = useConstructorStore((s) => s.layers);
   const coating = useConstructorStore((s) => s.coating);
   const activeDecorations = useConstructorStore((s) => s.activeDecorations);
+  const selectedDecorations = useConstructorStore((s) => s.selectedDecorations);
   const hasCandle = useConstructorStore((s) => s.hasCandle);
   const shape = useConstructorStore((s) => s.shape);
   const tierCount = useConstructorStore((s) => s.tierCount);
@@ -91,17 +92,17 @@ export function PriceCalculator() {
     }
 
     let decorCost = 0;
-    if (activeDecorations.length > 0) {
-      for (const decorId of activeDecorations) {
-        const decoIngredient = ingredients.decorations.find((d) => d.id === decorId);
-        if (decoIngredient) decorCost += decoIngredient.pricePerUnit;
-      }
+    let decorationCount = 0;
+    for (const selection of selectedDecorations) {
+      const decoIngredient = ingredients.decorations.find((d) => d.id === selection.decorationId);
+      decorationCount += selection.quantity;
+      if (decoIngredient) decorCost += decoIngredient.pricePerUnit * selection.quantity;
     }
     if (hasCandle) {
       const candleIngredient = ingredients.decorations.find(d => d.name.toLowerCase().includes('свеч'));
       if (candleIngredient) decorCost += candleIngredient.pricePerUnit;
     }
-    if (decorCost > 0) breakdown.push({ label: `Декор (${activeDecorations.length} шт.)`, value: Math.round(decorCost) });
+    if (decorCost > 0) breakdown.push({ label: `Декор (${decorationCount || activeDecorations.length} шт.)`, value: Math.round(decorCost) });
 
     const shapeInfo = ingredients.shapes.find((s) => s.id === shape);
     if (shapeInfo && shapeInfo.surchargePercent > 0) {

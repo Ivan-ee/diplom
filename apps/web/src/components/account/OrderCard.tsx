@@ -41,7 +41,7 @@ export interface OrderItemConstructor {
     layers?: Array<{ baseName?: string; fillingName?: string; weight: number }>;
     coatingName?: string;
     inscription?: string;
-    decorations?: string[];
+    decorations?: Array<string | { decorationId: string; quantity: number }>;
     decorVariant?: string | null;
     hasCandle?: boolean;
   };
@@ -100,6 +100,13 @@ const SHAPE_LABELS: Record<string, string> = {
   heart:  'Сердце',
 };
 
+function formatDecoration(value: string | { decorationId: string; quantity: number }): string {
+  if (typeof value === 'string') return value;
+
+  const label = `#${value.decorationId.slice(0, 8)}`;
+  return value.quantity > 1 ? `${label} × ${value.quantity}` : label;
+}
+
 // ---------- Sub-components ----------
 
 function ProductItemRow({ item }: { item: OrderItemProduct }) {
@@ -129,6 +136,9 @@ function ProductItemRow({ item }: { item: OrderItemProduct }) {
 
 function ConstructorItemRow({ item }: { item: OrderItemConstructor }) {
   const cfg = item.cakeConfig;
+  const decorationLabels = cfg?.decorations?.map(formatDecoration) ?? [];
+  if (cfg?.hasCandle) decorationLabels.push('свеча');
+
   return (
     <div className="flex items-start gap-3 py-2">
       <Chip size="sm" color="accent" variant="secondary" className="mt-0.5 shrink-0">Конструктор</Chip>
@@ -156,8 +166,8 @@ function ConstructorItemRow({ item }: { item: OrderItemConstructor }) {
             {cfg.inscription && <li>Надпись: «{cfg.inscription}»</li>}
             {cfg.decorVariant ? (
               <li>Декор: {cfg.decorVariant}{cfg.hasCandle ? ', свеча' : ''}</li>
-            ) : cfg.decorations && cfg.decorations.length > 0 ? (
-              <li>Декор: {cfg.decorations.join(', ')}</li>
+            ) : decorationLabels.length > 0 ? (
+              <li>Декор: {decorationLabels.join(', ')}</li>
             ) : null}
           </ul>
         )}

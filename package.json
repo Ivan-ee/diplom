@@ -20,6 +20,9 @@
     "typescript": "^5.8.0"
   },
   "pnpm": {
+    "overrides": {
+      "zod": "3.25.76"
+    },
     "onlyBuiltDependencies": [
       "@nestjs/core",
       "bcrypt",

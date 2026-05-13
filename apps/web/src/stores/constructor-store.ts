@@ -67,6 +67,12 @@ export interface IngredientDecoration {
   available: boolean;
 }
 
+export interface DecorationSelection {
+  variantId: string;
+  decorationId: string;
+  quantity: number;
+}
+
 export interface ShapeInfo {
   id: CakeShape;
   name: string;
@@ -103,6 +109,7 @@ export interface ConstructorState {
   layers: CakeLayer[];
   coating: CakeCoating;
   activeDecorations: string[];
+  selectedDecorations: DecorationSelection[];
   hasCandle: boolean;
   inscription: string;
   ingredients: ConstructorCatalog | null;
@@ -154,6 +161,65 @@ const buildLayers = (count: TierCount, existing: CakeLayer[]): CakeLayer[] => {
   return arr;
 };
 
+function decorationSearchText(decoration: IngredientDecoration): string {
+  return `${decoration.name} ${decoration.category}`.toLowerCase();
+}
+
+function findDecorationByKeywords(
+  decorations: IngredientDecoration[],
+  keywords: string[],
+): IngredientDecoration | undefined {
+  return decorations.find((decoration) => {
+    const text = decorationSearchText(decoration);
+    return keywords.some((keyword) => text.includes(keyword));
+  });
+}
+
+export function createDecorationSelection(
+  variantId: string,
+  decorations: IngredientDecoration[],
+): DecorationSelection | null {
+  const availableDecorations = decorations.filter((decoration) => decoration.available);
+  if (availableDecorations.length === 0) return null;
+
+  const variant = variantId.toLowerCase();
+  let selectedDecoration: IngredientDecoration | undefined;
+
+  if (variant.includes('blueberry')) {
+    selectedDecoration = findDecorationByKeywords(
+      availableDecorations,
+      ['голуб', 'черник', 'blueberry', 'berries', 'ягод'],
+    );
+  } else if (variant.includes('chocolate') || variant.includes('choco')) {
+    selectedDecoration = findDecorationByKeywords(availableDecorations, ['шоколад', 'chocolate']);
+  } else if (variant.includes('meringue')) {
+    selectedDecoration = findDecorationByKeywords(availableDecorations, ['меренг', 'безе', 'topper', 'топпер']);
+  } else if (variant.includes('cream') || variant.includes('glaze') || variant.includes('pink')) {
+    selectedDecoration = findDecorationByKeywords(
+      availableDecorations,
+      ['крем', 'cream', 'роза', 'цвет', 'flower'],
+    );
+  }
+
+  const decoration = selectedDecoration ?? availableDecorations[0];
+
+  return {
+    variantId,
+    decorationId: decoration.id,
+    quantity: 1,
+  };
+}
+
+function buildDecorationSelections(
+  variantIds: string[],
+  decorations: IngredientDecoration[],
+): DecorationSelection[] {
+  return variantIds.flatMap((variantId) => {
+    const selection = createDecorationSelection(variantId, decorations);
+    return selection ? [selection] : [];
+  });
+}
+
 function applyDefaultSelections(
   state: Pick<ConstructorState, 'coating' | 'layers'>,
   ingredients: ConstructorCatalog,
@@ -186,6 +252,7 @@ export const useConstructorStore = create<ConstructorState>()(
       layers: [{ ...DEFAULT_LAYER }],
       coating: { ...DEFAULT_COATING },
       activeDecorations: [],
+      selectedDecorations: [],
       hasCandle: false,
       inscription: '',
       ingredients: null,
@@ -195,7 +262,7 @@ export const useConstructorStore = create<ConstructorState>()(
       setStep: (step) => set({ currentStep: step }),
 
       setShape: (shape) => {
-        set({ shape, activeDecorations: [], hasCandle: false });
+        set({ shape, activeDecorations: [], selectedDecorations: [], hasCandle: false });
         get().recalculatePrice();
       },
 
@@ -271,21 +338,31 @@ export const useConstructorStore = create<ConstructorState>()(
       },
 
       addDecoration: (variantId) => {
-        const { activeDecorations, ingredients } = get();
+        const { activeDecorations, ingredients, selectedDecorations } = get();
         const max = ingredients?.config?.maxDecorations ?? 3;
         if (activeDecorations.length >= max || activeDecorations.includes(variantId)) return;
-        set({ activeDecorations: [...activeDecorations, variantId] });
+
+        const selectedDecoration = createDecorationSelection(variantId, ingredients?.decorations ?? []);
+        set({
+          activeDecorations: [...activeDecorations, variantId],
+          selectedDecorations: selectedDecoration
+            ? [...selectedDecorations, selectedDecoration]
+            : selectedDecorations,
+        });
         get().recalculatePrice();
       },
 
       removeDecoration: (variantId) => {
-        const { activeDecorations } = get();
-        set({ activeDecorations: activeDecorations.filter((id) => id !== variantId) });
+        const { activeDecorations, selectedDecorations } = get();
+        set({
+          activeDecorations: activeDecorations.filter((id) => id !== variantId),
+          selectedDecorations: selectedDecorations.filter((selection) => selection.variantId !== variantId),
+        });
         get().recalculatePrice();
       },
 
       clearDecorations: () => {
-        set({ activeDecorations: [] });
+        set({ activeDecorations: [], selectedDecorations: [] });
         get().recalculatePrice();
       },
 
@@ -342,6 +419,14 @@ export const useConstructorStore = create<ConstructorState>()(
           set(updates as Partial<ConstructorState>);
         }
 
+        const current = get();
+        set({
+          selectedDecorations: buildDecorationSelections(
+            current.activeDecorations,
+            ingredients.decorations,
+          ),
+        });
+
         get().recalculatePrice();
       },
 
@@ -368,11 +453,15 @@ export const useConstructorStore = create<ConstructorState>()(
           runningTotal += (totalWeight * coatingIngredient.pricePerKg) / 1000;
         }
 
-        for (const variantId of state.activeDecorations) {
-          const decoIngredient =
-            ingredients.decorations.find((d) => d.id === variantId) ?? ingredients.decorations[0];
+        const decorationSelections =
+          state.selectedDecorations.length > 0
+            ? state.selectedDecorations
+            : buildDecorationSelections(state.activeDecorations, ingredients.decorations);
+
+        for (const selection of decorationSelections) {
+          const decoIngredient = ingredients.decorations.find((d) => d.id === selection.decorationId);
           if (decoIngredient) {
-            runningTotal += decoIngredient.pricePerUnit;
+            runningTotal += decoIngredient.pricePerUnit * selection.quantity;
           }
         }
 
@@ -403,6 +492,7 @@ export const useConstructorStore = create<ConstructorState>()(
           layers: [{ ...DEFAULT_LAYER }],
           coating: { ...DEFAULT_COATING },
           activeDecorations: [],
+          selectedDecorations: [],
           hasCandle: false,
           inscription: '',
           totalPrice: 0,
@@ -415,12 +505,15 @@ export const useConstructorStore = create<ConstructorState>()(
     })),
     {
       name: 'bakery-constructor',
-      version: 1,
+      version: 2,
       migrate: (persisted: any, _version: number) => {
         // Конвертировать старый decorVariant в activeDecorations
         if (persisted && 'decorVariant' in persisted) {
           persisted.activeDecorations = persisted.decorVariant ? [persisted.decorVariant] : [];
           delete persisted.decorVariant;
+        }
+        if (persisted && !Array.isArray(persisted.selectedDecorations)) {
+          persisted.selectedDecorations = [];
         }
         // Добавить colorMode если отсутствует
         if (persisted?.coating && !('colorMode' in persisted.coating)) {
@@ -443,6 +536,7 @@ export const useConstructorStore = create<ConstructorState>()(
         layers: state.layers,
         coating: state.coating,
         activeDecorations: state.activeDecorations,
+        selectedDecorations: state.selectedDecorations,
         hasCandle: state.hasCandle,
         inscription: state.inscription,
       }) as unknown as ConstructorState,

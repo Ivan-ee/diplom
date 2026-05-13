@@ -46,6 +46,7 @@ services:
       mc mb --ignore-existing local/models;
       mc anonymous set download local/products;
       mc anonymous set download local/textures;
+      mc anonymous set download local/screenshots;
       mc anonymous set download local/models;
       echo 'Buckets created and policies set';
       "
@@ -64,5 +65,4 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
 
