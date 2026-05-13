@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 import { dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../../../.env') });
 
 import { readFileSync } from 'fs';
@@ -26,14 +26,65 @@ import { buildImageUrl } from './build-image-url';
 // Helpers
 // ---------------------------------------------------------------------------
 
-function loadJson<T>(schema: z.ZodType<T>, relativePath: string): T {
+interface DefaultAdminConfig {
+  readonly email: string;
+  readonly password: string;
+}
+
+interface DefaultAdminEnv {
+  readonly ADMIN_EMAIL?: string;
+  readonly ADMIN_PASSWORD?: string;
+}
+
+const defaultAdminEnvSchema = z.object({
+  ADMIN_EMAIL: z
+    .string({
+      required_error: 'ADMIN_EMAIL is required',
+      invalid_type_error: 'ADMIN_EMAIL must be a string',
+    })
+    .trim()
+    .min(1, 'ADMIN_EMAIL is required')
+    .email('ADMIN_EMAIL must be a valid email address')
+    .transform((email) => email.toLowerCase()),
+  ADMIN_PASSWORD: z
+    .string({
+      required_error: 'ADMIN_PASSWORD is required',
+      invalid_type_error: 'ADMIN_PASSWORD must be a string',
+    })
+    .min(1, 'ADMIN_PASSWORD is required')
+    .min(8, 'ADMIN_PASSWORD must be at least 8 characters long')
+    .regex(/\p{L}/u, 'ADMIN_PASSWORD must contain at least one letter')
+    .regex(/\d/u, 'ADMIN_PASSWORD must contain at least one digit'),
+});
+
+function formatZodIssues(error: z.ZodError): string {
+  return error.issues.map((issue) => `- ${issue.message}`).join('\n');
+}
+
+export function readDefaultAdminConfig(env: DefaultAdminEnv = process.env): DefaultAdminConfig {
+  const parsed = defaultAdminEnvSchema.safeParse({
+    ADMIN_EMAIL: env.ADMIN_EMAIL,
+    ADMIN_PASSWORD: env.ADMIN_PASSWORD,
+  });
+
+  if (!parsed.success) {
+    throw new Error(`Default admin env is invalid:\n${formatZodIssues(parsed.error)}`);
+  }
+
+  return {
+    email: parsed.data.ADMIN_EMAIL,
+    password: parsed.data.ADMIN_PASSWORD,
+  };
+}
+
+function loadJson<T>(schema: z.ZodType<T>, relativePath: string): T[] {
   const filePath = resolve(dirname(fileURLToPath(import.meta.url)), '..', relativePath);
   const raw = JSON.parse(readFileSync(filePath, 'utf-8')) as unknown;
   const result = z.array(schema).safeParse(raw);
   if (!result.success) {
     throw new Error(`Validation failed for ${relativePath}:\n${result.error.toString()}`);
   }
-  return result.data as T;
+  return result.data;
 }
 
 // ---------------------------------------------------------------------------
@@ -41,14 +92,9 @@ function loadJson<T>(schema: z.ZodType<T>, relativePath: string): T {
 // ---------------------------------------------------------------------------
 
 async function seed() {
+  const defaultAdmin = readDefaultAdminConfig();
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
   const db = drizzle(pool, { schema });
-
-  // ── Admin password guard ─────────────────────────────────────────────────
-  const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin123';
-  if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_PASSWORD) {
-    throw new Error('ADMIN_PASSWORD env var must be set in production');
-  }
 
   console.log('🌱 Loading JSON seed data...');
 
@@ -284,18 +330,27 @@ async function seed() {
       .onConflictDoNothing();
     console.log('✓ test user (test@bakery.ru / test123)');
 
-    const adminPasswordHash = await hash(adminPassword, 10);
+    const adminPasswordHash = await hash(defaultAdmin.password, 10);
     await tx
       .insert(schema.users)
       .values({
         name:         'Администратор',
-        email:        'admin@bakery.ru',
+        email:        defaultAdmin.email,
         phone:        '+79001234567',
         passwordHash: adminPasswordHash,
         role:         'admin',
       })
-      .onConflictDoNothing();
-    console.log('✓ admin user (admin@bakery.ru)');
+      .onConflictDoUpdate({
+        target: schema.users.email,
+        set: {
+          name:         'Администратор',
+          phone:        '+79001234567',
+          passwordHash: adminPasswordHash,
+          role:         'admin',
+          updatedAt:    sql`now()`,
+        },
+      });
+    console.log(`✓ admin user (${defaultAdmin.email})`);
 
     // ── 11. Reviews — clear and re-insert (no unique key) ─────────────────
     await tx.delete(schema.reviews);
@@ -316,7 +371,14 @@ async function seed() {
   await pool.end();
 }
 
-seed().catch((err) => {
-  console.error('❌ Seed failed:', err);
-  process.exit(1);
-});
+function isDirectExecution(): boolean {
+  const entrypoint = process.argv[1];
+  return entrypoint !== undefined && import.meta.url === pathToFileURL(resolve(entrypoint)).href;
+}
+
+if (isDirectExecution()) {
+  seed().catch((err: unknown) => {
+    console.error('❌ Seed failed:', err);
+    process.exit(1);
+  });
+}

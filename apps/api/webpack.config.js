@@ -1,6 +1,9 @@
 const path = require('path');
 const nodeExternals = require('webpack-node-externals');
 
+const appNodeModules = path.resolve(__dirname, 'node_modules');
+const rootNodeModules = path.resolve(__dirname, '../../node_modules');
+
 module.exports = (options) => {
   return {
     ...options,
@@ -32,7 +35,11 @@ module.exports = (options) => {
     externals: [
       nodeExternals({
         allowlist: [/^@bakery\//],
-        modulesDir: path.resolve(__dirname, '../../node_modules'),
+        modulesDir: appNodeModules,
+      }),
+      nodeExternals({
+        allowlist: [/^@bakery\//],
+        modulesDir: rootNodeModules,
       }),
     ],
   };

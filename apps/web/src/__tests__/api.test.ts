@@ -3,15 +3,19 @@ import { fetchServer } from '@/lib/api';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function mockFetch(response: Partial<Response> & { body?: unknown }): void {
-  const { body, ...rest } = response;
+interface MockFetchResponse extends Omit<Partial<Response>, 'body' | 'json'> {
+  readonly jsonBody?: unknown;
+}
+
+function mockFetch(response: MockFetchResponse): void {
+  const { jsonBody, ...rest } = response;
   vi.stubGlobal(
     'fetch',
     vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       statusText: 'OK',
-      json: () => Promise.resolve(body),
+      json: () => Promise.resolve(jsonBody),
       ...rest,
     }),
   );
@@ -25,14 +29,14 @@ afterEach(() => {
 
 describe('buildUrl', () => {
   it('builds a URL that includes the path under /api', async () => {
-    mockFetch({ body: { success: true, data: [] } });
+    mockFetch({ jsonBody: { success: true, data: [] } });
     await fetchServer('/products');
     const calledUrl = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
     expect(calledUrl).toContain('/api/products');
   });
 
   it('appends params as a query string', async () => {
-    mockFetch({ body: { success: true, data: [] } });
+    mockFetch({ jsonBody: { success: true, data: [] } });
     await fetchServer('/products', { params: { page: 2, limit: 10 } });
     const calledUrl = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
     expect(calledUrl).toContain('page=2');
@@ -40,7 +44,7 @@ describe('buildUrl', () => {
   });
 
   it('filters out undefined params', async () => {
-    mockFetch({ body: { success: true, data: [] } });
+    mockFetch({ jsonBody: { success: true, data: [] } });
     await fetchServer('/products', { params: { page: 1, category: undefined } });
     const calledUrl = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
     expect(calledUrl).not.toContain('category');
@@ -48,14 +52,14 @@ describe('buildUrl', () => {
   });
 
   it('filters out empty-string params', async () => {
-    mockFetch({ body: { success: true, data: [] } });
+    mockFetch({ jsonBody: { success: true, data: [] } });
     await fetchServer('/products', { params: { search: '' as unknown as undefined, page: 1 } });
     const calledUrl = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
     expect(calledUrl).not.toContain('search');
   });
 
   it('numeric params are converted to strings in the URL', async () => {
-    mockFetch({ body: { success: true, data: [] } });
+    mockFetch({ jsonBody: { success: true, data: [] } });
     await fetchServer('/products', { params: { limit: 5 } });
     const calledUrl = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
     expect(calledUrl).toContain('limit=5');
@@ -133,7 +137,7 @@ describe('fetchServer error handling', () => {
 
   it('returns parsed data on a successful response', async () => {
     const payload = { success: true, data: { id: '1', name: 'Торт' } };
-    mockFetch({ body: payload });
+    mockFetch({ jsonBody: payload });
 
     const result = await fetchServer<{ id: string; name: string }>('/products/1');
     expect(result.data.name).toBe('Торт');

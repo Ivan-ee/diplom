@@ -18,7 +18,11 @@ function minioRemotePatterns(): NextConfig['images'] {
     } catch { /* ignore invalid URL */ }
   }
 
-  return { dangerouslyAllowLocalIP: true, remotePatterns: patterns };
+  return {
+    dangerouslyAllowLocalIP: true,
+    remotePatterns: patterns,
+    unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED === 'true',
+  };
 }
 
 const nextConfig: NextConfig = {

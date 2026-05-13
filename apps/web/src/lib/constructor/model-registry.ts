@@ -1,6 +1,8 @@
 export type CakeShape = 'circle' | 'square' | 'heart';
 
-const MODELS_BASE = '/models';
+const configuredModelsBase =
+  process.env.NEXT_PUBLIC_CONSTRUCTOR_MODELS_BASE_URL?.replace(/\/+$/, '');
+const MODELS_BASE = configuredModelsBase || '/models';
 
 const SHAPE_FOLDER: Record<CakeShape, string> = {
   circle: 'circle',

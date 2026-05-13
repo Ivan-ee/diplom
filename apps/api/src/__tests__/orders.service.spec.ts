@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { OrdersService } from '../orders/orders.service';
 import { ConstructorService } from '../constructor/constructor.service';
+import { PromoCodesService } from '../promo-codes/promo-codes.service';
 import { OrderItemType, PickupTimeSlot } from '../orders/dto/create-order.dto';
 import type { SafeUser } from '../common/types/user.type';
 
@@ -15,8 +16,11 @@ const ORDER_ID = 'aaaaaaaa-1111-0000-0000-000000000030';
 
 const MOCK_USER: SafeUser = {
   id: USER_ID,
+  name: 'Test User',
   email: 'user@example.com',
+  phone: null,
   role: 'USER',
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
 };
 
 function makeCreateOrderDto(itemOverrides: Partial<Record<string, unknown>> = {}) {
@@ -108,6 +112,13 @@ function buildConstructorServiceMock(totalPrice = 50_000) {
   } as unknown as ConstructorService;
 }
 
+function buildPromoCodesServiceMock() {
+  return {
+    validate: vi.fn(),
+    applyToOrder: vi.fn(),
+  } as unknown as PromoCodesService;
+}
+
 // ---------------------------------------------------------------------------
 // Service factory
 // ---------------------------------------------------------------------------
@@ -115,8 +126,9 @@ function buildConstructorServiceMock(totalPrice = 50_000) {
 function buildService(
   db: unknown,
   constructorService: ConstructorService = buildConstructorServiceMock(),
+  promoCodesService: PromoCodesService = buildPromoCodesServiceMock(),
 ): OrdersService {
-  return new OrdersService(db as never, constructorService);
+  return new OrdersService(db as never, constructorService, promoCodesService);
 }
 
 // ---------------------------------------------------------------------------

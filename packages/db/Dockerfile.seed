@@ -1,0 +1,23 @@
+FROM node:22-alpine
+
+ENV PNPM_HOME="/pnpm"
+ENV COREPACK_HOME="/corepack"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable && corepack prepare pnpm@10.28.2 --activate
+
+WORKDIR /app
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.base.json turbo.json ./
+COPY packages/db/ ./packages/db/
+COPY apps/web/public/models/ ./apps/web/public/models/
+
+RUN pnpm install --frozen-lockfile --filter @bakery/db...
+RUN pnpm --filter @bakery/db type-check
+RUN pnpm --filter @bakery/db seed:validate
+
+RUN chown -R node:node "$COREPACK_HOME"
+
+USER node
+
+CMD ["sh", "-lc", "pnpm --filter @bakery/db db:migrate && pnpm --filter @bakery/db seed:full"]

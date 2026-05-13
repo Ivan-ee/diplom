@@ -13,9 +13,12 @@
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
+    "type-check": "tsc --noEmit",
+    "seed:validate": "tsx scripts/upload-assets.ts --validate-only",
     "seed": "tsx src/seed.ts",
-    "photos:upload": "tsx scripts/upload-photos.ts",
-    "seed:full": "tsx scripts/upload-photos.ts && tsx src/seed.ts"
+    "assets:upload": "tsx scripts/upload-assets.ts",
+    "photos:upload": "tsx scripts/upload-assets.ts",
+    "seed:full": "tsx scripts/upload-assets.ts && tsx src/seed.ts"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
@@ -25,6 +28,7 @@
     "pg": "^8.13.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/pg": "^8.11.0",
     "drizzle-kit": "^0.31.0",
     "tsx": "^4.19.0",

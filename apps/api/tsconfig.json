@@ -14,7 +14,10 @@
       "@/*": ["./src/*"],
       "@bakery/db": ["../../packages/db/src/index.ts"],
       "@bakery/db/schema": ["../../packages/db/src/schema/index.ts"],
-      "meilisearch": ["../../node_modules/meilisearch/dist/index.d.ts"]
+      "meilisearch": [
+        "./node_modules/meilisearch/dist/index.d.ts",
+        "../../node_modules/meilisearch/dist/index.d.ts"
+      ]
     }
   },
   "include": ["src/**/*"],

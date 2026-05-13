@@ -141,7 +141,7 @@ describe('AuthService.register()', () => {
 
     expect(result.user).toMatchObject(SAFE_USER);
     expect(result.token).toBe('mock.jwt.token');
-    expect((result.user as Record<string, unknown>).passwordHash).toBeUndefined();
+    expect((result.user as unknown as Record<string, unknown>).passwordHash).toBeUndefined();
   });
 
   it('calls bcrypt.hash with the plain password', async () => {
