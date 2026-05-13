@@ -12,24 +12,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore, type CartItem, type PromoResult } from '@/stores/cart-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { fetchClient } from '@/lib/api';
+import { cakeConfigToOrderDto } from '@/lib/constructor/order-adapter';
 import { formatPrice, cn } from '@/lib/utils';
-
-// ── cakeConfig → API DTO adapter ─────────────────────────────────────────────
-
-function cakeConfigToDto(cakeConfig: NonNullable<CartItem['cakeConfig']>) {
-  return {
-    shape: cakeConfig.shape,
-    tiers: cakeConfig.layers.map((l) => ({
-      baseId: l.baseId,
-      fillingId: l.fillingId,
-      weight: Math.round(l.weight / 100),
-    })),
-    coatingId: cakeConfig.coating.coatingId,
-    ...(cakeConfig.activeDecorations.length > 0 && { decorations: cakeConfig.activeDecorations }),
-    ...(cakeConfig.hasCandle && { hasCandle: true }),
-    ...(cakeConfig.inscription && { inscription: cakeConfig.inscription }),
-  };
-}
 
 // ── Validation schema ────────────────────────────────────────────────────────
 
@@ -497,7 +481,7 @@ export function CheckoutForm() {
           type: item.type,
           ...(item.type === 'product' && item.productId ? { productId: item.productId } : {}),
           ...(item.type === 'constructor' && item.cakeConfig
-            ? { cakeConfig: cakeConfigToDto(item.cakeConfig) }
+            ? { cakeConfig: cakeConfigToOrderDto(item.cakeConfig) }
             : {}),
           weight: Math.round(item.weight / 100),
           quantity: item.quantity,

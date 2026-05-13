@@ -6,6 +6,7 @@ import { extname } from 'path';
 import { PresignDto } from './dto/presign.dto';
 
 const PRESIGN_EXPIRY_SECONDS = 15 * 60; // 15 minutes
+const PUBLIC_READ_BUCKETS = ['screenshots', 'products'] as const;
 
 @Injectable()
 export class UploadService implements OnModuleInit {
@@ -29,8 +30,10 @@ export class UploadService implements OnModuleInit {
       'http://localhost:9000',
     );
 
-    await this.ensureBucketExists('screenshots');
-    await this.ensureBucketExists('products');
+    for (const bucket of PUBLIC_READ_BUCKETS) {
+      await this.ensureBucketExists(bucket);
+      await this.ensurePublicReadPolicy(bucket);
+    }
   }
 
   async presignUrl(dto: PresignDto): Promise<{
@@ -73,6 +76,31 @@ export class UploadService implements OnModuleInit {
     if (!exists) {
       this.logger.warn('Bucket does not exist, creating', { bucket });
       await this.client.makeBucket(bucket, 'us-east-1');
+    }
+  }
+
+  private async ensurePublicReadPolicy(bucket: string): Promise<void> {
+    const policy = JSON.stringify({
+      Version: '2012-10-17',
+      Statement: [
+        {
+          Effect: 'Allow',
+          Principal: { AWS: ['*'] },
+          Action: ['s3:GetObject'],
+          Resource: [`arn:aws:s3:::${bucket}/*`],
+        },
+      ],
+    });
+
+    try {
+      await this.client.setBucketPolicy(bucket, policy);
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('MinIO public-read policy setup failed', {
+        bucket,
+        error: error.message,
+      });
+      throw new InternalServerErrorException('Failed to configure upload bucket');
     }
   }
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { UploadService } from '../upload.service';
@@ -11,6 +11,7 @@ const minioClientInstance = vi.hoisted(() => ({
   presignedPutObject: vi.fn().mockResolvedValue('https://minio.test/presigned-url'),
   bucketExists: vi.fn().mockResolvedValue(true),
   makeBucket: vi.fn(),
+  setBucketPolicy: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('minio', () => ({
@@ -65,6 +66,27 @@ async function buildService(configOverrides: Record<string, string | number> = {
 // ---------------------------------------------------------------------------
 
 describe('UploadService.presignUrl', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    minioClientInstance.presignedPutObject.mockResolvedValue('https://minio.test/presigned-url');
+    minioClientInstance.bucketExists.mockResolvedValue(true);
+    minioClientInstance.setBucketPolicy.mockResolvedValue(undefined);
+  });
+
+  it('ensures public-read policies for public upload buckets on startup', async () => {
+    await buildService();
+
+    expect(minioClientInstance.setBucketPolicy).toHaveBeenCalledTimes(2);
+    expect(minioClientInstance.setBucketPolicy).toHaveBeenCalledWith(
+      'screenshots',
+      expect.stringContaining('arn:aws:s3:::screenshots/*'),
+    );
+    expect(minioClientInstance.setBucketPolicy).toHaveBeenCalledWith(
+      'products',
+      expect.stringContaining('arn:aws:s3:::products/*'),
+    );
+  });
+
   it('returns correct shape for bucket "products"', async () => {
     const service = await buildService();
 

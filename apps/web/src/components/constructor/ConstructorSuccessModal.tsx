@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, X } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 
 interface ConstructorSuccessModalProps {
   isOpen: boolean;
@@ -115,7 +116,7 @@ export function ConstructorSuccessModal({
 
               {/* Price */}
               <p className="mb-6 text-center text-xl font-semibold text-[var(--color-caramel)]">
-                {totalPrice.toLocaleString('ru-RU')} ₽
+                {formatPrice(totalPrice)}
               </p>
 
               {/* CTA buttons */}

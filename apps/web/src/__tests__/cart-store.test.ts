@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { useCartStore } from '@/stores/cart-store';
+import { useCartStore, type CakeConfigData } from '@/stores/cart-store';
 
 type AddItemInput = Omit<import('@/stores/cart-store').CartItem, 'id' | 'quantity'> & { quantity?: number };
 
@@ -12,6 +12,22 @@ const makeItem = (overrides: Partial<AddItemInput> = {}) => ({
   weight: 1000,
   price: 150000,
   ...overrides,
+});
+
+const makeCakeConfig = (): CakeConfigData => ({
+  shape: 'round',
+  tierCount: 1,
+  layers: [],
+  coating: {
+    type: 'cream',
+    coatingId: 'c1',
+    glazeVariant: 'cream',
+    withDrips: false,
+    colorMode: 'solid',
+  },
+  activeDecorations: [],
+  selectedDecorations: [],
+  hasCandle: false,
 });
 
 const resetStore = () => useCartStore.setState({ items: [] });
@@ -197,12 +213,12 @@ describe('cart-store', () => {
       useCartStore.getState().addItem(makeItem({
         type: 'constructor',
         productId: undefined,
-        cakeConfig: { shape: 'round', tierCount: 1, layers: [], coating: { type: 'cream', coatingId: 'c1', color: '#fff' }, decorations: [] },
+        cakeConfig: makeCakeConfig(),
       }));
       useCartStore.getState().addItem(makeItem({
         type: 'constructor',
         productId: undefined,
-        cakeConfig: { shape: 'round', tierCount: 1, layers: [], coating: { type: 'cream', coatingId: 'c1', color: '#fff' }, decorations: [] },
+        cakeConfig: makeCakeConfig(),
       }));
       const { items } = useCartStore.getState();
       expect(items).toHaveLength(2);
@@ -218,7 +234,7 @@ describe('cart-store', () => {
       useCartStore.getState().addItem(makeItem({
         type: 'constructor',
         productId: undefined,
-        cakeConfig: { shape: 'round', tierCount: 1, layers: [], coating: { type: 'cream', coatingId: 'c1', color: '#fff' }, decorations: [] },
+        cakeConfig: makeCakeConfig(),
       }));
       const id = useCartStore.getState().items[0].id;
       expect(id).toMatch(/^constructor-\d+-.+$/);
@@ -301,7 +317,7 @@ describe('cart-store', () => {
         pricePerKg: 200000,
         weight: 1000,
         price: 200000,
-        cakeConfig: { shape: 'round', tierCount: 1, layers: [], coating: { type: 'cream', coatingId: 'c1', color: '#fff' }, decorations: [] },
+        cakeConfig: makeCakeConfig(),
       }));
       useCartStore.getState().updateWeight('prod-w5', 2000);
       // updateWeight ищет только type='product', constructor не трогает
@@ -329,7 +345,7 @@ describe('cart-store', () => {
       useCartStore.getState().addItem(makeItem({
         type: 'constructor',
         productId: 'prod-ctor',
-        cakeConfig: { shape: 'round', tierCount: 1, layers: [], coating: { type: 'cream', coatingId: 'c1', color: '#fff' }, decorations: [] },
+        cakeConfig: makeCakeConfig(),
       }));
       const item = useCartStore.getState().getItemByProductId('prod-ctor');
       expect(item).toBeNull();

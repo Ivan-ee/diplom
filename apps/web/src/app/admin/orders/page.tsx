@@ -68,6 +68,13 @@ const SHAPE_LABELS: Record<string, string> = {
   heart:  'Сердце',
 };
 
+function formatDecoration(value: string | { decorationId: string; quantity: number }): string {
+  if (typeof value === 'string') return value;
+
+  const label = `#${value.decorationId.slice(0, 8)}`;
+  return value.quantity > 1 ? `${label} × ${value.quantity}` : label;
+}
+
 // ---------- Helpers ----------
 
 function formatDate(iso: string): string {
@@ -143,10 +150,14 @@ function ExpandedOrderRow({ order }: { order: AdminOrder }) {
                               Надпись: «{(item as OrderItemConstructor).cakeConfig!.inscription}»
                             </li>
                           )}
-                          {(item as OrderItemConstructor).cakeConfig?.decorations?.length ? (
+                          {(item as OrderItemConstructor).cakeConfig?.decorations?.length ||
+                          (item as OrderItemConstructor).cakeConfig?.hasCandle ? (
                             <li>
                               Декор:{' '}
-                              {(item as OrderItemConstructor).cakeConfig!.decorations!.join(', ')}
+                              {[
+                                ...((item as OrderItemConstructor).cakeConfig!.decorations ?? []).map(formatDecoration),
+                                ...((item as OrderItemConstructor).cakeConfig!.hasCandle ? ['свеча'] : []),
+                              ].join(', ')}
                             </li>
                           ) : null}
                         </ul>

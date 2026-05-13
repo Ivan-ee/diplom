@@ -12,8 +12,16 @@ const resetStore = () => useConstructorStore.setState({
   shape: 'circle',
   tierCount: 1,
   layers: [{ baseId: '', fillingId: '', weight: 1000 }],
-  coating: { type: 'cream', coatingId: '', color: '#FFFFFF', gradient: null, drips: null },
-  decorations: [],
+  coating: {
+    type: 'cream',
+    coatingId: '',
+    glazeVariant: 'cream',
+    withDrips: false,
+    colorMode: 'solid',
+  },
+  activeDecorations: [],
+  selectedDecorations: [],
+  hasCandle: false,
   inscription: '',
   ingredients: null,
   totalPrice: 0,
@@ -34,7 +42,9 @@ describe('constructor-store', () => {
     expect(state.tierCount).toBe(1);
     expect(state.layers).toHaveLength(1);
     expect(state.layers[0]).toMatchObject({ baseId: '', fillingId: '', weight: 1000 });
-    expect(state.decorations).toEqual([]);
+    expect(state.activeDecorations).toEqual([]);
+    expect(state.selectedDecorations).toEqual([]);
+    expect(state.hasCandle).toBe(false);
     expect(state.inscription).toBe('');
     expect(state.ingredients).toBeNull();
     expect(state.totalPrice).toBe(0);
@@ -57,8 +67,15 @@ describe('constructor-store', () => {
       shape: 'circle',
       tierCount: 1,
       layers: [{ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1000 }],
-      coating: { type: 'cream', coatingId: 'coating-cream', color: '#FFFFFF', gradient: null, drips: null },
-      decorations: [],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+      },
+      activeDecorations: [],
+      selectedDecorations: [],
     });
     useConstructorStore.getState().recalculatePrice();
     const priceForCircle = useConstructorStore.getState().totalPrice;
@@ -127,8 +144,15 @@ describe('constructor-store', () => {
       shape: 'circle',
       tierCount: 1,
       layers: [{ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1000 }],
-      coating: { type: 'cream', coatingId: 'coating-cream', color: '#FFFFFF', gradient: null, drips: null },
-      decorations: [],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+      },
+      activeDecorations: [],
+      selectedDecorations: [],
     });
 
     useConstructorStore.getState().recalculatePrice();
@@ -147,8 +171,15 @@ describe('constructor-store', () => {
       shape: 'heart',
       tierCount: 1,
       layers: [{ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1000 }],
-      coating: { type: 'cream', coatingId: 'coating-cream', color: '#FFFFFF', gradient: null, drips: null },
-      decorations: [],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+      },
+      activeDecorations: [],
+      selectedDecorations: [],
     });
 
     useConstructorStore.getState().recalculatePrice();
@@ -172,8 +203,15 @@ describe('constructor-store', () => {
         { baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1000 },
         { baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1000 },
       ],
-      coating: { type: 'cream', coatingId: 'coating-cream', color: '#FFFFFF', gradient: null, drips: null },
-      decorations: [],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+      },
+      activeDecorations: [],
+      selectedDecorations: [],
     });
 
     useConstructorStore.getState().recalculatePrice();
@@ -194,11 +232,17 @@ describe('constructor-store', () => {
       shape: 'circle',
       tierCount: 1,
       layers: [{ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1000 }],
-      coating: { type: 'cream', coatingId: 'coating-cream', color: '#FFFFFF', gradient: null, drips: null },
-      decorations: [
-        { id: 'd1', decorationId: 'decor-strawberry', position: [0, 0, 0], normal: [0, 1, 0] },
-        { id: 'd2', decorationId: 'decor-strawberry', position: [1, 0, 0], normal: [0, 1, 0] },
-        { id: 'd3', decorationId: 'decor-rose', position: [2, 0, 0], normal: [0, 1, 0] },
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+      },
+      activeDecorations: ['blueberry', 'cream'],
+      selectedDecorations: [
+        { variantId: 'blueberry', decorationId: 'decor-strawberry', quantity: 2 },
+        { variantId: 'cream', decorationId: 'decor-rose', quantity: 1 },
       ],
     });
 
@@ -227,7 +271,8 @@ describe('constructor-store', () => {
     expect(state.layers).toHaveLength(1);
     expect(state.layers[0]).toMatchObject({ baseId: '', fillingId: '', weight: 1000 });
     expect(state.inscription).toBe('');
-    expect(state.decorations).toEqual([]);
+    expect(state.activeDecorations).toEqual([]);
+    expect(state.selectedDecorations).toEqual([]);
     expect(state.totalPrice).toBe(0);
     expect(state.currentStep).toBe(1);
   });

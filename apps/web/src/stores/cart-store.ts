@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export interface CakeConfigDecorationSelection {
+  variantId: string;
+  decorationId: string;
+  quantity: number;
+}
+
 export interface CakeConfigData {
   shape: string;
   tierCount: number;
@@ -15,6 +21,7 @@ export interface CakeConfigData {
     secondaryGlazeVariant?: string;
   };
   activeDecorations: string[];
+  selectedDecorations?: CakeConfigDecorationSelection[];
   hasCandle: boolean;
   inscription?: string;
 }
@@ -69,7 +76,7 @@ interface CartState {
 }
 
 // Версия схемы persist — увеличить при изменении формата CartItem
-const CART_VERSION = 1;
+const CART_VERSION = 2;
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -198,16 +205,28 @@ export const useCartStore = create<CartState>()(
       name: 'bakery-cart',
       version: CART_VERSION,
       migrate: (persistedState, version) => {
-        const state = persistedState as { items: CartItem[] };
+        const state = (persistedState ?? { items: [] }) as { items: CartItem[] };
 
-        if (version === CART_VERSION) return state;
+        const itemsWithConstructorDecorations = (state.items ?? []).map((item) => {
+          if (item.type !== 'constructor' || !item.cakeConfig) return item;
+
+          return {
+            ...item,
+            cakeConfig: {
+              ...item.cakeConfig,
+              selectedDecorations: item.cakeConfig.selectedDecorations ?? [],
+            },
+          };
+        });
+
+        if (version === CART_VERSION) return { ...state, items: itemsWithConstructorDecorations };
 
         // v0 → v1: дедупликация product по productId, стабилизация ID,
         // приблизительное восстановление pricePerKg
         const seen = new Set<string>();
         const migratedItems: CartItem[] = [];
 
-        for (const item of state.items ?? []) {
+        for (const item of itemsWithConstructorDecorations) {
           if (item.type === 'constructor') {
             migratedItems.push(item);
             continue;
