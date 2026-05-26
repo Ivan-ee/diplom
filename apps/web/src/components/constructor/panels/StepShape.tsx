@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useConstructorStore, type CakeShape, type TierCount } from '@/stores/constructor-store';
+import { isFullTierVisualKeyAvailable } from '@/lib/constructor/model-registry';
 import { cn } from '@/lib/utils';
 
 const SHAPE_ICONS: Record<CakeShape, React.ReactNode> = {
@@ -46,6 +47,7 @@ export function StepShape() {
   const setShape = useConstructorStore((s) => s.setShape);
   const setTierCount = useConstructorStore((s) => s.setTierCount);
   const ingredients = useConstructorStore((s) => s.ingredients);
+  const bases = ingredients?.bases ?? [];
 
   const getTierSurcharge = (tiers: number): number => {
     const found = ingredients?.tierSurcharges?.find((s) => s.tierCount === tiers);
@@ -66,18 +68,24 @@ export function StepShape() {
         >
           {SHAPES.map(({ id, label, description }) => {
             const isSelected = shape === id;
+            const isAvailable = !ingredients || bases.some(
+              (base) => base.available && isFullTierVisualKeyAvailable(id, base.visualKey),
+            );
             return (
               <motion.button
                 key={id}
                 variants={itemVariants}
                 onClick={() => setShape(id)}
+                disabled={!isAvailable}
                 className={cn(
-                  'relative flex flex-col items-center gap-2 p-4 rounded-[var(--radius-control)] border cursor-pointer transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
+                  'relative flex flex-col items-center gap-2 p-4 rounded-[var(--radius-control)] border transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                   isSelected
                     ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5 shadow-sm'
-                    : 'border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
+                    : isAvailable
+                      ? 'cursor-pointer border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
+                      : 'cursor-not-allowed border-[var(--border-default)] bg-[var(--surface-elevated)] opacity-45'
                 )}
-                whileTap={{ scale: 0.97 }}
+                whileTap={isAvailable ? { scale: 0.97 } : undefined}
               >
                 {isSelected && (
                   <motion.div
@@ -97,7 +105,7 @@ export function StepShape() {
                     {label}
                   </p>
                   <p className="text-[10px] text-[var(--color-graphite-light)] mt-0.5 leading-tight">
-                    {description}
+                    {isAvailable ? description : 'Нужна чистая full-tier GLB-модель'}
                   </p>
                 </div>
               </motion.button>

@@ -1,6 +1,5 @@
 import {
   getDecoModelPath,
-  getFillModelPath,
   getFullTierModelPath,
   getGlazeModelPath,
   getModelVisualHeight,
@@ -12,8 +11,6 @@ export const DECORATION_LIFT = 0.014;
 
 export interface StackTierInput {
   baseVariant: string;
-  fillVariant: string;
-  showFill?: boolean;
 }
 
 export interface StackLayoutInput {
@@ -33,7 +30,6 @@ export interface StackRange {
 export interface StackTierLayout extends StackRange {
   index: number;
   layerPath: string;
-  fillPath: string | null;
   isFullTier: true;
 }
 
@@ -80,10 +76,8 @@ export function buildCakeStackLayout(input: StackLayoutInput): CakeStackLayout {
     const layerPath = getFullTierModelPath(input.shape, tier.baseVariant);
     if (!layerPath) return;
 
-    const fillPath = tier.showFill === false ? null : getFillModelPath(input.shape, tier.fillVariant);
     const layerHeight = modelHeight(layerPath);
-    const fillHeight = modelHeight(fillPath);
-    const height = Math.max(layerHeight, fillHeight);
+    const height = layerHeight;
     const topY = nextBottomY + height;
 
     tierLayouts.push({
@@ -92,7 +86,6 @@ export function buildCakeStackLayout(input: StackLayoutInput): CakeStackLayout {
       topY,
       height,
       layerPath,
-      fillPath,
       isFullTier: true,
     });
 

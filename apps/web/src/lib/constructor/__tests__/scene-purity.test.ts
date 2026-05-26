@@ -67,4 +67,15 @@ describe('constructor scene GLB-only purity', () => {
 
     expect(failures).toEqual([]);
   });
+
+  it('does not render filling GLB files in the assembled cake scene', () => {
+    const tierSource = readSceneSources().find(
+      ({ relativePath }) => relativePath === 'src/components/constructor/scene/GlbTier.tsx',
+    )?.source;
+
+    expect(tierSource).toBeDefined();
+    expect(tierSource).not.toMatch(/\bgetFillModelPath\b/);
+    expect(tierSource).not.toMatch(/\bfillPath\b/);
+    expect(tierSource).not.toMatch(/\bfillGltf\b|\bclonedFill\b/);
+  });
 });

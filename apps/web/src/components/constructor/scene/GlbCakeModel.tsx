@@ -25,16 +25,12 @@ interface CakeModelGroupProps {
   coating: CakeCoating;
   decorationInstances: DecorationInstance[];
   ingredients: ConstructorCatalog | null;
+  showCoating: boolean;
 }
 
 function getBaseVariant(baseId: string, ingredients: ConstructorCatalog | null): string {
   const base = ingredients?.bases.find((b) => b.id === baseId);
   return base?.visualKey ?? 'default';
-}
-
-function getFillVariant(fillingId: string, ingredients: ConstructorCatalog | null): string {
-  const filling = ingredients?.fillings.find((f) => f.id === fillingId);
-  return filling?.visualKey ?? 'cream';
 }
 
 function CakeModelGroup({
@@ -43,6 +39,7 @@ function CakeModelGroup({
   coating,
   decorationInstances,
   ingredients,
+  showCoating,
 }: CakeModelGroupProps) {
   const visualTiers = useMemo(
     () =>
@@ -50,8 +47,6 @@ function CakeModelGroup({
         const layer = layers[i];
         return {
           baseVariant: getBaseVariant(layer?.baseId ?? '', ingredients),
-          fillVariant: getFillVariant(layer?.fillingId ?? '', ingredients),
-          showFill: i < config.tierCount - 1,
         };
       }),
     [config.tierCount, ingredients, layers],
@@ -62,35 +57,32 @@ function CakeModelGroup({
       buildCakeStackLayout({
         shape: config.shape,
         tiers: visualTiers,
-        glazeVariant: coating.glazeVariant,
-        withDrips: coating.withDrips,
+        glazeVariant: showCoating ? coating.glazeVariant : '',
+        withDrips: showCoating ? coating.withDrips : false,
         decorations: decorationInstances.map((instance) => ({
           instanceId: instance.instanceId,
           variantId: instance.visualKey,
           position: instance.position,
         })),
       }),
-    [decorationInstances, coating.glazeVariant, coating.withDrips, config.shape, visualTiers],
+    [decorationInstances, coating.glazeVariant, coating.withDrips, config.shape, showCoating, visualTiers],
   );
 
   return (
     <>
       {layout.tiers.map((tier) => {
         const visualTier = visualTiers[tier.index];
-        const showFill = tier.index < config.tierCount - 1;
         return (
           <GlbTier
             key={tier.index}
             shape={config.shape}
             baseVariant={visualTier?.baseVariant ?? 'default'}
-            fillVariant={visualTier?.fillVariant ?? 'cream'}
-            showFill={showFill}
             yOffset={tier.bottomY}
           />
         );
       })}
 
-      {layout.glaze && (
+      {showCoating && layout.glaze && (
         <GlbGlaze
           shape={config.shape}
           glazeVariant={coating.glazeVariant}
@@ -115,6 +107,7 @@ function CakeModelGroup({
 }
 
 export function GlbCakeModel() {
+  const currentStep = useConstructorStore((s) => s.currentStep);
   const shape = useConstructorStore((s) => s.shape);
   const tierCount = useConstructorStore((s) => s.tierCount);
   const layers = useConstructorStore((s) => s.layers);
@@ -137,6 +130,7 @@ export function GlbCakeModel() {
       coating={normalizedCoating}
       decorationInstances={normalizedDecorationInstances}
       ingredients={ingredients}
+      showCoating={currentStep >= 4}
     />
   );
 }

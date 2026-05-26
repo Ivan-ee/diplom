@@ -35,8 +35,28 @@ function ConstructorCommandBar() {
   const setViewMode = useConstructorStore((s) => s.setViewMode);
   const reset = useConstructorStore((s) => s.reset);
 
+  const isPresetAvailable = (preset: (typeof PRESETS)[number]) => {
+    if (!ingredients) return false;
+
+    const shape = preset.shape as CakeShape;
+    const baseKeys = 'bases' in preset ? preset.bases : [preset.base];
+    const hasBase = baseKeys.some((visualKey) =>
+      ingredients.bases.some(
+        (item) =>
+          item.available &&
+          item.visualKey === visualKey &&
+          isFullTierVisualKeyAvailable(shape, item.visualKey),
+      ),
+    );
+    const hasCoating = ingredients.coatings.some(
+      (item) => item.available && item.visualKey === preset.coating && isGlazeVisualKeyAvailable(shape, item.visualKey),
+    );
+
+    return hasBase && hasCoating;
+  };
+
   const applyPreset = (preset: (typeof PRESETS)[number]) => {
-    if (!ingredients) return;
+    if (!ingredients || !isPresetAvailable(preset)) return;
 
     const shape = preset.shape as CakeShape;
     const tierCount = preset.tierCount as TierCount;
@@ -152,16 +172,26 @@ function ConstructorCommandBar() {
       </div>
 
       <div className="flex min-w-0 flex-1 items-center justify-center gap-2 overflow-x-auto">
-        {PRESETS.map((preset) => (
-          <button
-            key={preset.label}
-            type="button"
-            onClick={() => applyPreset(preset)}
-            className="whitespace-nowrap rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-white/70 transition hover:border-[#d8b37a]/40 hover:text-white"
-          >
-            {preset.label}
-          </button>
-        ))}
+        {PRESETS.map((preset) => {
+          const available = isPresetAvailable(preset);
+          return (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => applyPreset(preset)}
+              disabled={!available}
+              title={available ? preset.label : 'Для пресета нужна чистая full-tier GLB-модель'}
+              className={cn(
+                'whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition',
+                available
+                  ? 'border-white/10 bg-white/[0.04] text-white/70 hover:border-[#d8b37a]/40 hover:text-white'
+                  : 'cursor-not-allowed border-white/5 bg-white/[0.02] text-white/25',
+              )}
+            >
+              {preset.label}
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex items-center gap-2">
@@ -212,12 +242,12 @@ export function ConstructorLayout() {
       </div>
 
       <div className="flex h-[calc(100dvh-64px)] flex-col overflow-hidden lg:hidden">
-        <div className="relative h-[55%] flex-shrink-0 border-b border-[var(--color-champagne)] bg-gradient-to-b from-[var(--color-warm-ivory)] to-[var(--color-milk-white)]">
+        <div className="relative h-[34dvh] min-h-[220px] max-h-[320px] flex-shrink-0 border-b border-[var(--color-champagne)] bg-gradient-to-b from-[var(--color-warm-ivory)] to-[var(--color-milk-white)]">
           <CakeViewport className="h-full w-full" />
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <SettingsPanel />
+          <SettingsPanel showSpecSummary={false} />
         </div>
       </div>
     </>

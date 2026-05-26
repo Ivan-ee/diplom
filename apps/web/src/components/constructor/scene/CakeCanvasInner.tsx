@@ -8,6 +8,10 @@ import { GlbCakeModel } from './GlbCakeModel';
 import { glRef } from '@/lib/screenshot-ref';
 import { normalizeCoating, useConstructorStore } from '@/stores/constructor-store';
 import { buildCakeStackLayout } from '@/lib/constructor/geometry';
+import {
+  DECORATION_POINTER_DROP_EVENT,
+  type DecorationPointerDropDetail,
+} from '@/lib/constructor/decoration-drag';
 
 /** Registers the WebGL renderer into the module-level glRef so that
  *  components outside the R3F tree (e.g. StepNavigation) can take screenshots. */
@@ -36,10 +40,8 @@ function DecorationDropTarget() {
   const decorationBaseY = useMemo(() => {
     const layout = buildCakeStackLayout({
       shape,
-      tiers: safeLayers.slice(0, tierCount).map((layer, index) => ({
+      tiers: safeLayers.slice(0, tierCount).map((layer) => ({
         baseVariant: ingredients?.bases.find((base) => base.id === layer.baseId)?.visualKey ?? 'default',
-        fillVariant: ingredients?.fillings.find((filling) => filling.id === layer.fillingId)?.visualKey ?? 'cream',
-        showFill: index < tierCount - 1,
       })),
       glazeVariant: safeCoating.glazeVariant,
       withDrips: safeCoating.withDrips,
@@ -55,28 +57,21 @@ function DecorationDropTarget() {
     const pointer = new THREE.Vector2();
     const point = new THREE.Vector3();
 
-    const handleDragOver = (event: DragEvent) => {
-      event.preventDefault();
-    };
-
-    const handleDrop = (event: DragEvent) => {
-      event.preventDefault();
-      const raw =
-        event.dataTransfer?.getData('application/x-bakery-decoration') ||
-        event.dataTransfer?.getData('text/plain');
-      if (!raw) return;
-
-      let payload: { visualKey?: string; decorationId?: string };
-      try {
-        payload = JSON.parse(raw) as { visualKey?: string; decorationId?: string };
-      } catch {
-        return;
-      }
+    const placeDecoration = (payload: DecorationPointerDropDetail) => {
       if (!payload.visualKey) return;
 
       const rect = canvas.getBoundingClientRect();
-      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      pointer.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
+      if (
+        payload.clientX < rect.left ||
+        payload.clientX > rect.right ||
+        payload.clientY < rect.top ||
+        payload.clientY > rect.bottom
+      ) {
+        return;
+      }
+
+      pointer.x = ((payload.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -(((payload.clientY - rect.top) / rect.height) * 2 - 1);
       raycaster.setFromCamera(pointer, camera);
 
       if (!raycaster.ray.intersectPlane(plane, point)) return;
@@ -88,12 +83,16 @@ function DecorationDropTarget() {
       });
     };
 
-    canvas.addEventListener('dragover', handleDragOver);
-    canvas.addEventListener('drop', handleDrop);
+    const handlePointerDrop = (event: Event) => {
+      const detail = (event as CustomEvent<DecorationPointerDropDetail>).detail;
+      if (!detail) return;
+      placeDecoration(detail);
+    };
+
+    window.addEventListener(DECORATION_POINTER_DROP_EVENT, handlePointerDrop);
 
     return () => {
-      canvas.removeEventListener('dragover', handleDragOver);
-      canvas.removeEventListener('drop', handleDrop);
+      window.removeEventListener(DECORATION_POINTER_DROP_EVENT, handlePointerDrop);
     };
   }, [addDecorationInstance, camera, decorationBaseY, gl.domElement, raycaster]);
 
@@ -108,7 +107,7 @@ export default function CakeCanvasInner() {
         preserveDrawingBuffer: true,
         antialias: true,
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 0.9,
+        toneMappingExposure: 1.25,
       }}
       camera={{ position: [0, 3, 6], fov: 45 }}
       shadows

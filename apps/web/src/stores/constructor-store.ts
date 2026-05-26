@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, subscribeWithSelector } from 'zustand/middleware';
 import { getMockIngredients } from '@/lib/constructor/mock-ingredients';
 import {
+  getAvailableGlazes,
   getGlazeColor,
   isDecoVisualKeyAvailable,
   isFillVisualKeyAvailable,
@@ -232,6 +233,7 @@ const DEFAULT_COATING: CakeCoating = {
 };
 
 const DEFAULT_DECORATION_POSITION: DecorationPosition = { x: 0, y: 0, z: 0 };
+const SHAPE_ORDER: CakeShape[] = ['circle', 'square', 'heart'];
 
 function asArray<T>(value: T[] | null | undefined): T[] {
   return Array.isArray(value) ? value : [];
@@ -416,6 +418,75 @@ function findCompatibleBaseId(
   return bases.find(isCompatible)?.id ?? '';
 }
 
+function shapeHasCompatibleBase(bases: IngredientBase[], shape: CakeShape): boolean {
+  const registryShape = shape as RegistryCakeShape;
+  return bases.some(
+    (base) => base.available && isFullTierVisualKeyAvailable(registryShape, base.visualKey),
+  );
+}
+
+function catalogShapeOrder(ingredients: ConstructorCatalog): CakeShape[] {
+  const catalogShapes = asArray(ingredients.shapes)
+    .map((shape) => shape.id)
+    .filter((shape): shape is CakeShape => SHAPE_ORDER.includes(shape));
+
+  return catalogShapes.length > 0 ? catalogShapes : SHAPE_ORDER;
+}
+
+function findCompatibleShape(
+  bases: IngredientBase[],
+  preferredShape: CakeShape,
+  ingredients: ConstructorCatalog,
+): CakeShape {
+  if (shapeHasCompatibleBase(bases, preferredShape)) return preferredShape;
+  return catalogShapeOrder(ingredients).find((shape) => shapeHasCompatibleBase(bases, shape)) ?? preferredShape;
+}
+
+function findSecondaryGlazeVariant(
+  shape: CakeShape,
+  primaryVariant: string,
+  preferredVariant?: string,
+): string | undefined {
+  if (
+    preferredVariant &&
+    preferredVariant !== primaryVariant &&
+    isGlazeVisualKeyAvailable(shape as RegistryCakeShape, preferredVariant)
+  ) {
+    return preferredVariant;
+  }
+
+  return getAvailableGlazes(shape as RegistryCakeShape).find((option) => option.id !== primaryVariant)?.id;
+}
+
+function ensureGradientVisual(coating: CakeCoating, shape: CakeShape): CakeCoating {
+  const normalized = normalizeCoating(coating);
+  if (normalized.colorMode !== 'gradient' && normalized.visual.mode !== 'gradient') {
+    return normalized;
+  }
+
+  const secondaryGlazeVariant = findSecondaryGlazeVariant(
+    shape,
+    normalized.glazeVariant,
+    normalized.secondaryGlazeVariant,
+  );
+  const secondaryColor = secondaryGlazeVariant
+    ? getGlazeColor(secondaryGlazeVariant)
+    : normalized.visual.secondaryColor;
+
+  return {
+    ...normalized,
+    colorMode: 'gradient',
+    secondaryGlazeVariant,
+    visual: {
+      ...normalized.visual,
+      mode: 'gradient',
+      primaryColor: getGlazeColor(normalized.glazeVariant),
+      ...(secondaryColor ? { secondaryColor } : {}),
+      splashes: false,
+    },
+  };
+}
+
 function findCompatibleFillingId(
   fillings: IngredientFilling[],
   shape: CakeShape,
@@ -527,7 +598,7 @@ function repairSelectionsForCompatibility(
   ingredients: ConstructorCatalog | null,
 ): Pick<
   ConstructorState,
-  'layers' | 'coating' | 'activeDecorations' | 'selectedDecorations' | 'decorationInstances' | 'hasCandle'
+  'shape' | 'layers' | 'coating' | 'activeDecorations' | 'selectedDecorations' | 'decorationInstances' | 'hasCandle'
 > {
   const normalizedLayers = buildLayers(state.tierCount, asArray(state.layers));
   const normalizedCoating = normalizeCoating(state.coating);
@@ -537,6 +608,7 @@ function repairSelectionsForCompatibility(
 
   if (!ingredients) {
     return {
+      shape: state.shape,
       layers: normalizedLayers,
       coating: normalizedCoating,
       activeDecorations: normalizedActiveDecorations,
@@ -548,23 +620,25 @@ function repairSelectionsForCompatibility(
     };
   }
 
+  const compatibleShape = findCompatibleShape(ingredients.bases, state.shape, ingredients);
   const layers = normalizedLayers.map((layer, index) => ({
     ...layer,
     baseId: findCompatibleBaseId(
       ingredients.bases,
-      state.shape,
+      compatibleShape,
       layer.baseId,
     ),
-    fillingId: findCompatibleFillingId(ingredients.fillings, state.shape, layer.fillingId),
+    fillingId: findCompatibleFillingId(ingredients.fillings, compatibleShape, layer.fillingId),
   }));
   const compatibleCoating = findCompatibleCoating(
     ingredients.coatings,
-    state.shape,
+    compatibleShape,
     normalizedCoating.coatingId,
     normalizedCoating.glazeVariant,
   );
-  const coating = compatibleCoating
-    ? normalizeCoating({
+  const coating = ensureGradientVisual(
+    compatibleCoating
+      ? normalizeCoating({
         ...normalizedCoating,
         type: compatibleCoating.type,
         coatingId: compatibleCoating.id,
@@ -574,16 +648,19 @@ function repairSelectionsForCompatibility(
           primaryColor: getGlazeColor(compatibleCoating.visualKey),
         },
       })
-    : normalizedCoating;
+      : normalizedCoating,
+    compatibleShape,
+  );
   const decorations = repairDecorationsForShape(
     normalizedActiveDecorations,
     normalizedSelectedDecorations,
     normalizedDecorationInstances,
     ingredients.decorations,
-    state.shape,
+    compatibleShape,
   );
 
   return {
+    shape: compatibleShape,
     layers,
     coating,
     activeDecorations: decorations.activeDecorations,
@@ -594,14 +671,21 @@ function repairSelectionsForCompatibility(
 }
 
 function applyDefaultSelections(
-  state: Pick<ConstructorState, 'coating' | 'layers'>,
+  state: Pick<ConstructorState, 'shape' | 'coating' | 'layers'>,
   ingredients: ConstructorCatalog,
 ): Partial<ConstructorState> {
   const updates: Partial<ConstructorState> = {};
   const normalizedCoating = normalizeCoating(state.coating);
+  const compatibleShape = findCompatibleShape(ingredients.bases, state.shape, ingredients);
+
+  if (compatibleShape !== state.shape) {
+    updates.shape = compatibleShape;
+  }
 
   if (!normalizedCoating.coatingId && ingredients.coatings.length > 0) {
-    const defaultCoating = ingredients.coatings.find((c) => c.type === 'cream') ?? ingredients.coatings[0];
+    const defaultCoating = findCompatibleCoating(ingredients.coatings, compatibleShape) ??
+      ingredients.coatings.find((c) => c.type === 'cream') ??
+      ingredients.coatings[0];
     updates.coating = {
       ...normalizedCoating,
       coatingId: defaultCoating.id,
@@ -617,8 +701,8 @@ function applyDefaultSelections(
   if (layersForDefaults[0] && !layersForDefaults[0].baseId && ingredients.bases.length > 0) {
     const layers = layersForDefaults.map((l, i) => ({
       ...l,
-      baseId: l.baseId || (ingredients.bases[i % ingredients.bases.length]?.id ?? ''),
-      fillingId: l.fillingId || (ingredients.fillings[0]?.id ?? ''),
+      baseId: l.baseId || findCompatibleBaseId(ingredients.bases, compatibleShape),
+      fillingId: l.fillingId || findCompatibleFillingId(ingredients.fillings, compatibleShape),
     }));
     updates.layers = layers;
   }
@@ -750,7 +834,6 @@ export const useConstructorStore = create<ConstructorState>()(
       setShape: (shape) => {
         const current = get();
         set({
-          shape,
           ...repairSelectionsForCompatibility({ ...current, shape }, current.ingredients),
         });
         get().recalculatePrice();
@@ -826,7 +909,7 @@ export const useConstructorStore = create<ConstructorState>()(
             isGlazeVisualKeyAvailable(shape as RegistryCakeShape, c.visualKey),
         );
         set((state) => ({
-          coating: {
+          coating: ensureGradientVisual({
             ...normalizeCoating(state.coating),
             type,
             coatingId: matchingCoating?.id ?? normalizeCoating(state.coating).coatingId,
@@ -835,7 +918,7 @@ export const useConstructorStore = create<ConstructorState>()(
               ...normalizeCoating(state.coating).visual,
               primaryColor: getGlazeColor(matchingCoating?.visualKey ?? normalizeCoating(state.coating).glazeVariant),
             },
-          },
+          }, shape),
         }));
         get().recalculatePrice();
         markPriceStale(set);
@@ -851,7 +934,7 @@ export const useConstructorStore = create<ConstructorState>()(
           return;
         }
         set((state) => ({
-          coating: {
+          coating: ensureGradientVisual({
             ...normalizeCoating(state.coating),
             coatingId: id,
             glazeVariant: coating?.visualKey ?? normalizeCoating(state.coating).glazeVariant,
@@ -860,7 +943,7 @@ export const useConstructorStore = create<ConstructorState>()(
               ...normalizeCoating(state.coating).visual,
               primaryColor: getGlazeColor(coating?.visualKey ?? normalizeCoating(state.coating).glazeVariant),
             },
-          },
+          }, shape),
         }));
         get().recalculatePrice();
         markPriceStale(set);
@@ -873,7 +956,7 @@ export const useConstructorStore = create<ConstructorState>()(
           (coating) => coating.available && coating.visualKey === variant,
         );
         set((state) => ({
-          coating: {
+          coating: ensureGradientVisual({
             ...normalizeCoating(state.coating),
             glazeVariant: variant,
             coatingId: matchingCoating?.id ?? normalizeCoating(state.coating).coatingId,
@@ -882,7 +965,7 @@ export const useConstructorStore = create<ConstructorState>()(
               ...normalizeCoating(state.coating).visual,
               primaryColor: getGlazeColor(variant),
             },
-          },
+          }, shape),
         }));
         markPriceStale(set);
       },
@@ -893,8 +976,9 @@ export const useConstructorStore = create<ConstructorState>()(
       },
 
       setColorMode: (mode) => {
+        const shape = get().shape;
         set((state) => ({
-          coating: {
+          coating: ensureGradientVisual({
             ...normalizeCoating(state.coating),
             colorMode: mode,
             withDrips: mode === 'splashes',
@@ -903,12 +987,14 @@ export const useConstructorStore = create<ConstructorState>()(
               mode,
               splashes: mode === 'splashes',
             },
-          },
+          }, shape),
         }));
         markPriceStale(set);
       },
 
       setSecondaryGlazeVariant: (variant) => {
+        const shape = get().shape;
+        if (!isGlazeVisualKeyAvailable(shape as RegistryCakeShape, variant)) return;
         set((state) => ({
           coating: {
             ...normalizeCoating(state.coating),
@@ -1173,7 +1259,8 @@ export const useConstructorStore = create<ConstructorState>()(
       },
 
       reset: () => {
-        set({
+        const ingredients = get().ingredients;
+        const resetState: Partial<ConstructorState> = {
           currentStep: 1,
           viewMode: 'orbit',
           shape: 'circle',
@@ -1191,7 +1278,44 @@ export const useConstructorStore = create<ConstructorState>()(
           priceError: null,
           priceVerifiedAt: null,
           lastPricingSignature: null,
+        };
+
+        if (!ingredients) {
+          set(resetState);
+          return;
+        }
+
+        const withDefaults = {
+          ...resetState,
+          ...applyDefaultSelections({
+            shape: resetState.shape ?? 'circle',
+            coating: resetState.coating ?? DEFAULT_COATING,
+            layers: resetState.layers ?? [{ ...DEFAULT_LAYER }],
+          }, ingredients),
+        } as Partial<ConstructorState>;
+        const repaired = repairSelectionsForCompatibility(
+          {
+            shape: withDefaults.shape ?? 'circle',
+            tierCount: withDefaults.tierCount ?? 1,
+            layers: withDefaults.layers ?? [{ ...DEFAULT_LAYER }],
+            coating: withDefaults.coating ?? DEFAULT_COATING,
+            activeDecorations: [],
+            selectedDecorations: [],
+            decorationInstances: [],
+          },
+          ingredients,
+        );
+
+        set({
+          ...withDefaults,
+          ...repaired,
+          pricingStatus: 'idle',
+          priceBreakdown: null,
+          priceError: null,
+          priceVerifiedAt: null,
+          lastPricingSignature: null,
         });
+        get().recalculatePrice();
       },
 
       getConfig: () => {

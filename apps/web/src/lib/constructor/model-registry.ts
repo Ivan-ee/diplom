@@ -51,7 +51,15 @@ const LAYER_FILES: Record<CakeShape, Partial<Record<LayerVariant, string>>> = {
   },
 };
 
-const BIG_LAYER_FILES: Record<CakeShape, Partial<Record<BigLayerVariant, string>>> = {
+const CLEAN_TIER_BODY_FILES: Record<CakeShape, Partial<Record<LayerVariant, string>>> = {
+  circle: {},
+  square: {
+    default: 'CakeBigLayer.glb',
+  },
+  heart: {},
+};
+
+const BAKED_COATED_TIER_FILES: Record<CakeShape, Partial<Record<BigLayerVariant, string>>> = {
   circle: {
     cherry: 'CakeBigLayerCherry.glb',
     choco: 'CakeBigLayerChoco.glb',
@@ -71,6 +79,8 @@ const BIG_LAYER_FILES: Record<CakeShape, Partial<Record<BigLayerVariant, string>
     pink: 'CakeBigLayerPink.glb',
   },
 };
+
+export type TierModelRole = 'tierBody' | 'bakedCoatedTier';
 
 // --- Fills ------------------------------------------------------------------
 
@@ -292,8 +302,8 @@ export function getLayerModelPath(
   const folder = SHAPE_FOLDER[shape];
 
   if (isBig) {
-    const bigMap = BIG_LAYER_FILES[shape];
-    const bigFile = bigMap[baseVariant as BigLayerVariant];
+    const bigMap = CLEAN_TIER_BODY_FILES[shape];
+    const bigFile = bigMap[baseVariant as LayerVariant];
     return bigFile ? p(folder, bigFile) : null;
   }
 
@@ -310,9 +320,22 @@ export function getLayerModelPath(
  */
 export function getFullTierModelPath(shape: CakeShape, baseVariant: string): string | null {
   const folder = SHAPE_FOLDER[shape];
-  const bigFile = BIG_LAYER_FILES[shape][baseVariant as BigLayerVariant];
+  const bigFile = CLEAN_TIER_BODY_FILES[shape][baseVariant as LayerVariant];
 
   return bigFile ? p(folder, bigFile) : null;
+}
+
+export function getBakedCoatedTierModelPath(shape: CakeShape, variant: string): string | null {
+  const folder = SHAPE_FOLDER[shape];
+  const file = BAKED_COATED_TIER_FILES[shape][variant as BigLayerVariant];
+
+  return file ? p(folder, file) : null;
+}
+
+export function getTierModelRole(shape: CakeShape, variant: string): TierModelRole | null {
+  if (CLEAN_TIER_BODY_FILES[shape][variant as LayerVariant]) return 'tierBody';
+  if (BAKED_COATED_TIER_FILES[shape][variant as BigLayerVariant]) return 'bakedCoatedTier';
+  return null;
 }
 
 /**
@@ -413,7 +436,8 @@ export function getDeclaredModelPaths(): string[] {
   for (const shape of Object.keys(SHAPE_FOLDER) as CakeShape[]) {
     const folder = SHAPE_FOLDER[shape];
     for (const file of Object.values(LAYER_FILES[shape])) paths.add(p(folder, file));
-    for (const file of Object.values(BIG_LAYER_FILES[shape])) paths.add(p(folder, file));
+    for (const file of Object.values(CLEAN_TIER_BODY_FILES[shape])) paths.add(p(folder, file));
+    for (const file of Object.values(BAKED_COATED_TIER_FILES[shape])) paths.add(p(folder, file));
     for (const file of Object.values(FILL_FILES[shape])) paths.add(p(folder, file));
     for (const [base, drips] of Object.values(GLAZE_FILES[shape])) {
       paths.add(p(folder, base));
@@ -511,11 +535,11 @@ const LAYER_VARIANT_META: Record<LayerVariant, string> = {
 };
 
 export function getAvailableBaseVariants(shape: CakeShape): BaseVariant[] {
-  const layerMap = BIG_LAYER_FILES[shape];
+  const layerMap = CLEAN_TIER_BODY_FILES[shape];
 
-  return (Object.keys(layerMap) as BigLayerVariant[]).map((variant) => ({
+  return (Object.keys(layerMap) as LayerVariant[]).map((variant) => ({
     id: variant,
-    label: LAYER_VARIANT_META[variant as LayerVariant] ?? variant,
+    label: LAYER_VARIANT_META[variant] ?? variant,
   }));
 }
 
@@ -553,7 +577,10 @@ export function getAllLayerPaths(shape: CakeShape): string[] {
   for (const file of Object.values(LAYER_FILES[shape])) {
     if (file) paths.push(p(folder, file));
   }
-  for (const file of Object.values(BIG_LAYER_FILES[shape])) {
+  for (const file of Object.values(CLEAN_TIER_BODY_FILES[shape])) {
+    if (file) paths.push(p(folder, file));
+  }
+  for (const file of Object.values(BAKED_COATED_TIER_FILES[shape])) {
     if (file) paths.push(p(folder, file));
   }
 

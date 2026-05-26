@@ -1,14 +1,29 @@
 'use client';
 
-import { useId, type DragEvent } from 'react';
+import { useEffect, useId, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Grip, Plus, Trash2, X } from 'lucide-react';
 import { useConstructorStore } from '@/stores/constructor-store';
 import { isDecoVisualKeyAvailable, type CakeShape } from '@/lib/constructor/model-registry';
+import {
+  DECORATION_POINTER_DROP_EVENT,
+  type DecorationPointerDropDetail,
+} from '@/lib/constructor/decoration-drag';
 import { cn } from '@/lib/utils';
+
+interface PendingDecorationDrag {
+  visualKey: string;
+  decorationId: string;
+  startX: number;
+  startY: number;
+  moved: boolean;
+  cleanup: () => void;
+}
 
 export function StepDecor() {
   const inscriptionInputId = useId();
+  const pendingDragRef = useRef<PendingDecorationDrag | null>(null);
+  const suppressClickRef = useRef(false);
   const shape = useConstructorStore((s) => s.shape);
   const activeDecorations = useConstructorStore((s) => s.activeDecorations);
   const decorationInstances = useConstructorStore((s) => s.decorationInstances);
@@ -38,6 +53,8 @@ export function StepDecor() {
   const maxDecorations = getConfig()?.maxDecorations ?? 3;
   const isMaxReached = safeDecorationInstances.length >= maxDecorations;
 
+  useEffect(() => () => pendingDragRef.current?.cleanup(), []);
+
   return (
     <div className="flex flex-col gap-5">
       <div>
@@ -64,24 +81,73 @@ export function StepDecor() {
               (instance) => instance.visualKey === option.visualKey,
             ).length;
             const handleClick = () => {
+              if (suppressClickRef.current) {
+                suppressClickRef.current = false;
+                return;
+              }
               addDecorationInstance(option.visualKey, option.id);
             };
-            const handleDragStart = (event: DragEvent<HTMLButtonElement>) => {
-              const payload = JSON.stringify({
+            const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+              if (isMaxReached || event.button !== 0) return;
+
+              pendingDragRef.current?.cleanup();
+              const dragState: PendingDecorationDrag = {
                 visualKey: option.visualKey,
                 decorationId: option.id,
-              });
-              event.dataTransfer.setData('application/x-bakery-decoration', payload);
-              event.dataTransfer.setData('text/plain', payload);
-              event.dataTransfer.effectAllowed = 'copy';
+                startX: event.clientX,
+                startY: event.clientY,
+                moved: false,
+                cleanup: () => undefined,
+              };
+
+              const cleanup = () => {
+                document.removeEventListener('pointermove', handlePointerMove);
+                document.removeEventListener('pointerup', handlePointerUp);
+                document.removeEventListener('pointercancel', handlePointerCancel);
+              };
+              const handlePointerMove = (moveEvent: PointerEvent) => {
+                const distance = Math.hypot(
+                  moveEvent.clientX - dragState.startX,
+                  moveEvent.clientY - dragState.startY,
+                );
+                if (distance > 8) dragState.moved = true;
+              };
+              const handlePointerUp = (upEvent: PointerEvent) => {
+                cleanup();
+                pendingDragRef.current = null;
+
+                if (!dragState.moved) return;
+
+                suppressClickRef.current = true;
+                window.dispatchEvent(new CustomEvent<DecorationPointerDropDetail>(
+                  DECORATION_POINTER_DROP_EVENT,
+                  {
+                    detail: {
+                      visualKey: dragState.visualKey,
+                      decorationId: dragState.decorationId,
+                      clientX: upEvent.clientX,
+                      clientY: upEvent.clientY,
+                    },
+                  },
+                ));
+              };
+              const handlePointerCancel = () => {
+                cleanup();
+                pendingDragRef.current = null;
+              };
+
+              dragState.cleanup = cleanup;
+              pendingDragRef.current = dragState;
+              document.addEventListener('pointermove', handlePointerMove);
+              document.addEventListener('pointerup', handlePointerUp);
+              document.addEventListener('pointercancel', handlePointerCancel);
             };
 
             return (
               <motion.button
                 key={option.visualKey}
                 onClick={handleClick}
-                draggable={!isMaxReached}
-                onDragStartCapture={handleDragStart}
+                onPointerDown={handlePointerDown}
                 disabled={isMaxReached}
                 className={cn(
                   'relative flex flex-col items-start gap-1 p-3 rounded-xl border-2 text-left transition-all duration-150 ease-out cursor-pointer',
@@ -118,7 +184,7 @@ export function StepDecor() {
                 </span>
                 <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-[var(--color-graphite-light)]">
                   <Grip size={10} />
-                  Перетащить на торт
+                  Нажмите или перетащите на торт
                 </span>
               </motion.button>
             );

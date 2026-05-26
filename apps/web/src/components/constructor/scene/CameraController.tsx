@@ -36,10 +36,8 @@ export function CameraController() {
   const totalHeight = useMemo(() => {
     const layout = buildCakeStackLayout({
       shape,
-      tiers: safeLayers.slice(0, tierCount).map((layer, index) => ({
+      tiers: safeLayers.slice(0, tierCount).map((layer) => ({
         baseVariant: ingredients?.bases.find((base) => base.id === layer.baseId)?.visualKey ?? 'default',
-        fillVariant: ingredients?.fillings.find((filling) => filling.id === layer.fillingId)?.visualKey ?? 'cream',
-        showFill: index < tierCount - 1,
       })),
       glazeVariant: safeCoating.glazeVariant,
       withDrips: safeCoating.withDrips,

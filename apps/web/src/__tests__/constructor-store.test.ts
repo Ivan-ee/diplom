@@ -122,6 +122,33 @@ describe('constructor-store', () => {
     expect(useConstructorStore.getState().layers).toHaveLength(3);
   });
 
+  it('setColorMode gradient chooses a secondary color different from primary', () => {
+    useConstructorStore.setState({
+      ingredients: getMockIngredients(),
+      shape: 'square',
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
+      },
+    });
+
+    useConstructorStore.getState().setColorMode('gradient');
+
+    const coating = useConstructorStore.getState().coating;
+    expect(coating.colorMode).toBe('gradient');
+    expect(coating.secondaryGlazeVariant).toBeDefined();
+    expect(coating.secondaryGlazeVariant).not.toBe(coating.glazeVariant);
+    expect(coating.visual.secondaryColor).toBeDefined();
+    expect(coating.visual.secondaryColor).not.toBe(coating.visual.primaryColor);
+  });
+
   it('setTierCount back to 1 trims to one layer', () => {
     useConstructorStore.getState().setTierCount(3);
     useConstructorStore.getState().setTierCount(1);
@@ -143,7 +170,7 @@ describe('constructor-store', () => {
     expect(layers[0]).toMatchObject({ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1500 });
   });
 
-  it('setTierCount repairs bottom and upper tier bases independently for model compatibility', () => {
+  it('setTierCount repairs shape and tiers to clean full-tier model compatibility', () => {
     const ingredients = getMockIngredients();
     useConstructorStore.setState({
       ingredients,
@@ -165,9 +192,10 @@ describe('constructor-store', () => {
 
     useConstructorStore.getState().setTierCount(2);
 
+    expect(useConstructorStore.getState().shape).toBe('square');
     expect(useConstructorStore.getState().layers).toEqual([
-      { baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 },
-      { baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 },
+      { baseId: 'base-vanilla', fillingId: 'filling-caramel', weight: 1000 },
+      { baseId: 'base-vanilla', fillingId: 'filling-caramel', weight: 1000 },
     ]);
   });
 
@@ -569,5 +597,19 @@ describe('constructor-store', () => {
     expect(state.decorationInstances).toEqual([]);
     expect(state.totalPrice).toBe(0);
     expect(state.currentStep).toBe(1);
+  });
+
+  it('reset keeps the constructor on a compatible clean-tier shape when ingredients are loaded', () => {
+    useConstructorStore.setState({ ingredients: getMockIngredients() });
+
+    useConstructorStore.getState().reset();
+
+    const state = useConstructorStore.getState();
+    expect(state.shape).toBe('square');
+    expect(state.layers[0]).toMatchObject({
+      baseId: 'base-vanilla',
+      fillingId: 'filling-caramel',
+    });
+    expect(state.coating.coatingId).toBe('coating-cream');
   });
 });

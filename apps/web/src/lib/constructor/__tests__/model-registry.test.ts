@@ -4,12 +4,14 @@ import { describe, expect, it } from 'vitest';
 import { buildCakeStackLayout } from '@/lib/constructor/geometry';
 import {
   getDeclaredModelPaths,
+  getBakedCoatedTierModelPath,
   getDecoModelPath,
   getFillModelPath,
   getFullTierModelPath,
   getLayerModelPath,
   getModelVisualHeight,
   getModelYBounds,
+  getTierModelRole,
   isFullTierVisualKeyAvailable,
   isDecoVisualKeyAvailable,
   isFillVisualKeyAvailable,
@@ -32,40 +34,73 @@ describe('constructor model registry', () => {
 
   it('exposes restored valid models from the canonical Cakes archive', () => {
     expect(getLayerModelPath('circle', 'cherry', false)).toBe('/models/circle/CakeLayerCherry.glb');
-    expect(getLayerModelPath('circle', 'cherry', true)).toBe('/models/circle/CakeBigLayerCherry.glb');
-    expect(getLayerModelPath('circle', 'cream', true)).toBe('/models/circle/CakeBigLayerCream.glb');
-    expect(getLayerModelPath('circle', 'glaze', true)).toBe('/models/circle/CakeBigLayerGlaze.glb');
+    expect(getBakedCoatedTierModelPath('circle', 'cherry')).toBe('/models/circle/CakeBigLayerCherry.glb');
+    expect(getBakedCoatedTierModelPath('circle', 'cream')).toBe('/models/circle/CakeBigLayerCream.glb');
+    expect(getBakedCoatedTierModelPath('circle', 'glaze')).toBe('/models/circle/CakeBigLayerGlaze.glb');
     expect(getFillModelPath('heart', 'meringue')).toBe('/models/heart/CakeFillMeringue.glb');
   });
 
-  it('requires an explicit BigLayer model for every full tier', () => {
+  it('requires an explicit clean full-tier body model for every rendered Ярус', () => {
     expect(getFullTierModelPath('circle', 'default')).toBeNull();
     expect(isFullTierVisualKeyAvailable('circle', 'default')).toBe(false);
+    expect(getFullTierModelPath('circle', 'choco')).toBeNull();
+    expect(isFullTierVisualKeyAvailable('circle', 'choco')).toBe(false);
 
-    expect(getFullTierModelPath('circle', 'choco')).toBe('/models/circle/CakeBigLayerChoco.glb');
-    expect(isFullTierVisualKeyAvailable('circle', 'choco')).toBe(true);
+    expect(getFullTierModelPath('square', 'default')).toBe('/models/cube/CakeBigLayer.glb');
+    expect(isFullTierVisualKeyAvailable('square', 'default')).toBe(true);
+  });
+
+  it('does not expose baked-coated BigLayer GLB files as clean tier bodies', () => {
+    expect(getTierModelRole('circle', 'choco')).toBe('bakedCoatedTier');
+    expect(getTierModelRole('heart', 'pink')).toBe('bakedCoatedTier');
+    expect(getFullTierModelPath('circle', 'choco')).toBeNull();
+    expect(getLayerModelPath('circle', 'choco', true)).toBeNull();
   });
 
   it('uses the same exact BigLayer GLB for 1, 2, and 3 tier layouts', () => {
     for (const tierCount of [1, 2, 3]) {
       const layout = buildCakeStackLayout({
-        shape: 'circle',
+        shape: 'square',
         tiers: Array.from({ length: tierCount }, () => ({
-          baseVariant: 'choco',
-          fillVariant: 'cream',
+          baseVariant: 'default',
         })),
-        glazeVariant: 'milk',
+        glazeVariant: 'cream',
         withDrips: false,
         decorations: [],
       });
 
       expect(layout.tiers).toHaveLength(tierCount);
       expect(layout.tiers.map((tier) => tier.layerPath)).toEqual(
-        Array.from({ length: tierCount }, () => '/models/circle/CakeBigLayerChoco.glb'),
+        Array.from({ length: tierCount }, () => '/models/cube/CakeBigLayer.glb'),
       );
       expect(layout.tiers.every((tier) => tier.isFullTier)).toBe(true);
       expect(new Set(layout.tiers.map((tier) => tier.height)).size).toBe(1);
     }
+  });
+
+  it('does not include filling GLB geometry in assembled tier layouts', () => {
+    const layout = buildCakeStackLayout({
+      shape: 'square',
+      tiers: [
+        { baseVariant: 'default' },
+        { baseVariant: 'default' },
+        { baseVariant: 'default' },
+      ],
+      glazeVariant: '',
+      withDrips: false,
+      decorations: [],
+    });
+
+    expect(layout.tiers).toHaveLength(3);
+
+    const tierHeight = getModelVisualHeight('/models/cube/CakeBigLayer.glb') ?? 0;
+    layout.tiers.forEach((tier, index) => {
+      expect(tier).not.toHaveProperty('fillPath');
+      expect(tier.layerPath).toBe('/models/cube/CakeBigLayer.glb');
+      expect(tier.height).toBeCloseTo(tierHeight, 5);
+      expect(tier.bottomY).toBeCloseTo(index * tierHeight, 5);
+      expect(tier.topY).toBeCloseTo((index + 1) * tierHeight, 5);
+    });
   });
 
   it('has physical GLB files for every declared registry entry', () => {
@@ -104,12 +139,12 @@ describe('constructor model registry', () => {
 
   it('builds a physical stack with monotonic non-overlapping Y ranges', () => {
     const layout = buildCakeStackLayout({
-      shape: 'circle',
+      shape: 'square',
       tiers: [
-        { baseVariant: 'choco', fillVariant: 'cream' },
-        { baseVariant: 'choco', fillVariant: 'cream' },
+        { baseVariant: 'default' },
+        { baseVariant: 'default' },
       ],
-      glazeVariant: 'milk',
+      glazeVariant: 'cream',
       withDrips: false,
       decorations: ['blueberry', 'candle'],
     });
@@ -124,14 +159,15 @@ describe('constructor model registry', () => {
     expect(layout.tiers[1]).not.toHaveProperty('xzScale');
 
     const firstTierLayerHeight = getModelVisualHeight(layout.tiers[0].layerPath) ?? 0;
-    const firstTierFillHeight = getModelVisualHeight(layout.tiers[0].fillPath) ?? 0;
     const secondTierLayerHeight = getModelVisualHeight(layout.tiers[1].layerPath) ?? 0;
-    const secondTierFillHeight = getModelVisualHeight(layout.tiers[1].fillPath) ?? 0;
 
-    expect(layout.tiers[0].height).toBeCloseTo(Math.max(firstTierLayerHeight, firstTierFillHeight), 5);
-    expect(layout.tiers[1].height).toBeCloseTo(Math.max(secondTierLayerHeight, secondTierFillHeight), 5);
+    expect(layout.tiers[0]).not.toHaveProperty('fillPath');
+    expect(layout.tiers[1]).not.toHaveProperty('fillPath');
+    expect(layout.tiers[0].height).toBeCloseTo(firstTierLayerHeight, 5);
+    expect(layout.tiers[1].height).toBeCloseTo(secondTierLayerHeight, 5);
 
     expect(layout.glaze).not.toBeNull();
+    expect(layout.glaze?.path).toBe('/models/cube/GlazeCream.glb');
     expect(layout.glaze?.topY).toBeGreaterThan(layout.topTierTopY);
     expect(layout.glaze).not.toHaveProperty('xzScale');
     expect(layout.glaze?.bottomY).toBeLessThan(layout.glaze?.topY ?? 0);

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "r3f-best-practices": {
+      "source": "emalorenzo/three-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/r3f-best-practices/SKILL.md",
+      "computedHash": "d15cf5c47c35125afb4bfb079c3da515a34152f9839985065270a85e6bf36fb5"
+    },
+    "r3f-shaders": {
+      "source": "EnzeD/r3f-skills",
+      "sourceType": "github",
+      "skillPath": "skills/r3f-shaders/SKILL.md",
+      "computedHash": "50a272a45dd6874657125c06a14a2e333c616966b4d09234f6c9c8081a4dc4fe"
+    },
+    "web3d-integration-patterns": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/web3d-integration-patterns/SKILL.md",
+      "computedHash": "e411bbc6e7f7f928b6fd2f209530446cf74dfa1ff9cfd6adb17ba37317d89e9a"
+    }
+  }
+}

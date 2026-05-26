@@ -35,7 +35,13 @@ const slideVariants = {
   }),
 };
 
-export function SettingsPanel({ showFooter = true }: { showFooter?: boolean }) {
+export function SettingsPanel({
+  showFooter = true,
+  showSpecSummary = true,
+}: {
+  showFooter?: boolean;
+  showSpecSummary?: boolean;
+}) {
   const currentStep = useConstructorStore((s) => s.currentStep);
   const isLoading = useConstructorStore((s) => s.isLoading);
   const prevStepRef = useRef(currentStep);
@@ -77,7 +83,7 @@ export function SettingsPanel({ showFooter = true }: { showFooter?: boolean }) {
 
       {showFooter && (
         <div className="flex-shrink-0">
-          <CompactSpecSummary />
+          {showSpecSummary && <CompactSpecSummary />}
           <PriceCalculator />
           <StepNavigation />
         </div>
