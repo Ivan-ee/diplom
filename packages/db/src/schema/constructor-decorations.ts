@@ -6,6 +6,7 @@ export const decorCategoryEnum = pgEnum('decor_category', [
   'toppers',
   'flowers',
   'figures',
+  'candle',
 ]);
 
 export const constructorDecorations = pgTable('constructor_decorations', {
@@ -13,6 +14,8 @@ export const constructorDecorations = pgTable('constructor_decorations', {
   name: varchar('name', { length: 100 }).notNull(),
   category: decorCategoryEnum('category').notNull(),
   pricePerUnit: integer('price_per_unit').notNull(),
+  /** Stable visual key used by the web model registry to choose a GLB variant. */
+  visualKey: varchar('visual_key', { length: 64 }).notNull().default('cream'),
   modelUrl: text('model_url'),
   thumbnailUrl: text('thumbnail_url'),
   sortOrder: integer('sort_order').notNull().default(0),

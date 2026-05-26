@@ -4,6 +4,7 @@
     "description": "Крем с уваренной сгущёнкой и грецкий орех. Для белого классического бисквита",
     "pricePerKg": 40000,
     "category": "white",
+    "visualKey": "cream",
     "sortOrder": 1,
     "isAvailable": true
   },
@@ -12,6 +13,7 @@
     "description": "Крем-брюле с прослойкой молочного шоколада и грецким орехом. Для белого бисквита",
     "pricePerKg": 45000,
     "category": "white",
+    "visualKey": "cream",
     "sortOrder": 2,
     "isAvailable": true
   },
@@ -20,6 +22,7 @@
     "description": "Нежный крем-чиз с кусочками клубники и банана. Для белого ванильного бисквита",
     "pricePerKg": 48000,
     "category": "white",
+    "visualKey": "pink",
     "sortOrder": 3,
     "isAvailable": true
   },
@@ -28,6 +31,7 @@
     "description": "Взбитые сливки, уваренная сгущёнка, грецкий орех. Для шоколадного бисквита",
     "pricePerKg": 45000,
     "category": "chocolate",
+    "visualKey": "choco",
     "sortOrder": 4,
     "isAvailable": true
   },
@@ -36,6 +40,7 @@
     "description": "Взбитые сливки с кусочками шоколада и грецким орехом. Для шоколадного бисквита",
     "pricePerKg": 48000,
     "category": "chocolate",
+    "visualKey": "choco",
     "sortOrder": 5,
     "isAvailable": true
   },
@@ -44,6 +49,7 @@
     "description": "Крем-чиз с вишнёвым конфи и кусочками вишни. Для нежного шоколадного бисквита",
     "pricePerKg": 50000,
     "category": "chocolate",
+    "visualKey": "meringue-pink",
     "sortOrder": 6,
     "isAvailable": true
   },
@@ -52,6 +58,7 @@
     "description": "Крем-чиз с лимонным конфи и свежей черникой. Для нежного шоколадного бисквита",
     "pricePerKg": 52000,
     "category": "chocolate",
+    "visualKey": "cream",
     "sortOrder": 7,
     "isAvailable": true
   },
@@ -60,6 +67,7 @@
     "description": "Медовые коржи, нежный крем со сгущёнкой, прослойка чернослива и грецкого ореха",
     "pricePerKg": 55000,
     "category": "honey",
+    "visualKey": "glaze-cream",
     "sortOrder": 8,
     "isAvailable": true
   },
@@ -68,6 +76,7 @@
     "description": "Сметанный крем с кусочками персика на сметанной основе",
     "pricePerKg": 42000,
     "category": "sour_cream",
+    "visualKey": "cream",
     "sortOrder": 9,
     "isAvailable": true
   },
@@ -76,6 +85,7 @@
     "description": "Сметанный крем, кусочки ананаса, грецкий орех. На сметанной основе",
     "pricePerKg": 45000,
     "category": "sour_cream",
+    "visualKey": "cream",
     "sortOrder": 10,
     "isAvailable": true
   },
@@ -84,6 +94,7 @@
     "description": "Сметанно-сливочный крем с уваренной сгущёнкой и грецким орехом",
     "pricePerKg": 45000,
     "category": "sour_cream",
+    "visualKey": "cream",
     "sortOrder": 11,
     "isAvailable": true
   },
@@ -92,6 +103,7 @@
     "description": "Тонкие песочные коржи со сметанным кремом и кусочками банана",
     "pricePerKg": 44000,
     "category": "shortcrust",
+    "visualKey": "meringue",
     "sortOrder": 12,
     "isAvailable": true
   },
@@ -100,6 +112,7 @@
     "description": "Шоколадный бисквит, крем на варёной сгущёнке, солёная карамель, жареный арахис",
     "pricePerKg": 55000,
     "category": "specialty",
+    "visualKey": "choco",
     "sortOrder": 13,
     "isAvailable": true
   },
@@ -108,6 +121,7 @@
     "description": "Красный масляный бисквит, крем-чиз, опционально вишня или клубника",
     "pricePerKg": 58000,
     "category": "specialty",
+    "visualKey": "meringue-pink",
     "sortOrder": 14,
     "isAvailable": true
   },
@@ -116,6 +130,7 @@
     "description": "Белый ванильный бисквит, сметанный крем, ананасовый курд, кокос, кусочки ананаса",
     "pricePerKg": 56000,
     "category": "specialty",
+    "visualKey": "glaze-cream",
     "sortOrder": 15,
     "isAvailable": true
   }

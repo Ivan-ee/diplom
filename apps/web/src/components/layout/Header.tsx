@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ShoppingBag, User, Menu, Heart, ShoppingBag as OrdersIcon, LogOut, X, Search } from 'lucide-react';
-import { Drawer, DrawerRoot, DrawerTrigger, DrawerBackdrop, DrawerContent, DrawerDialog, DrawerBody, DrawerCloseTrigger, DrawerHandle, Popover, PopoverRoot, PopoverTrigger, PopoverContent, PopoverDialog } from '@heroui/react';
+import { DrawerRoot, DrawerTrigger, DrawerBackdrop, DrawerContent, DrawerDialog, DrawerBody, DrawerCloseTrigger, DrawerHandle } from '@heroui/react';
 import { CartBadge } from './CartBadge';
 import { useAuth } from '@/hooks/useAuth';
 import { SearchDialog } from '@/components/search/SearchDialog';
@@ -129,7 +129,7 @@ export function Header() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Desktop UserMenu via HeroUI Popover                                 */
+/* Desktop UserMenu                                                     */
 /* ------------------------------------------------------------------ */
 
 interface UserMenuProps {
@@ -140,6 +140,8 @@ interface UserMenuProps {
 }
 
 function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: UserMenuProps) {
+  const [open, setOpen] = useState(false);
+
   if (!isAuthenticated || !user) {
     return (
       <button
@@ -157,18 +159,27 @@ function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: User
   const initial = user.name.charAt(0).toUpperCase();
 
   return (
-    <PopoverRoot>
-      <PopoverTrigger>
-        <button
-          type="button"
-          aria-label="Меню пользователя"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-caramel)] text-sm font-semibold text-white shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2"
+    <div
+      className="relative"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+    >
+      <button
+        type="button"
+        aria-label="Меню пользователя"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((value) => !value)}
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-caramel)] text-sm font-semibold text-white shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2"
+      >
+        {initial}
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-11 z-50 min-w-[220px] overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-0 shadow-xl outline-none"
         >
-          {initial}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="z-50 min-w-[220px] rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-0 shadow-xl outline-none">
-        <PopoverDialog className="outline-none">
           {/* User info */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border-default)]">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-toffee)] text-sm font-semibold text-neutral-800">
@@ -182,10 +193,10 @@ function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: User
 
           {/* Nav items */}
           <div className="py-1">
-            <PopoverLink href="/account/orders" icon={<OrdersIcon size={15} />}>
+            <PopoverLink href="/account/orders" icon={<OrdersIcon size={15} />} onClick={() => setOpen(false)}>
               Мои заказы
             </PopoverLink>
-            <PopoverLink href="/account/favorites" icon={<Heart size={15} />}>
+            <PopoverLink href="/account/favorites" icon={<Heart size={15} />} onClick={() => setOpen(false)}>
               Избранное
             </PopoverLink>
           </div>
@@ -194,15 +205,18 @@ function DesktopUserMenu({ user, isAuthenticated, onLoginClick, onLogout }: User
 
           <button
             type="button"
-            onClick={onLogout}
+            onClick={() => {
+              setOpen(false);
+              void onLogout();
+            }}
             className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-graphite-light)] transition-colors duration-150 hover:bg-red-50 hover:text-red-600"
           >
             <LogOut size={15} />
             Выйти
           </button>
-        </PopoverDialog>
-      </PopoverContent>
-    </PopoverRoot>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -210,12 +224,14 @@ interface PopoverLinkProps {
   href: string;
   icon: React.ReactNode;
   children: React.ReactNode;
+  onClick?: () => void;
 }
 
-function PopoverLink({ href, icon, children }: PopoverLinkProps) {
+function PopoverLink({ href, icon, children, onClick }: PopoverLinkProps) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-graphite-light)] transition-colors duration-150 hover:bg-[var(--surface-secondary)] hover:text-[var(--color-graphite)]"
     >
       <span className="text-[var(--color-graphite-light)]/60">{icon}</span>

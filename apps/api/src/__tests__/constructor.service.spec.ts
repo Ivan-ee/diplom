@@ -11,6 +11,7 @@ const BASE_ID = 'aaaaaaaa-0000-0000-0000-000000000001';
 const FILLING_ID = 'bbbbbbbb-0000-0000-0000-000000000002';
 const COATING_ID = 'cccccccc-0000-0000-0000-000000000003';
 const DECOR_ID = 'dddddddd-0000-0000-0000-000000000004';
+const CANDLE_DECOR_ID = 'dddddddd-0000-0000-0000-000000000005';
 
 function makeBase(overrides: Partial<Record<string, unknown>> = {}) {
   return {
@@ -49,7 +50,9 @@ function makeDecor(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     id: DECOR_ID,
     name: 'Роза',
+    category: 'flowers',
     pricePerUnit: 30_00,
+    visualKey: 'cream',
     isAvailable: true,
     sortOrder: 0,
     ...overrides,
@@ -84,6 +87,28 @@ function buildDbMock(
       from: () => thenable,
       where: () => Promise.resolve(results[index] ?? []),
       orderBy: () => thenable,
+    };
+    return thenable;
+  };
+
+  return { select: chain };
+}
+
+function buildIngredientsDbMock(
+  basesResult: unknown[],
+  fillingsResult: unknown[],
+  coatingsResult: unknown[],
+  decorationsResult: unknown[],
+) {
+  let callCount = 0;
+  const results = [basesResult, fillingsResult, coatingsResult, decorationsResult];
+
+  const chain = () => {
+    const index = callCount++;
+    const thenable = {
+      from: () => thenable,
+      where: () => thenable,
+      orderBy: () => Promise.resolve(results[index] ?? []),
     };
     return thenable;
   };
@@ -605,12 +630,18 @@ describe('ConstructorService.calculatePrice', () => {
       expect(result.totalPrice).toBe(44_000);
     });
 
-    it('accepts hasCandle as visual order metadata without changing price', async () => {
+    it('prices candle as a regular paid decoration', async () => {
       const db = buildDbMock(
         [makeBase()],
         [makeFilling()],
         [makeCoating()],
-        [],
+        [makeDecor({
+          id: CANDLE_DECOR_ID,
+          name: 'Свеча золотая',
+          category: 'candle',
+          pricePerUnit: 15_00,
+          visualKey: 'candle',
+        })],
       );
       const service = buildService(db);
 
@@ -618,10 +649,18 @@ describe('ConstructorService.calculatePrice', () => {
         shape: 'circle',
         tiers: [{ baseId: BASE_ID, fillingId: FILLING_ID, weight: 10 }],
         coatingId: COATING_ID,
-        hasCandle: true,
+        decorations: [{ decorationId: CANDLE_DECOR_ID, quantity: 1 }],
       });
 
-      expect(result.totalPrice).toBe(35_000);
+      expect(result.breakdown.decorations).toEqual([
+        expect.objectContaining({
+          id: CANDLE_DECOR_ID,
+          name: 'Свеча золотая',
+          quantity: 1,
+          cost: 1_500,
+        }),
+      ]);
+      expect(result.totalPrice).toBe(36_500);
     });
 
     /**
@@ -649,6 +688,32 @@ describe('ConstructorService.calculatePrice', () => {
 
       expect(result.breakdown.coating.cost).toBe(10_000);
       expect(result.breakdown.totalWeightKg).toBe(2.0);
+    });
+  });
+});
+
+describe('ConstructorService.getIngredients', () => {
+  it('returns constructor config using shared web keys', async () => {
+    const db = buildIngredientsDbMock(
+      [makeBase({ visualKey: 'default' })],
+      [makeFilling({ visualKey: 'cream' })],
+      [makeCoating({ visualKey: 'cream' })],
+      [makeDecor({ visualKey: 'cream' })],
+    );
+    const service = buildService(db);
+
+    const result = await service.getIngredients();
+
+    expect(result.config).toEqual({
+      maxDecorations: 20,
+      maxInscriptionLength: 50,
+      minWeightPerTier: 500,
+      maxWeightPerTier: 5000,
+      weightStep: 500,
+    });
+    expect(result.bases[0]).toMatchObject({
+      available: true,
+      visualKey: 'default',
     });
   });
 });

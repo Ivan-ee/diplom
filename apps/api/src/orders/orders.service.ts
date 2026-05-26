@@ -265,10 +265,29 @@ export class OrdersService {
         );
       }
 
-      const { totalPrice } = await this.constructorService.calculatePrice(
+      const { totalPrice, breakdown } = await this.constructorService.calculatePrice(
         item.cakeConfig,
       );
-      return { ...item, price: totalPrice };
+      return {
+        ...item,
+        cakeConfig: {
+          ...item.cakeConfig,
+          layers: (breakdown.tiers ?? []).map((tier) => ({
+            baseId: tier.base.id,
+            fillingId: tier.filling.id,
+            baseName: tier.base.name,
+            fillingName: tier.filling.name,
+            weight: tier.weightKg,
+          })),
+          ...(breakdown.coating ? { coatingName: breakdown.coating.name } : {}),
+          decorations: (breakdown.decorations ?? []).map((decoration) => ({
+            decorationId: decoration.id,
+            name: decoration.name,
+            quantity: decoration.quantity,
+          })),
+        } as unknown as CreateOrderItemDto['cakeConfig'],
+        price: totalPrice,
+      };
     }
 
     throw new BadRequestException(`Unknown order item type: ${String(item.type)}`);

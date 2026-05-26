@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Cake, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
-import { Chip } from '@heroui/react';
 import { toast } from 'sonner';
 import { cn, formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart-store';
@@ -41,7 +40,7 @@ export interface OrderItemConstructor {
     layers?: Array<{ baseName?: string; fillingName?: string; weight: number }>;
     coatingName?: string;
     inscription?: string;
-    decorations?: Array<string | { decorationId: string; quantity: number }>;
+    decorations?: Array<string | { decorationId: string; name?: string; quantity: number }>;
     decorVariant?: string | null;
     hasCandle?: boolean;
   };
@@ -69,11 +68,11 @@ export interface Order {
 
 // ---------- Status config ----------
 
-type ChipColor = 'accent' | 'danger' | 'default' | 'success' | 'warning';
+type BadgeTone = 'accent' | 'danger' | 'default' | 'success' | 'warning';
 
 const STATUS_CONFIG: Record<
   OrderStatus,
-  { label: string; color: ChipColor }
+  { label: string; color: BadgeTone }
 > = {
   created:   { label: 'Новый',     color: 'accent' },
   accepted:  { label: 'Принят',    color: 'accent' },
@@ -82,6 +81,14 @@ const STATUS_CONFIG: Record<
   picked_up: { label: 'Забран',    color: 'default' },
   completed: { label: 'Завершён',  color: 'success' },
   cancelled: { label: 'Отменён',   color: 'danger' },
+};
+
+const STATUS_BADGE_CLASS: Record<BadgeTone, string> = {
+  accent: 'border-[var(--color-caramel)]/20 bg-[var(--color-caramel)]/10 text-[var(--color-caramel)]',
+  danger: 'border-red-500/20 bg-red-50 text-red-600',
+  default: 'border-neutral-200 bg-neutral-50 text-neutral-500',
+  success: 'border-emerald-500/20 bg-emerald-50 text-emerald-600',
+  warning: 'border-amber-500/20 bg-amber-50 text-amber-600',
 };
 
 // ---------- Helpers ----------
@@ -100,10 +107,10 @@ const SHAPE_LABELS: Record<string, string> = {
   heart:  'Сердце',
 };
 
-function formatDecoration(value: string | { decorationId: string; quantity: number }): string {
+function formatDecoration(value: string | { decorationId: string; name?: string; quantity: number }): string {
   if (typeof value === 'string') return value;
 
-  const label = `#${value.decorationId.slice(0, 8)}`;
+  const label = value.name ?? `#${value.decorationId.slice(0, 8)}`;
   return value.quantity > 1 ? `${label} × ${value.quantity}` : label;
 }
 
@@ -141,7 +148,9 @@ function ConstructorItemRow({ item }: { item: OrderItemConstructor }) {
 
   return (
     <div className="flex items-start gap-3 py-2">
-      <Chip size="sm" color="accent" variant="secondary" className="mt-0.5 shrink-0">Конструктор</Chip>
+      <span className="mt-0.5 inline-flex h-5 shrink-0 items-center rounded-full border border-[var(--color-caramel)]/20 bg-[var(--color-caramel)]/10 px-2 text-[10px] font-medium text-[var(--color-caramel)]">
+        Конструктор
+      </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <Cake size={13} className="text-[var(--color-caramel)] shrink-0" />
@@ -240,9 +249,14 @@ export function OrderCard({ order }: OrderCardProps) {
             )}
           </p>
         </div>
-        <Chip size="sm" color={statusCfg.color} variant="soft">
+        <span
+          className={cn(
+            'inline-flex h-6 shrink-0 items-center rounded-full border px-2.5 text-xs font-medium',
+            STATUS_BADGE_CLASS[statusCfg.color],
+          )}
+        >
           {statusCfg.label}
-        </Chip>
+        </span>
       </div>
 
       {/* Expand toggle + Reorder */}

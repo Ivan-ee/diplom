@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, MapPin, Clock, CalendarDays, ShoppingBag, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { CHECKOUT_SUCCESS_PENDING_KEY } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 // ── Time slot display ────────────────────────────────────────────────────────
@@ -58,6 +59,10 @@ function DetailRow({
 
 function SuccessContent() {
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    window.sessionStorage.removeItem(CHECKOUT_SUCCESS_PENDING_KEY);
+  }, []);
 
   const orderNumber = searchParams.get('orderNumber') ?? '—';
   const pickupDate = searchParams.get('pickupDate') ?? '';

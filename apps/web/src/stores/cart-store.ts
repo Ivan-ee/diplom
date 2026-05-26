@@ -6,23 +6,51 @@ export interface CakeConfigDecorationSelection {
   variantId: string;
   decorationId: string;
   quantity: number;
+  name?: string;
+}
+
+export interface CakeConfigDecorationInstance {
+  instanceId: string;
+  decorationId: string;
+  visualKey: string;
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  name?: string;
 }
 
 export interface CakeConfigData {
   shape: string;
   tierCount: number;
-  layers: Array<{ baseId: string; fillingId: string; weight: number }>;
+  layers: Array<{
+    baseId: string;
+    fillingId: string;
+    weight: number;
+    baseName?: string;
+    fillingName?: string;
+  }>;
   coating: {
     type: string;
     coatingId: string;
+    coatingName?: string;
     glazeVariant: string;
     withDrips: boolean;
     colorMode?: string;
     secondaryGlazeVariant?: string;
+    visual?: {
+      mode: string;
+      primaryColor: string;
+      secondaryColor?: string;
+      splashes?: boolean;
+    };
   };
   activeDecorations: string[];
   selectedDecorations?: CakeConfigDecorationSelection[];
-  hasCandle: boolean;
+  decorationInstances?: CakeConfigDecorationInstance[];
+  /** @deprecated Candles are paid decorations; kept optional for legacy persisted carts. */
+  hasCandle?: boolean;
   inscription?: string;
 }
 
@@ -215,6 +243,7 @@ export const useCartStore = create<CartState>()(
             cakeConfig: {
               ...item.cakeConfig,
               selectedDecorations: item.cakeConfig.selectedDecorations ?? [],
+              decorationInstances: item.cakeConfig.decorationInstances ?? [],
             },
           };
         });

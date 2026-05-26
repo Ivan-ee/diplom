@@ -35,7 +35,7 @@ const slideVariants = {
   }),
 };
 
-export function SettingsPanel() {
+export function SettingsPanel({ showFooter = true }: { showFooter?: boolean }) {
   const currentStep = useConstructorStore((s) => s.currentStep);
   const isLoading = useConstructorStore((s) => s.isLoading);
   const prevStepRef = useRef(currentStep);
@@ -75,10 +75,56 @@ export function SettingsPanel() {
         </div>
       </div>
 
-      <div className="flex-shrink-0">
-        <PriceCalculator />
-        <StepNavigation />
+      {showFooter && (
+        <div className="flex-shrink-0">
+          <CompactSpecSummary />
+          <PriceCalculator />
+          <StepNavigation />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CompactSpecSummary() {
+  const shape = useConstructorStore((s) => s.shape);
+  const tierCount = useConstructorStore((s) => s.tierCount);
+  const layers = useConstructorStore((s) => s.layers);
+  const coating = useConstructorStore((s) => s.coating);
+  const decorationInstances = useConstructorStore((s) => s.decorationInstances);
+  const ingredients = useConstructorStore((s) => s.ingredients);
+  const safeLayers = Array.isArray(layers) ? layers : [];
+  const safeDecorationInstances = Array.isArray(decorationInstances) ? decorationInstances : [];
+
+  const totalWeight = safeLayers.reduce((sum, layer) => sum + layer.weight, 0);
+  const shapeName = ingredients?.shapes.find((item) => item.id === shape)?.name ?? shape;
+  const coatingName = ingredients?.coatings.find((item) => item.id === coating.coatingId)?.name ?? 'не выбрано';
+
+  return (
+    <div className="border-t border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3">
+      <div className="grid grid-cols-4 gap-2 text-xs">
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-[var(--color-graphite-light)]">Форма</p>
+          <p className="truncate font-semibold text-[var(--color-graphite)]">{shapeName}</p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-[var(--color-graphite-light)]">Ярусы</p>
+          <p className="font-semibold text-[var(--color-graphite)]">{tierCount}</p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-[var(--color-graphite-light)]">Вес</p>
+          <p className="font-semibold text-[var(--color-graphite)]">
+            {totalWeight >= 1000 ? `${totalWeight / 1000} кг` : `${totalWeight} г`}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-[var(--color-graphite-light)]">Декор</p>
+          <p className="font-semibold text-[var(--color-graphite)]">{safeDecorationInstances.length}</p>
+        </div>
       </div>
+      <p className="mt-2 truncate text-xs text-[var(--color-graphite-light)]">
+        Покрытие: <span className="text-[var(--color-graphite)]">{coatingName}</span>
+      </p>
     </div>
   );
 }

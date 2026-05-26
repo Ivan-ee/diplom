@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsIn, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 
 export enum IngredientType {
   BASE = 'base',
@@ -28,6 +28,20 @@ export class UpdateIngredientDto {
   @IsInt()
   @Min(0)
   pricePerUnit?: number;
+
+  @ApiPropertyOptional({ description: 'Stable visual/model key used by the web 3D registry' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  visualKey?: string;
+
+  @ApiPropertyOptional({
+    description: 'Decoration category',
+    enum: ['berries', 'chocolate', 'toppers', 'flowers', 'figures', 'candle'],
+  })
+  @IsOptional()
+  @IsIn(['berries', 'chocolate', 'toppers', 'flowers', 'figures', 'candle'])
+  category?: 'berries' | 'chocolate' | 'toppers' | 'flowers' | 'figures' | 'candle';
 
   @ApiPropertyOptional({ example: true })
   @IsOptional()

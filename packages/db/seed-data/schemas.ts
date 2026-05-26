@@ -22,6 +22,7 @@ export const constructorBaseSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().nullable(),
   pricePerKg: z.number().int().positive(), // kopecks (₽ * 100)
+  visualKey: z.string().min(1).max(64).default('default'),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/), // hex color #RRGGBB
   textureUrl: z.string().url().nullable(),
   sortOrder: z.number().int().nonnegative(),
@@ -38,6 +39,7 @@ export const constructorFillingSchema = z.object({
   description: z.string().nullable(),
   pricePerKg: z.number().int().positive(), // kopecks
   category: fillingCategorySchema,
+  visualKey: z.string().min(1).max(64).default('cream'),
   sortOrder: z.number().int().nonnegative(),
   isAvailable: z.boolean().default(true),
 });
@@ -51,6 +53,7 @@ export const constructorCoatingSchema = z.object({
   name: z.string().min(1).max(100),
   type: coatingTypeSchema,
   pricePerKg: z.number().int().positive(), // kopecks
+  visualKey: z.string().min(1).max(64).default('cream'),
   // numeric(3,2) in DB, stored as string in Drizzle (0.00 - 1.00)
   roughness: z.string()
     .regex(/^(0|1)(\.\d{1,2})?$/, 'roughness must be 0-1 with up to 2 decimals')
@@ -71,6 +74,7 @@ export const constructorDecorationSchema = z.object({
   name: z.string().min(1).max(100),
   category: decorCategorySchema,
   pricePerUnit: z.number().int().positive(), // kopecks per unit (штука)
+  visualKey: z.string().min(1).max(64).default('cream'),
   modelUrl: z.string().nullable(),
   thumbnailUrl: z.string().nullable(),
   sortOrder: z.number().int().nonnegative(),

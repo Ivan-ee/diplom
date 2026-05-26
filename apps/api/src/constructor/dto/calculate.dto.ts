@@ -3,7 +3,6 @@ import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
-  IsBoolean,
   IsArray,
   IsIn,
   IsInt,
@@ -83,11 +82,4 @@ export class CalculatePriceDto {
   @MaxLength(50)
   inscription?: string;
 
-  @ApiPropertyOptional({
-    description: 'Whether the constructor cake includes a visual candle',
-    example: true,
-  })
-  @IsOptional()
-  @IsBoolean()
-  hasCandle?: boolean;
 }

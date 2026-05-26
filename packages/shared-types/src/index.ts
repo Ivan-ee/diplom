@@ -60,10 +60,28 @@ export type OrderItemType = 'product' | 'constructor';
 export interface CakeConfigData {
   shape: string;
   tierCount: number;
-  layers: Array<{ baseId: string; fillingId: string; weight: number }>;
-  coating: { type: string; coatingId: string; glazeVariant: string; withDrips: boolean; colorMode?: string; secondaryGlazeVariant?: string };
+  layers: Array<{ baseId: string; fillingId: string; weight: number; baseName?: string; fillingName?: string }>;
+  coating: {
+    type: string;
+    coatingId: string;
+    coatingName?: string;
+    glazeVariant: string;
+    withDrips: boolean;
+    colorMode?: string;
+    secondaryGlazeVariant?: string;
+    visual?: { mode: string; primaryColor: string; secondaryColor?: string; splashes?: boolean };
+  };
   activeDecorations: string[];
-  hasCandle: boolean;
+  selectedDecorations?: Array<{ variantId: string; decorationId: string; quantity: number; name?: string }>;
+  decorationInstances?: Array<{
+    instanceId: string;
+    decorationId: string;
+    visualKey: string;
+    position: { x: number; y: number; z: number };
+    name?: string;
+  }>;
+  /** @deprecated Candles are paid decorations; kept optional for legacy persisted carts. */
+  hasCandle?: boolean;
   inscription?: string;
 }
 
@@ -110,6 +128,7 @@ export interface CakeCoating {
   coatingId: string;
   glazeVariant: string;
   withDrips: boolean;
+  visual?: { mode: 'solid' | 'gradient' | 'splashes'; primaryColor: string; secondaryColor?: string; splashes?: boolean };
 }
 
 /** A placed decoration instance on the 3-D canvas. */
@@ -126,6 +145,7 @@ export interface IngredientBase {
   name: string;
   description?: string;
   pricePerKg: number;
+  visualKey: string;
   color?: string;
   available: boolean;
 }
@@ -146,6 +166,7 @@ export interface IngredientFilling {
   description?: string;
   pricePerKg: number;
   category: FillingCategory;
+  visualKey: string;
   available: boolean;
 }
 
@@ -155,6 +176,7 @@ export interface IngredientCoating {
   type: CoatingType;
   name: string;
   pricePerKg: number;
+  visualKey: string;
   available: boolean;
 }
 
@@ -164,6 +186,7 @@ export interface IngredientDecoration {
   name: string;
   category: string;
   pricePerUnit: number;
+  visualKey: string;
   available: boolean;
 }
 

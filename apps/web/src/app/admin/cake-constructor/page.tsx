@@ -35,10 +35,11 @@ const TABS: { key: Tab; label: string }[] = [
 interface AvailabilityToggleProps {
   id: string;
   available: boolean;
+  type: IngredientApiType;
   onToggle: (id: string, value: boolean) => void;
 }
 
-function AvailabilityToggle({ id, available, onToggle }: AvailabilityToggleProps) {
+function AvailabilityToggle({ id, available, type, onToggle }: AvailabilityToggleProps) {
   const [loading, setLoading] = useState(false);
 
   const handleChange = async () => {
@@ -46,7 +47,7 @@ function AvailabilityToggle({ id, available, onToggle }: AvailabilityToggleProps
     try {
       await fetchClient(`/admin/constructor/ingredients/${id}`, {
         method: 'PUT',
-        body: JSON.stringify({ available: !available }),
+        body: JSON.stringify({ type, isAvailable: !available }),
       });
       onToggle(id, !available);
     } catch {
@@ -84,10 +85,11 @@ interface PriceEditorProps {
   id: string;
   price: number;
   priceKey: string;
+  type: IngredientApiType;
   onSaved: (id: string, price: number) => void;
 }
 
-function PriceEditor({ id, price, priceKey, onSaved }: PriceEditorProps) {
+function PriceEditor({ id, price, priceKey, type, onSaved }: PriceEditorProps) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(String(Math.round(price / 100)));
   const [saving, setSaving] = useState(false);
@@ -113,7 +115,7 @@ function PriceEditor({ id, price, priceKey, onSaved }: PriceEditorProps) {
     try {
       await fetchClient(`/admin/constructor/ingredients/${id}`, {
         method: 'PUT',
-        body: JSON.stringify({ [priceKey]: newPriceKopecks }),
+        body: JSON.stringify({ type, [priceKey]: newPriceKopecks }),
       });
       onSaved(id, newPriceKopecks);
       setEditing(false);
@@ -172,6 +174,132 @@ function PriceEditor({ id, price, priceKey, onSaved }: PriceEditorProps) {
         <X size={13} />
       </button>
     </div>
+  );
+}
+
+interface TextEditorProps {
+  id: string;
+  type: IngredientApiType;
+  field: 'visualKey';
+  value: string;
+  onSaved: (id: string, value: string) => void;
+}
+
+function TextEditor({ id, type, field, value, onSaved }: TextEditorProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const startEdit = () => {
+    setDraft(value);
+    setEditing(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const save = async () => {
+    const normalized = draft.trim();
+    if (!normalized) {
+      setEditing(false);
+      setDraft(value);
+      return;
+    }
+    if (normalized === value) {
+      setEditing(false);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await fetchClient(`/admin/constructor/ingredients/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ type, [field]: normalized }),
+      });
+      onSaved(id, normalized);
+      setEditing(false);
+    } catch {
+      setDraft(value);
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!editing) {
+    return (
+      <button
+        onClick={startEdit}
+        className="rounded-lg bg-neutral-100 px-2 py-1 font-mono text-xs text-neutral-600 hover:bg-neutral-200"
+      >
+        {value || '—'}
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        ref={inputRef}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') void save();
+          if (e.key === 'Escape') setEditing(false);
+        }}
+        disabled={saving}
+        className="w-32 rounded-lg border border-[var(--color-champagne)] px-2 py-1 font-mono text-xs focus:border-[var(--color-caramel)] focus:outline-none"
+      />
+      <button
+        onClick={() => void save()}
+        disabled={saving}
+        className="flex h-6 w-6 items-center justify-center rounded text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+        aria-label="Сохранить visual key"
+      >
+        {saving ? <RefreshCw size={11} className="animate-spin" /> : <Check size={13} />}
+      </button>
+    </div>
+  );
+}
+
+const DECOR_CATEGORIES = ['berries', 'chocolate', 'toppers', 'flowers', 'figures', 'candle'] as const;
+
+function CategorySelect({
+  id,
+  value,
+  onSaved,
+}: {
+  id: string;
+  value: string;
+  onSaved: (id: string, value: string) => void;
+}) {
+  const [saving, setSaving] = useState(false);
+
+  const handleChange = async (next: string) => {
+    setSaving(true);
+    try {
+      await fetchClient(`/admin/constructor/ingredients/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ type: 'decoration', category: next }),
+      });
+      onSaved(id, next);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <select
+      value={value}
+      disabled={saving}
+      onChange={(event) => void handleChange(event.target.value)}
+      className="rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-600"
+    >
+      {DECOR_CATEGORIES.map((category) => (
+        <option key={category} value={category}>
+          {category}
+        </option>
+      ))}
+    </select>
   );
 }
 
@@ -281,6 +409,8 @@ function AddIngredientModal({ type, onClose, onCreated }: AddIngredientModalProp
   const [description, setDescription] = useState('');
   const [pricePerKg, setPricePerKg] = useState('');
   const [pricePerUnit, setPricePerUnit] = useState('');
+  const [visualKey, setVisualKey] = useState(type === 'base' ? 'default' : 'cream');
+  const [category, setCategory] = useState<(typeof DECOR_CATEGORIES)[number]>('berries');
   const [sortOrder, setSortOrder] = useState('0');
   const [saving, setSaving] = useState(false);
 
@@ -298,6 +428,7 @@ function AddIngredientModal({ type, onClose, onCreated }: AddIngredientModalProp
     const body: Record<string, unknown> = {
       type,
       name: name.trim(),
+      visualKey: visualKey.trim() || (type === 'base' ? 'default' : 'cream'),
       sortOrder: parseInt(sortOrder, 10) || 0,
     };
 
@@ -319,6 +450,7 @@ function AddIngredientModal({ type, onClose, onCreated }: AddIngredientModalProp
         return;
       }
       body.pricePerUnit = Math.round(parsed * 100);
+      body.category = category;
     }
 
     setSaving(true);
@@ -432,6 +564,41 @@ function AddIngredientModal({ type, onClose, onCreated }: AddIngredientModalProp
             </div>
           )}
 
+          {/* Visual key */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              Visual key <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={visualKey}
+              onChange={(e) => setVisualKey(e.target.value)}
+              placeholder="cream"
+              className={fieldClass}
+              disabled={saving}
+            />
+          </div>
+
+          {type === 'decoration' && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+                Категория декора
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as (typeof DECOR_CATEGORIES)[number])}
+                className={fieldClass}
+                disabled={saving}
+              >
+                {DECOR_CATEGORIES.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Sort order */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
@@ -488,6 +655,7 @@ interface IngredientTableProps<T extends AnyIngredient> {
   }[];
   onAvailabilityToggle: (id: string, value: boolean) => void;
   onPriceSaved: (id: string, price: number) => void;
+  onPatchSaved: (id: string, patch: Partial<AnyIngredient>) => void;
   onDeleted: (id: string) => void;
 }
 
@@ -500,10 +668,11 @@ function IngredientTable<T extends AnyIngredient>({
   extraColumns = [],
   onAvailabilityToggle,
   onPriceSaved,
+  onPatchSaved,
   onDeleted,
 }: IngredientTableProps<T>) {
   // +1 for actions column
-  const colCount = 4 + extraColumns.length;
+  const colCount = 5 + extraColumns.length;
 
   return (
     <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
@@ -522,6 +691,9 @@ function IngredientTable<T extends AnyIngredient>({
                   {col.header}
                 </th>
               ))}
+              <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
+                Visual key
+              </th>
               <th className="px-4 py-3 text-left text-xs text-neutral-500 uppercase tracking-wider font-medium">
                 {priceLabel}
               </th>
@@ -567,6 +739,15 @@ function IngredientTable<T extends AnyIngredient>({
                       {col.render(row)}
                     </td>
                   ))}
+                  <td className="px-4 py-3 text-sm text-neutral-700">
+                    <TextEditor
+                      id={row.id}
+                      type={type}
+                      field="visualKey"
+                      value={'visualKey' in row ? row.visualKey : ''}
+                      onSaved={(rowId, value) => onPatchSaved(rowId, { visualKey: value } as Partial<AnyIngredient>)}
+                    />
+                  </td>
 
                   {/* Price — inline editable */}
                   <td className="px-4 py-3">
@@ -574,6 +755,7 @@ function IngredientTable<T extends AnyIngredient>({
                       id={row.id}
                       price={priceKey === 'pricePerKg' ? (row as { pricePerKg: number }).pricePerKg : (row as { pricePerUnit: number }).pricePerUnit}
                       priceKey={priceKey}
+                      type={type}
                       onSaved={onPriceSaved}
                     />
                   </td>
@@ -584,6 +766,7 @@ function IngredientTable<T extends AnyIngredient>({
                       <AvailabilityToggle
                         id={row.id}
                         available={row.available}
+                        type={type}
                         onToggle={onAvailabilityToggle}
                       />
                       <span className="text-xs text-neutral-500">
@@ -665,6 +848,9 @@ export default function AdminConstructorPage() {
   const handlePrice = (section: IngredientSection, priceKey: string) => (id: string, price: number) =>
     updateIngredient(section, id, { [priceKey]: price } as Partial<AnyIngredient>);
 
+  const handlePatch = (section: IngredientSection) => (id: string, patch: Partial<AnyIngredient>) =>
+    updateIngredient(section, id, patch);
+
   const handleDeleted = (section: IngredientSection) => (id: string) => {
     setConstructorCatalog((prev) => {
       if (!prev) return prev;
@@ -733,6 +919,7 @@ export default function AdminConstructorPage() {
           type="base"
           onAvailabilityToggle={handleAvailability('bases')}
           onPriceSaved={handlePrice('bases', 'pricePerKg')}
+          onPatchSaved={handlePatch('bases')}
           onDeleted={handleDeleted('bases')}
         />
       )}
@@ -746,6 +933,7 @@ export default function AdminConstructorPage() {
           type="filling"
           onAvailabilityToggle={handleAvailability('fillings')}
           onPriceSaved={handlePrice('fillings', 'pricePerKg')}
+          onPatchSaved={handlePatch('fillings')}
           onDeleted={handleDeleted('fillings')}
         />
       )}
@@ -769,6 +957,7 @@ export default function AdminConstructorPage() {
           ]}
           onAvailabilityToggle={handleAvailability('coatings')}
           onPriceSaved={handlePrice('coatings', 'pricePerKg')}
+          onPatchSaved={handlePatch('coatings')}
           onDeleted={handleDeleted('coatings')}
         />
       )}
@@ -784,14 +973,17 @@ export default function AdminConstructorPage() {
             {
               header: 'Категория',
               render: (row) => (
-                <span className="text-xs font-medium text-neutral-500">
-                  {row.category}
-                </span>
+                <CategorySelect
+                  id={row.id}
+                  value={row.category}
+                  onSaved={(id, category) => updateIngredient('decorations', id, { category } as Partial<AnyIngredient>)}
+                />
               ),
             },
           ]}
           onAvailabilityToggle={handleAvailability('decorations')}
           onPriceSaved={handlePrice('decorations', 'pricePerUnit')}
+          onPatchSaved={handlePatch('decorations')}
           onDeleted={handleDeleted('decorations')}
         />
       )}

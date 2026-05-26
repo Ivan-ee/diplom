@@ -16,7 +16,6 @@ export interface ConstructorOrderDto {
   tiers: ConstructorTierDto[];
   coatingId: string;
   decorations?: ConstructorDecorationDto[];
-  hasCandle?: boolean;
   inscription?: string;
 }
 
@@ -26,7 +25,13 @@ const UUID_PATTERN =
 function groupDecorations(cakeConfig: CakeConfigData): ConstructorDecorationDto[] {
   const grouped = new Map<string, number>();
 
-  for (const selection of cakeConfig.selectedDecorations ?? []) {
+  if ((cakeConfig.decorationInstances?.length ?? 0) > 0) {
+    for (const instance of cakeConfig.decorationInstances ?? []) {
+      grouped.set(instance.decorationId, (grouped.get(instance.decorationId) ?? 0) + 1);
+    }
+  }
+
+  for (const selection of grouped.size === 0 ? cakeConfig.selectedDecorations ?? [] : []) {
     grouped.set(
       selection.decorationId,
       (grouped.get(selection.decorationId) ?? 0) + selection.quantity,
@@ -60,7 +65,6 @@ export function cakeConfigToOrderDto(
     })),
     coatingId: cakeConfig.coating.coatingId,
     ...(decorations.length > 0 && { decorations }),
-    ...(cakeConfig.hasCandle && { hasCandle: true }),
     ...(cakeConfig.inscription && { inscription: cakeConfig.inscription }),
   };
 }

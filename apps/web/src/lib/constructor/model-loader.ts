@@ -18,8 +18,10 @@ import {
  * Call this as early as possible — e.g. when the user picks a shape.
  */
 export function preloadEssentialModels(shape: CakeShape): void {
-  useGLTF.preload(getLayerModelPath(shape, 'default', false));
-  useGLTF.preload(getGlazeModelPath(shape, 'cream', false));
+  const layerPath = getLayerModelPath(shape, 'default', false);
+  const glazePath = getGlazeModelPath(shape, 'cream', false);
+  if (layerPath) useGLTF.preload(layerPath);
+  if (glazePath) useGLTF.preload(glazePath);
 }
 
 /**

@@ -7,6 +7,7 @@ import { useConstructorStore } from '@/stores/constructor-store';
 import { TierTabs } from './TierTabs';
 import { formatPrice } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { isFullTierVisualKeyAvailable, type CakeShape } from '@/lib/constructor/model-registry';
 
 const containerVariants = {
   hidden: {},
@@ -20,6 +21,7 @@ const itemVariants = {
 
 export function StepBase() {
   const tierCount = useConstructorStore((s) => s.tierCount);
+  const shape = useConstructorStore((s) => s.shape);
   const layers = useConstructorStore((s) => s.layers);
   const ingredients = useConstructorStore((s) => s.ingredients);
   const setLayerBase = useConstructorStore((s) => s.setLayerBase);
@@ -62,18 +64,22 @@ export function StepBase() {
         >
           {bases.map((base) => {
             const isSelected = layer?.baseId === base.id;
+            const isCompatible = isFullTierVisualKeyAvailable(shape as CakeShape, base.visualKey);
             return (
               <motion.button
                 key={base.id}
                 variants={itemVariants}
                 onClick={() => setLayerBase(activeTier, base.id)}
+                disabled={!isCompatible}
                 className={cn(
                   'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                   isSelected
                     ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5'
-                    : 'border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
+                    : isCompatible
+                      ? 'border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
+                      : 'border-[var(--border-default)] bg-[var(--surface-elevated)] opacity-45 cursor-not-allowed'
                 )}
-                whileTap={{ scale: 0.985 }}
+                whileTap={isCompatible ? { scale: 0.985 } : undefined}
               >
                 <div
                   className="w-10 h-10 rounded-lg flex-shrink-0 border border-black/10 shadow-sm"
@@ -89,7 +95,7 @@ export function StepBase() {
                   </p>
                   {base.description && (
                     <p className="text-xs text-[var(--color-graphite-light)] mt-0.5 leading-snug line-clamp-1">
-                      {base.description}
+                      {isCompatible ? base.description : 'Для этой формы нужна готовая BigLayer-модель'}
                     </p>
                   )}
                 </div>

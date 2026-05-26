@@ -5,44 +5,64 @@ import { useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import * as THREE from 'three';
-import { useConstructorStore } from '@/stores/constructor-store';
-
-// ---------------------------------------------------------------------------
-// Height calculation — mirrors the formula used in CakeModel.
-// weight is stored in grams; each tier height = weightG / 1500, clamped [0.4, 2.0].
-// ---------------------------------------------------------------------------
-const TIER_HEIGHT_MIN = 0.4;
-const TIER_HEIGHT_MAX = 2.0;
-const TIER_HEIGHT_DIVISOR = 1500;
-
-function tierHeight(weightG: number): number {
-  return Math.max(TIER_HEIGHT_MIN, Math.min(TIER_HEIGHT_MAX, weightG / TIER_HEIGHT_DIVISOR));
-}
+import { normalizeCoating, useConstructorStore } from '@/stores/constructor-store';
+import { buildCakeStackLayout } from '@/lib/constructor/geometry';
 
 // Smooth lerp speed — fraction of remaining distance closed per second.
 // At 60 fps this gives ~500 ms to close 98 % of the gap (1 - 0.92^30 ≈ 0.92).
 const LERP_SPEED = 4.5;
 
-// Distance is a linear function of total height.
-// At default 1-tier height (1000 g → ~0.667): 5.0 + 0.667 * 0.8 ≈ 5.53 ≈ 5.5 (matches brief).
-const DISTANCE_BASE = 5.0;
-const DISTANCE_HEIGHT_FACTOR = 0.8;
+// Keep camera distance independent from tier count: GLB size must not appear
+// smaller just because the Конфигурация торта has more Ярусы.
+const ORBIT_DISTANCE = 5.6;
+const TOP_VIEW_DISTANCE = 5.4;
+const FOCUS_DISTANCE = 4.4;
 
 export function CameraController() {
   const controlsRef = useRef<OrbitControlsImpl>(null);
 
   // Store subscriptions
+  const shape = useConstructorStore((s) => s.shape);
   const tierCount = useConstructorStore((s) => s.tierCount);
   const layers = useConstructorStore((s) => s.layers);
+  const coating = useConstructorStore((s) => s.coating);
+  const decorationInstances = useConstructorStore((s) => s.decorationInstances);
+  const ingredients = useConstructorStore((s) => s.ingredients);
+  const viewMode = useConstructorStore((s) => s.viewMode);
+  const safeLayers = Array.isArray(layers) ? layers : [];
+  const safeDecorationInstances = Array.isArray(decorationInstances) ? decorationInstances : [];
+  const safeCoating = normalizeCoating(coating);
 
-  // Total cake height derived from layers
-  const totalHeight = useMemo(
-    () => layers.reduce((sum, l) => sum + tierHeight(l.weight), 0),
-    [layers],
-  );
+  const totalHeight = useMemo(() => {
+    const layout = buildCakeStackLayout({
+      shape,
+      tiers: safeLayers.slice(0, tierCount).map((layer, index) => ({
+        baseVariant: ingredients?.bases.find((base) => base.id === layer.baseId)?.visualKey ?? 'default',
+        fillVariant: ingredients?.fillings.find((filling) => filling.id === layer.fillingId)?.visualKey ?? 'cream',
+        showFill: index < tierCount - 1,
+      })),
+      glazeVariant: safeCoating.glazeVariant,
+      withDrips: safeCoating.withDrips,
+      decorations: safeDecorationInstances.map((instance) => ({
+        instanceId: instance.instanceId,
+        variantId: instance.visualKey,
+        position: instance.position,
+      })),
+    });
+
+    return Math.max(layout.totalHeight, 0.6);
+  }, [
+    ingredients,
+    safeCoating.glazeVariant,
+    safeCoating.withDrips,
+    safeDecorationInstances,
+    safeLayers,
+    shape,
+    tierCount,
+  ]);
 
   // Ideal camera distance and vertical target centre
-  const idealDistance = DISTANCE_BASE + totalHeight * DISTANCE_HEIGHT_FACTOR;
+  const idealDistance = ORBIT_DISTANCE;
   const idealTargetY = totalHeight / 2;
 
   // Refs that drive the useFrame lerp — plain refs so the closure is always fresh
@@ -110,6 +130,28 @@ export function CameraController() {
       cancelAnimationFrame(rafId);
     };
   }, []);
+
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    const camera = controls.object as THREE.PerspectiveCamera;
+    const distance = targetDistanceRef.current;
+
+    if (viewMode === 'top') {
+      camera.position.set(0, idealTargetY + TOP_VIEW_DISTANCE, 0.01);
+      controls.target.set(0, idealTargetY, 0);
+    } else if (viewMode === 'focus') {
+      camera.position.set(2.2, idealTargetY + 1.2, FOCUS_DISTANCE);
+      controls.target.set(0, Math.max(0.35, totalHeight * 0.72), 0);
+    } else {
+      camera.position.set(0, idealTargetY + 2.4, distance);
+      controls.target.set(0, idealTargetY, 0);
+    }
+
+    camera.lookAt(controls.target);
+    controls.update();
+  }, [viewMode, totalHeight, idealTargetY]);
 
   // Per-frame lerp: smoothly move camera distance and orbit target centre.
   // Runs inside the R3F render loop — no competing rAF with OrbitControls damping.

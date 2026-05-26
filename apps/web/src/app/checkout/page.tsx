@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { CheckoutForm } from '@/components/checkout/CheckoutForm';
 import { useAuth } from '@/hooks/useAuth';
 import { useCartStore } from '@/stores/cart-store';
+import { CHECKOUT_SUCCESS_PENDING_KEY } from '@/lib/constants';
 
 const ProgressIndicator = () => (
   <div className="flex items-center justify-center gap-2 text-xs font-medium mb-6">
@@ -43,6 +44,9 @@ export default function CheckoutPage() {
   // Redirect if cart is empty (only after confirmed authenticated)
   useEffect(() => {
     if (isAuthenticated && items.length === 0) {
+      if (window.sessionStorage.getItem(CHECKOUT_SUCCESS_PENDING_KEY) === '1') {
+        return;
+      }
       router.replace('/cart');
     }
   }, [isAuthenticated, items.length, router]);

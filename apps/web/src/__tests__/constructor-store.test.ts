@@ -9,6 +9,7 @@ import { useConstructorStore } from '@/stores/constructor-store';
 
 const resetStore = () => useConstructorStore.setState({
   currentStep: 1,
+  viewMode: 'orbit',
   shape: 'circle',
   tierCount: 1,
   layers: [{ baseId: '', fillingId: '', weight: 1000 }],
@@ -18,18 +19,29 @@ const resetStore = () => useConstructorStore.setState({
     glazeVariant: 'cream',
     withDrips: false,
     colorMode: 'solid',
+    visual: {
+      mode: 'solid',
+      primaryColor: '#FFF5E0',
+    },
   },
   activeDecorations: [],
   selectedDecorations: [],
+  decorationInstances: [],
   hasCandle: false,
   inscription: '',
   ingredients: null,
   totalPrice: 0,
+  pricingStatus: 'idle',
+  priceBreakdown: null,
+  priceError: null,
+  priceVerifiedAt: null,
+  lastPricingSignature: null,
   isLoading: false,
 });
 
 describe('constructor-store', () => {
   beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('no network'))));
     resetStore();
   });
 
@@ -44,6 +56,7 @@ describe('constructor-store', () => {
     expect(state.layers[0]).toMatchObject({ baseId: '', fillingId: '', weight: 1000 });
     expect(state.activeDecorations).toEqual([]);
     expect(state.selectedDecorations).toEqual([]);
+    expect(state.decorationInstances).toEqual([]);
     expect(state.hasCandle).toBe(false);
     expect(state.inscription).toBe('');
     expect(state.ingredients).toBeNull();
@@ -73,9 +86,14 @@ describe('constructor-store', () => {
         glazeVariant: 'cream',
         withDrips: false,
         colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
       },
       activeDecorations: [],
       selectedDecorations: [],
+      decorationInstances: [],
     });
     useConstructorStore.getState().recalculatePrice();
     const priceForCircle = useConstructorStore.getState().totalPrice;
@@ -85,8 +103,8 @@ describe('constructor-store', () => {
     const priceForSquare = useConstructorStore.getState().totalPrice;
 
     expect(priceForSquare).toBeGreaterThan(priceForCircle);
-    // base + filling + coating = 140000, +10% = 154000
-    expect(priceForSquare).toBe(154000);
+    // base + repaired square-compatible filling + coating = 150000, +10% = 165000
+    expect(priceForSquare).toBe(165000);
   });
 
   // ── setTierCount ───────────────────────────────────────────────────────────
@@ -125,6 +143,34 @@ describe('constructor-store', () => {
     expect(layers[0]).toMatchObject({ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1500 });
   });
 
+  it('setTierCount repairs bottom and upper tier bases independently for model compatibility', () => {
+    const ingredients = getMockIngredients();
+    useConstructorStore.setState({
+      ingredients,
+      shape: 'circle',
+      tierCount: 1,
+      layers: [{ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1000 }],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
+      },
+    });
+
+    useConstructorStore.getState().setTierCount(2);
+
+    expect(useConstructorStore.getState().layers).toEqual([
+      { baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 },
+      { baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 },
+    ]);
+  });
+
   // ── recalculatePrice ───────────────────────────────────────────────────────
 
   it('recalculatePrice with known ingredients computes correct total', () => {
@@ -150,9 +196,14 @@ describe('constructor-store', () => {
         glazeVariant: 'cream',
         withDrips: false,
         colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
       },
       activeDecorations: [],
       selectedDecorations: [],
+      decorationInstances: [],
     });
 
     useConstructorStore.getState().recalculatePrice();
@@ -177,9 +228,14 @@ describe('constructor-store', () => {
         glazeVariant: 'cream',
         withDrips: false,
         colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
       },
       activeDecorations: [],
       selectedDecorations: [],
+      decorationInstances: [],
     });
 
     useConstructorStore.getState().recalculatePrice();
@@ -209,9 +265,14 @@ describe('constructor-store', () => {
         glazeVariant: 'cream',
         withDrips: false,
         colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
       },
       activeDecorations: [],
       selectedDecorations: [],
+      decorationInstances: [],
     });
 
     useConstructorStore.getState().recalculatePrice();
@@ -238,16 +299,248 @@ describe('constructor-store', () => {
         glazeVariant: 'cream',
         withDrips: false,
         colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
       },
       activeDecorations: ['blueberry', 'cream'],
-      selectedDecorations: [
-        { variantId: 'blueberry', decorationId: 'decor-strawberry', quantity: 2 },
-        { variantId: 'cream', decorationId: 'decor-rose', quantity: 1 },
+      selectedDecorations: [],
+      decorationInstances: [
+        {
+          instanceId: 'decor-1',
+          decorationId: 'decor-strawberry',
+          visualKey: 'blueberry',
+          position: { x: 0, y: 0, z: 0 },
+        },
+        {
+          instanceId: 'decor-2',
+          decorationId: 'decor-strawberry',
+          visualKey: 'blueberry',
+          position: { x: 0.15, y: 0, z: 0 },
+        },
+        {
+          instanceId: 'decor-3',
+          decorationId: 'decor-rose',
+          visualKey: 'cream',
+          position: { x: -0.15, y: 0, z: 0 },
+        },
       ],
     });
 
     useConstructorStore.getState().recalculatePrice();
     expect(useConstructorStore.getState().totalPrice).toBe(160000);
+  });
+
+  it('adds multiple decoration instances of the same visual key and groups them for pricing', async () => {
+    const ingredients = getMockIngredients();
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          totalPrice: 150000,
+          breakdown: {
+            tiers: [],
+            decorations: [],
+            subtotal: 150000,
+            shapeSurcharge: 0,
+            tierSurcharge: 0,
+            totalPrice: 150000,
+            totalWeightKg: 1,
+          },
+        },
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    useConstructorStore.setState({
+      ingredients,
+      shape: 'circle',
+      tierCount: 1,
+      layers: [{ baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 }],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
+      },
+      activeDecorations: [],
+      selectedDecorations: [],
+      decorationInstances: [],
+    });
+
+    useConstructorStore.getState().addDecorationInstance('blueberry', 'decor-strawberry', {
+      x: -0.18,
+      y: 0,
+      z: 0.1,
+    });
+    useConstructorStore.getState().addDecorationInstance('blueberry', 'decor-strawberry', {
+      x: 0.18,
+      y: 0,
+      z: 0.1,
+    });
+
+    const state = useConstructorStore.getState();
+    expect(state.activeDecorations).toEqual(['blueberry']);
+    expect(state.decorationInstances).toHaveLength(2);
+    expect(state.selectedDecorations).toEqual([
+      { variantId: 'blueberry', decorationId: 'decor-strawberry', quantity: 2 },
+    ]);
+
+    await useConstructorStore.getState().syncServerPrice();
+
+    const [, requestInit] = fetchMock.mock.calls.at(-1) as unknown as [string, RequestInit];
+    const requestBody = JSON.parse(String(requestInit.body));
+    expect(requestBody.decorations).toEqual([
+      { decorationId: 'decor-strawberry', quantity: 2 },
+    ]);
+  });
+
+  it('normalizes legacy persisted constructor state before loading ingredients', async () => {
+    useConstructorStore.setState({
+      activeDecorations: undefined,
+      selectedDecorations: undefined,
+      decorationInstances: undefined,
+      coating: {
+        type: 'cream',
+        coatingId: '',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+      },
+    } as unknown as Partial<ReturnType<typeof useConstructorStore.getState>>);
+
+    await expect(useConstructorStore.getState().loadIngredients()).resolves.toBeUndefined();
+
+    const state = useConstructorStore.getState();
+    expect(state.activeDecorations).toEqual([]);
+    expect(state.selectedDecorations).toEqual([]);
+    expect(state.decorationInstances).toEqual([]);
+    expect(state.coating.visual).toMatchObject({
+      mode: 'solid',
+      primaryColor: '#FFF5E0',
+    });
+    expect(state.hasCandle).toBe(false);
+  });
+
+  it('posts pricing from legacy state without decoration arrays', async () => {
+    const ingredients = getMockIngredients();
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          totalPrice: 140000,
+          breakdown: {
+            tiers: [],
+            decorations: [],
+            subtotal: 140000,
+            shapeSurcharge: 0,
+            tierSurcharge: 0,
+            totalPrice: 140000,
+            totalWeightKg: 1,
+          },
+        },
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    useConstructorStore.setState({
+      ingredients,
+      shape: 'circle',
+      tierCount: 1,
+      layers: [{ baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 }],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+      },
+      activeDecorations: undefined,
+      selectedDecorations: undefined,
+      decorationInstances: undefined,
+    } as unknown as Partial<ReturnType<typeof useConstructorStore.getState>>);
+
+    await expect(useConstructorStore.getState().syncServerPrice()).resolves.toBeUndefined();
+
+    const [, requestInit] = fetchMock.mock.calls.at(-1) as unknown as [string, RequestInit];
+    const requestBody = JSON.parse(String(requestInit.body));
+    expect(requestBody.decorations).toBeUndefined();
+    expect(useConstructorStore.getState().pricingStatus).toBe('verified');
+  });
+
+  it('syncServerPrice posts the constructor config and marks the price as verified', async () => {
+    const ingredients = getMockIngredients();
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          totalPrice: 166000,
+          breakdown: {
+            tiers: [],
+            decorations: [],
+            subtotal: 166000,
+            shapeSurcharge: 0,
+            tierSurcharge: 0,
+            totalPrice: 166000,
+            totalWeightKg: 1,
+          },
+        },
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    useConstructorStore.setState({
+      ingredients,
+      shape: 'circle',
+      tierCount: 1,
+      layers: [{ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1000 }],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
+      },
+      activeDecorations: ['candle'],
+      selectedDecorations: [],
+      decorationInstances: [
+        {
+          instanceId: 'candle-1',
+          decorationId: 'decor-candle-gold',
+          visualKey: 'candle',
+          position: { x: 0, y: 0, z: 0 },
+        },
+      ],
+      inscription: 'Codex',
+    });
+
+    await useConstructorStore.getState().syncServerPrice();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/constructor/calculate',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('decor-candle-gold'),
+      }),
+    );
+    expect(useConstructorStore.getState().pricingStatus).toBe('verified');
+    expect(useConstructorStore.getState().totalPrice).toBe(166000);
+    expect(useConstructorStore.getState().priceBreakdown).toMatchObject({
+      totalPrice: 166000,
+    });
   });
 
   it('recalculatePrice returns 0 when ingredients are null', () => {
@@ -273,6 +566,7 @@ describe('constructor-store', () => {
     expect(state.inscription).toBe('');
     expect(state.activeDecorations).toEqual([]);
     expect(state.selectedDecorations).toEqual([]);
+    expect(state.decorationInstances).toEqual([]);
     expect(state.totalPrice).toBe(0);
     expect(state.currentStep).toBe(1);
   });

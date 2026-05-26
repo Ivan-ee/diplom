@@ -1,28 +1,42 @@
 'use client';
 
+import { useId, type DragEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Check, X } from 'lucide-react';
+import { Grip, Plus, Trash2, X } from 'lucide-react';
 import { useConstructorStore } from '@/stores/constructor-store';
-import { getAvailableDecos, type CakeShape } from '@/lib/constructor/model-registry';
-import { Toggle } from '@/components/constructor/panels/StepCoating';
+import { isDecoVisualKeyAvailable, type CakeShape } from '@/lib/constructor/model-registry';
 import { cn } from '@/lib/utils';
 
 export function StepDecor() {
+  const inscriptionInputId = useId();
   const shape = useConstructorStore((s) => s.shape);
   const activeDecorations = useConstructorStore((s) => s.activeDecorations);
-  const hasCandle = useConstructorStore((s) => s.hasCandle);
+  const decorationInstances = useConstructorStore((s) => s.decorationInstances);
   const inscription = useConstructorStore((s) => s.inscription);
-  const addDecoration = useConstructorStore((s) => s.addDecoration);
-  const removeDecoration = useConstructorStore((s) => s.removeDecoration);
+  const ingredients = useConstructorStore((s) => s.ingredients);
+  const addDecorationInstance = useConstructorStore((s) => s.addDecorationInstance);
+  const removeDecorationInstance = useConstructorStore((s) => s.removeDecorationInstance);
   const clearDecorations = useConstructorStore((s) => s.clearDecorations);
-  const setHasCandle = useConstructorStore((s) => s.setHasCandle);
   const setInscription = useConstructorStore((s) => s.setInscription);
   const getConfig = useConstructorStore((s) => s.getConfig);
+  const safeActiveDecorations = Array.isArray(activeDecorations) ? activeDecorations : [];
+  const safeDecorationInstances = Array.isArray(decorationInstances) ? decorationInstances : [];
+  const safeInscription = inscription ?? '';
 
-  const decoOptions = getAvailableDecos(shape as CakeShape);
+  const decoOptions = Array.from(
+    new Map(
+      (ingredients?.decorations ?? [])
+        .filter(
+          (decoration) =>
+            decoration.available &&
+            isDecoVisualKeyAvailable(shape as CakeShape, decoration.visualKey),
+        )
+        .map((decoration) => [decoration.visualKey, decoration]),
+    ).values(),
+  );
   const maxLength = getConfig()?.maxInscriptionLength ?? 50;
   const maxDecorations = getConfig()?.maxDecorations ?? 3;
-  const isMaxReached = activeDecorations.length >= maxDecorations;
+  const isMaxReached = safeDecorationInstances.length >= maxDecorations;
 
   return (
     <div className="flex flex-col gap-5">
@@ -39,26 +53,36 @@ export function StepDecor() {
                 : 'text-[var(--color-graphite-light)]'
             )}
           >
-            {activeDecorations.length}/{maxDecorations}
+            {safeDecorationInstances.length}/{maxDecorations}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           {decoOptions.map((option) => {
-            const isActive = activeDecorations.includes(option.id);
+            const isActive = safeActiveDecorations.includes(option.visualKey);
+            const count = safeDecorationInstances.filter(
+              (instance) => instance.visualKey === option.visualKey,
+            ).length;
             const handleClick = () => {
-              if (isActive) {
-                removeDecoration(option.id);
-              } else {
-                addDecoration(option.id);
-              }
+              addDecorationInstance(option.visualKey, option.id);
+            };
+            const handleDragStart = (event: DragEvent<HTMLButtonElement>) => {
+              const payload = JSON.stringify({
+                visualKey: option.visualKey,
+                decorationId: option.id,
+              });
+              event.dataTransfer.setData('application/x-bakery-decoration', payload);
+              event.dataTransfer.setData('text/plain', payload);
+              event.dataTransfer.effectAllowed = 'copy';
             };
 
             return (
               <motion.button
-                key={option.id}
+                key={option.visualKey}
                 onClick={handleClick}
-                disabled={!isActive && isMaxReached}
+                draggable={!isMaxReached}
+                onDragStartCapture={handleDragStart}
+                disabled={isMaxReached}
                 className={cn(
                   'relative flex flex-col items-start gap-1 p-3 rounded-xl border-2 text-left transition-all duration-150 ease-out cursor-pointer',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
@@ -68,11 +92,11 @@ export function StepDecor() {
                       ? 'border-[var(--color-champagne)] opacity-40 cursor-not-allowed'
                       : 'border-[var(--color-champagne)] hover:border-[var(--color-caramel)]/40'
                 )}
-                whileTap={!isMaxReached || isActive ? { scale: 0.985 } : undefined}
+                whileTap={!isMaxReached ? { scale: 0.985 } : undefined}
               >
                 <div className="flex items-start justify-between w-full gap-1">
                   <span className="text-xs font-semibold text-[var(--color-graphite)] leading-tight">
-                    {option.label}
+                    {option.name}
                   </span>
                   <div
                     className={cn(
@@ -82,23 +106,32 @@ export function StepDecor() {
                         : 'border-[var(--color-champagne)] bg-transparent'
                     )}
                   >
-                    {isActive && <Check size={9} className="text-white" strokeWidth={3} />}
+                    {isActive ? (
+                      <span className="text-[9px] font-bold text-white">{count}</span>
+                    ) : (
+                      <Plus size={9} className="text-[var(--color-graphite-light)]" strokeWidth={3} />
+                    )}
                   </div>
                 </div>
                 <span className="text-[10px] text-[var(--color-graphite-light)] leading-tight">
-                  {option.description}
+                  {option.category} · {new Intl.NumberFormat('ru-RU').format(option.pricePerUnit / 100)} ₽
+                </span>
+                <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-[var(--color-graphite-light)]">
+                  <Grip size={10} />
+                  Перетащить на торт
                 </span>
               </motion.button>
             );
           })}
 
-          <button
-            onClick={clearDecorations}
-            disabled={activeDecorations.length === 0}
+            <button
+              type="button"
+              onClick={clearDecorations}
+              disabled={safeDecorationInstances.length === 0}
             className={cn(
               'col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-150 ease-out cursor-pointer',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
-              activeDecorations.length === 0
+              safeDecorationInstances.length === 0
                 ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5 shadow-sm opacity-40 cursor-not-allowed'
                 : 'border-[var(--color-champagne)] hover:border-[var(--color-caramel)]/40'
             )}
@@ -111,13 +144,41 @@ export function StepDecor() {
         </div>
       </div>
 
-      <div className="p-3 bg-[var(--surface-elevated)] rounded-[var(--radius-control)] border border-[var(--border-default)]">
-        <Toggle
-          checked={hasCandle}
-          onChange={setHasCandle}
-          label="Добавить свечу"
-        />
-      </div>
+      {safeDecorationInstances.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm uppercase tracking-wide">
+            Размещённый декор
+          </h3>
+          <div className="flex flex-col gap-2">
+            {safeDecorationInstances.map((instance, index) => {
+              const decoration = ingredients?.decorations.find((item) => item.id === instance.decorationId);
+              return (
+                <div
+                  key={instance.instanceId}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold text-[var(--color-graphite)]">
+                      {decoration?.name ?? `Декор ${index + 1}`}
+                    </p>
+                    <p className="text-[10px] text-[var(--color-graphite-light)]">
+                      X {instance.position.x.toFixed(2)} · Z {instance.position.z.toFixed(2)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeDecorationInstance(instance.instanceId)}
+                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[var(--border-subtle)] text-[var(--color-graphite-light)] transition hover:border-red-300 hover:text-red-500"
+                    aria-label="Удалить декор"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -127,20 +188,22 @@ export function StepDecor() {
           <span
             className={cn(
               'text-xs font-medium',
-              inscription.length >= maxLength
+              safeInscription.length >= maxLength
                 ? 'text-red-500'
-                : inscription.length > maxLength * 0.8
+                : safeInscription.length > maxLength * 0.8
                   ? 'text-orange-500'
                   : 'text-[var(--color-graphite-light)]'
             )}
           >
-            {inscription.length}/{maxLength}
+            {safeInscription.length}/{maxLength}
           </span>
         </div>
         <div className="relative">
           <input
+            id={inscriptionInputId}
+            name="cake-inscription"
             type="text"
-            value={inscription}
+            value={safeInscription}
             onChange={(e) => setInscription(e.target.value)}
             placeholder="Например: «С Днём Рождения, Аня!»"
             maxLength={maxLength}
@@ -149,8 +212,9 @@ export function StepDecor() {
               'border-[var(--color-champagne)] focus:border-[var(--color-caramel)] focus:ring-1 focus:ring-[var(--color-caramel)]/30'
             )}
           />
-          {inscription.length > 0 && (
+          {safeInscription.length > 0 && (
             <button
+              type="button"
               onClick={() => setInscription('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[var(--surface-secondary)] hover:bg-[var(--border-default)] flex items-center justify-center transition-colors cursor-pointer"
             >

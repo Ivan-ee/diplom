@@ -20,7 +20,7 @@ export class ConstructorController {
   }
 
   @Post('calculate')
-  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  @Throttle({ default: { ttl: 60000, limit: 300 } })
   @ApiOperation({
     summary: 'Calculate total price for a given cake configuration',
   })

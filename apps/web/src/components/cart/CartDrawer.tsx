@@ -6,7 +6,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Chip, DrawerRoot, DrawerBackdrop, DrawerContent, DrawerDialog, DrawerBody } from '@heroui/react';
 import { useCartStore, type CartItem } from '@/stores/cart-store';
 import { useAuth } from '@/hooks/useAuth';
 import { formatPrice, cn } from '@/lib/utils';
@@ -65,23 +64,41 @@ export function CartDrawer({ isOpen, onOpenChange }: CartDrawerProps) {
   }
 
   return (
-    <DrawerRoot isOpen={isOpen} onOpenChange={onOpenChange}>
-      <DrawerBackdrop
-        isDismissable
-        className="bg-black/30 backdrop-blur-sm"
-      >
-        <DrawerContent placement={isMobile ? 'bottom' : 'right'}>
-          <DrawerDialog className={cn(
-            "bg-[var(--surface-elevated)] outline-none flex flex-col shadow-[var(--shadow-elevated)] !p-0",
-            !isMobile && "w-[380px] max-w-full"
-          )}>
-            <DrawerBody className="flex flex-col h-full p-0 mx-0 overflow-hidden">
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.button
+            type="button"
+            aria-label="Закрыть корзину"
+            className="fixed inset-0 z-[79] bg-black/30 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            onClick={() => onOpenChange(false)}
+          />
+          <motion.aside
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cart-drawer-title"
+            className={cn(
+              'fixed z-[80] flex flex-col overflow-hidden bg-[var(--surface-elevated)] shadow-[var(--shadow-elevated)] outline-none',
+              isMobile
+                ? 'inset-x-0 bottom-0 max-h-[85dvh] rounded-t-3xl'
+                : 'right-0 top-0 h-dvh w-[380px] max-w-full',
+            )}
+            initial={isMobile ? { y: '100%' } : { x: '100%' }}
+            animate={isMobile ? { y: 0 } : { x: 0 }}
+            exit={isMobile ? { y: '100%' } : { x: '100%' }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="flex h-full flex-col overflow-hidden p-0">
 
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-default)] shrink-0">
             <div className="flex items-center gap-2.5">
               <ShoppingBag size={18} className="text-[var(--color-caramel)]" />
-              <h2 className="font-semibold text-base text-[var(--color-graphite)] leading-none">
+              <h2 id="cart-drawer-title" className="font-semibold text-base text-[var(--color-graphite)] leading-none">
                 Корзина
               </h2>
               {!isEmpty && (
@@ -172,11 +189,11 @@ export function CartDrawer({ isOpen, onOpenChange }: CartDrawerProps) {
             </>
           )}
 
-            </DrawerBody>
-          </DrawerDialog>
-        </DrawerContent>
-      </DrawerBackdrop>
-    </DrawerRoot>
+            </div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -299,14 +316,9 @@ function DrawerCartItem({ item }: { item: CartItem }) {
             {item.name}
           </p>
           {isConstructor && (
-            <Chip
-              size="sm"
-              color="accent"
-              variant="soft"
-              className="text-[10px] font-medium shrink-0"
-            >
+            <span className="inline-flex h-5 shrink-0 items-center rounded-full border border-[var(--color-caramel)]/20 bg-[var(--color-caramel)]/10 px-2 text-[10px] font-medium text-[var(--color-caramel)]">
               Собранный торт
-            </Chip>
+            </span>
           )}
         </div>
 

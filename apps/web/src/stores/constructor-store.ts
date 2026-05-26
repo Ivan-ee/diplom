@@ -1,17 +1,34 @@
 import { create } from 'zustand';
 import { persist, subscribeWithSelector } from 'zustand/middleware';
 import { getMockIngredients } from '@/lib/constructor/mock-ingredients';
+import {
+  getGlazeColor,
+  isDecoVisualKeyAvailable,
+  isFillVisualKeyAvailable,
+  isFullTierVisualKeyAvailable,
+  isGlazeVisualKeyAvailable,
+  type CakeShape as RegistryCakeShape,
+} from '@/lib/constructor/model-registry';
 
 export type CakeShape = 'circle' | 'square' | 'heart';
 export type TierCount = 1 | 2 | 3;
 export type CoatingType = 'cream' | 'fondant';
 export type ConstructorStep = 1 | 2 | 3 | 4 | 5;
 export type ColorMode = 'solid' | 'gradient' | 'splashes';
+export type ViewMode = 'orbit' | 'top' | 'focus';
+export type PricingStatus = 'idle' | 'stale' | 'updating' | 'verified' | 'error';
 
 export interface CakeLayer {
   baseId: string;
   fillingId: string;
   weight: number;
+}
+
+export interface CoatingVisual {
+  mode: ColorMode;
+  primaryColor: string;
+  secondaryColor?: string;
+  splashes?: boolean;
 }
 
 export interface CakeCoating {
@@ -21,6 +38,7 @@ export interface CakeCoating {
   withDrips: boolean;
   colorMode: ColorMode;
   secondaryGlazeVariant?: string;
+  visual: CoatingVisual;
 }
 
 export interface IngredientBase {
@@ -28,6 +46,7 @@ export interface IngredientBase {
   name: string;
   description?: string;
   pricePerKg: number;
+  visualKey: string;
   color?: string;
   available: boolean;
 }
@@ -47,6 +66,7 @@ export interface IngredientFilling {
   pricePerKg: number;
   /** Category as returned by the API. May be absent in legacy mock data. */
   category?: FillingCategory;
+  visualKey: string;
   imageUrl?: string;
   available: boolean;
 }
@@ -56,6 +76,7 @@ export interface IngredientCoating {
   type: CoatingType;
   name: string;
   pricePerKg: number;
+  visualKey: string;
   available: boolean;
 }
 
@@ -64,6 +85,7 @@ export interface IngredientDecoration {
   name: string;
   category: string;
   pricePerUnit: number;
+  visualKey: string;
   available: boolean;
 }
 
@@ -71,6 +93,19 @@ export interface DecorationSelection {
   variantId: string;
   decorationId: string;
   quantity: number;
+}
+
+export interface DecorationPosition {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface DecorationInstance {
+  instanceId: string;
+  decorationId: string;
+  visualKey: string;
+  position: DecorationPosition;
 }
 
 export interface ShapeInfo {
@@ -104,19 +139,27 @@ export interface ConstructorCatalog {
 
 export interface ConstructorState {
   currentStep: ConstructorStep;
+  viewMode: ViewMode;
   shape: CakeShape;
   tierCount: TierCount;
   layers: CakeLayer[];
   coating: CakeCoating;
   activeDecorations: string[];
   selectedDecorations: DecorationSelection[];
+  decorationInstances: DecorationInstance[];
   hasCandle: boolean;
   inscription: string;
   ingredients: ConstructorCatalog | null;
   totalPrice: number;
+  pricingStatus: PricingStatus;
+  priceBreakdown: ConstructorPriceBreakdown | null;
+  priceError: string | null;
+  priceVerifiedAt: number | null;
+  lastPricingSignature: string | null;
   isLoading: boolean;
 
   setStep: (step: ConstructorStep) => void;
+  setViewMode: (mode: ViewMode) => void;
   setShape: (shape: CakeShape) => void;
   setTierCount: (count: TierCount) => void;
   setLayerBase: (tierIndex: number, baseId: string) => void;
@@ -128,15 +171,46 @@ export interface ConstructorState {
   setWithDrips: (withDrips: boolean) => void;
   setColorMode: (mode: ColorMode) => void;
   setSecondaryGlazeVariant: (variant: string) => void;
-  addDecoration: (variantId: string) => void;
+  addDecoration: (variantId: string, decorationId?: string) => void;
+  addDecorationInstance: (
+    visualKey: string,
+    decorationId?: string,
+    position?: Partial<DecorationPosition>,
+  ) => void;
+  moveDecorationInstance: (instanceId: string, position: Partial<DecorationPosition>) => void;
+  removeDecorationInstance: (instanceId: string) => void;
   removeDecoration: (variantId: string) => void;
   clearDecorations: () => void;
   setHasCandle: (hasCandle: boolean) => void;
   setInscription: (text: string) => void;
   loadIngredients: () => Promise<void>;
   recalculatePrice: () => void;
+  syncServerPrice: () => Promise<void>;
   reset: () => void;
   getConfig: () => ConstructorConfig | null;
+}
+
+export interface ConstructorPriceBreakdown {
+  tiers?: Array<{
+    weightKg: number;
+    base: { id: string; name: string; pricePerKg: number };
+    filling: { id: string; name: string; pricePerKg: number };
+    baseCost: number;
+    fillingCost: number;
+  }>;
+  coating?: { id: string; name: string; pricePerKg: number; cost: number };
+  decorations?: Array<{
+    id: string;
+    name: string;
+    pricePerUnit: number;
+    quantity: number;
+    cost: number;
+  }>;
+  subtotal: number;
+  shapeSurcharge: number;
+  tierSurcharge: number;
+  totalPrice: number;
+  totalWeightKg: number;
 }
 
 const DEFAULT_LAYER: CakeLayer = {
@@ -151,9 +225,82 @@ const DEFAULT_COATING: CakeCoating = {
   glazeVariant: 'cream',
   withDrips: false,
   colorMode: 'solid' as ColorMode,
+  visual: {
+    mode: 'solid',
+    primaryColor: getGlazeColor('cream'),
+  },
 };
 
-const buildLayers = (count: TierCount, existing: CakeLayer[]): CakeLayer[] => {
+const DEFAULT_DECORATION_POSITION: DecorationPosition = { x: 0, y: 0, z: 0 };
+
+function asArray<T>(value: T[] | null | undefined): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function isColorMode(value: unknown): value is ColorMode {
+  return value === 'solid' || value === 'gradient' || value === 'splashes';
+}
+
+export function normalizeCoating(coating?: Partial<CakeCoating> | null): CakeCoating {
+  const glazeVariant = coating?.glazeVariant ?? DEFAULT_COATING.glazeVariant;
+  const colorMode = isColorMode(coating?.colorMode)
+    ? coating.colorMode
+    : isColorMode(coating?.visual?.mode)
+      ? coating.visual.mode
+      : DEFAULT_COATING.colorMode;
+  const visualMode = isColorMode(coating?.visual?.mode) ? coating.visual.mode : colorMode;
+  const secondaryColor = coating?.visual?.secondaryColor ??
+    (coating?.secondaryGlazeVariant ? getGlazeColor(coating.secondaryGlazeVariant) : undefined);
+
+  return {
+    type: coating?.type ?? DEFAULT_COATING.type,
+    coatingId: coating?.coatingId ?? DEFAULT_COATING.coatingId,
+    glazeVariant,
+    withDrips: coating?.withDrips ?? DEFAULT_COATING.withDrips,
+    colorMode,
+    secondaryGlazeVariant: coating?.secondaryGlazeVariant,
+    visual: {
+      mode: visualMode,
+      primaryColor: coating?.visual?.primaryColor ?? getGlazeColor(glazeVariant),
+      ...(secondaryColor ? { secondaryColor } : {}),
+      splashes: coating?.visual?.splashes ?? visualMode === 'splashes',
+    },
+  };
+}
+
+function normalizeConstructorStateFields(
+  state: Partial<ConstructorState> & { decorVariant?: unknown },
+): Partial<ConstructorState> {
+  const tierCount = state.tierCount ?? 1;
+  const legacyDecorVariant = typeof state.decorVariant === 'string' ? state.decorVariant : null;
+  const activeDecorations = asArray(state.activeDecorations);
+  const normalizedActiveDecorations =
+    activeDecorations.length > 0 ? activeDecorations : legacyDecorVariant ? [legacyDecorVariant] : [];
+  const decorationInstances = asArray(state.decorationInstances);
+  const syncedDecorations = decorationInstances.length > 0
+    ? syncDecorationState(decorationInstances)
+    : {
+        activeDecorations: normalizedActiveDecorations,
+        selectedDecorations: asArray(state.selectedDecorations),
+        hasCandle: normalizedActiveDecorations.includes('candle') || Boolean(state.hasCandle),
+      };
+
+  return {
+    layers: buildLayers(tierCount, asArray(state.layers)),
+    coating: normalizeCoating(state.coating),
+    activeDecorations: syncedDecorations.activeDecorations,
+    selectedDecorations: syncedDecorations.selectedDecorations,
+    decorationInstances,
+    hasCandle: syncedDecorations.hasCandle,
+    pricingStatus: 'stale',
+    priceBreakdown: null,
+    priceError: null,
+    priceVerifiedAt: null,
+    lastPricingSignature: null,
+  };
+}
+
+const buildLayers = (count: TierCount, existing: CakeLayer[] = []): CakeLayer[] => {
   const arr: CakeLayer[] = [];
   for (let i = 0; i < count; i++) {
     arr.push(existing[i] ?? { ...DEFAULT_LAYER });
@@ -161,47 +308,27 @@ const buildLayers = (count: TierCount, existing: CakeLayer[]): CakeLayer[] => {
   return arr;
 };
 
-function decorationSearchText(decoration: IngredientDecoration): string {
-  return `${decoration.name} ${decoration.category}`.toLowerCase();
-}
-
-function findDecorationByKeywords(
-  decorations: IngredientDecoration[],
-  keywords: string[],
-): IngredientDecoration | undefined {
-  return decorations.find((decoration) => {
-    const text = decorationSearchText(decoration);
-    return keywords.some((keyword) => text.includes(keyword));
-  });
-}
-
 export function createDecorationSelection(
   variantId: string,
   decorations: IngredientDecoration[],
+  decorationId?: string,
 ): DecorationSelection | null {
-  const availableDecorations = decorations.filter((decoration) => decoration.available);
+  const availableDecorations = asArray(decorations).filter((decoration) => decoration.available);
   if (availableDecorations.length === 0) return null;
 
   const variant = variantId.toLowerCase();
-  let selectedDecoration: IngredientDecoration | undefined;
+  let selectedDecoration = decorationId
+    ? availableDecorations.find((decoration) => decoration.id === decorationId)
+    : undefined;
 
-  if (variant.includes('blueberry')) {
-    selectedDecoration = findDecorationByKeywords(
-      availableDecorations,
-      ['голуб', 'черник', 'blueberry', 'berries', 'ягод'],
-    );
-  } else if (variant.includes('chocolate') || variant.includes('choco')) {
-    selectedDecoration = findDecorationByKeywords(availableDecorations, ['шоколад', 'chocolate']);
-  } else if (variant.includes('meringue')) {
-    selectedDecoration = findDecorationByKeywords(availableDecorations, ['меренг', 'безе', 'topper', 'топпер']);
-  } else if (variant.includes('cream') || variant.includes('glaze') || variant.includes('pink')) {
-    selectedDecoration = findDecorationByKeywords(
-      availableDecorations,
-      ['крем', 'cream', 'роза', 'цвет', 'flower'],
+  if (!selectedDecoration) {
+    selectedDecoration = availableDecorations.find(
+      (decoration) => decoration.visualKey?.toLowerCase() === variant,
     );
   }
 
-  const decoration = selectedDecoration ?? availableDecorations[0];
+  const decoration = selectedDecoration;
+  if (!decoration) return null;
 
   return {
     variantId,
@@ -214,10 +341,256 @@ function buildDecorationSelections(
   variantIds: string[],
   decorations: IngredientDecoration[],
 ): DecorationSelection[] {
-  return variantIds.flatMap((variantId) => {
+  return asArray(variantIds).flatMap((variantId) => {
     const selection = createDecorationSelection(variantId, decorations);
     return selection ? [selection] : [];
   });
+}
+
+function createDecorationInstanceId(): string {
+  return `decor-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeDecorationPosition(
+  position?: Partial<DecorationPosition>,
+  fallbackIndex = 0,
+): DecorationPosition {
+  const angle = fallbackIndex * 2.399963229728653;
+  const radius = fallbackIndex === 0 ? 0 : 0.28;
+  return {
+    x: position?.x ?? (fallbackIndex === 0 ? DEFAULT_DECORATION_POSITION.x : Math.cos(angle) * radius),
+    y: position?.y ?? DEFAULT_DECORATION_POSITION.y,
+    z: position?.z ?? (fallbackIndex === 0 ? DEFAULT_DECORATION_POSITION.z : Math.sin(angle) * radius),
+  };
+}
+
+function activeDecorationKeysFromInstances(instances: DecorationInstance[]): string[] {
+  return Array.from(new Set(asArray(instances).map((instance) => instance.visualKey)));
+}
+
+function groupDecorationInstances(instances: DecorationInstance[]): DecorationSelection[] {
+  const grouped = new Map<string, DecorationSelection>();
+
+  for (const instance of asArray(instances)) {
+    const current = grouped.get(instance.decorationId);
+    if (current) {
+      current.quantity += 1;
+    } else {
+      grouped.set(instance.decorationId, {
+        variantId: instance.visualKey,
+        decorationId: instance.decorationId,
+        quantity: 1,
+      });
+    }
+  }
+
+  return Array.from(grouped.values());
+}
+
+function syncDecorationState(instances: DecorationInstance[]): Pick<
+  ConstructorState,
+  'activeDecorations' | 'selectedDecorations' | 'hasCandle'
+> {
+  const normalizedInstances = asArray(instances);
+  const activeDecorations = activeDecorationKeysFromInstances(normalizedInstances);
+
+  return {
+    activeDecorations,
+    selectedDecorations: groupDecorationInstances(normalizedInstances),
+    hasCandle: activeDecorations.includes('candle'),
+  };
+}
+
+function findCompatibleBaseId(
+  bases: IngredientBase[],
+  shape: CakeShape,
+  preferredId?: string,
+): string {
+  const registryShape = shape as RegistryCakeShape;
+  const isCompatible = (base: IngredientBase) =>
+    base.available && isFullTierVisualKeyAvailable(registryShape, base.visualKey);
+
+  const preferred = bases.find((base) => base.id === preferredId);
+  if (preferred && isCompatible(preferred)) return preferred.id;
+
+  return bases.find(isCompatible)?.id ?? '';
+}
+
+function findCompatibleFillingId(
+  fillings: IngredientFilling[],
+  shape: CakeShape,
+  preferredId?: string,
+): string {
+  const registryShape = shape as RegistryCakeShape;
+  const isCompatible = (filling: IngredientFilling) =>
+    filling.available && isFillVisualKeyAvailable(registryShape, filling.visualKey);
+
+  const preferred = fillings.find((filling) => filling.id === preferredId);
+  if (preferred && isCompatible(preferred)) return preferred.id;
+
+  return fillings.find(isCompatible)?.id ?? '';
+}
+
+function findCompatibleCoating(
+  coatings: IngredientCoating[],
+  shape: CakeShape,
+  preferredId?: string,
+  preferredVisualKey?: string,
+): IngredientCoating | undefined {
+  const registryShape = shape as RegistryCakeShape;
+  const isCompatible = (coating: IngredientCoating) =>
+    coating.available && isGlazeVisualKeyAvailable(registryShape, coating.visualKey);
+
+  const preferredById = coatings.find((coating) => coating.id === preferredId);
+  if (preferredById && isCompatible(preferredById)) return preferredById;
+
+  const preferredByVisualKey = coatings.find(
+    (coating) => coating.visualKey === preferredVisualKey && isCompatible(coating),
+  );
+  if (preferredByVisualKey) return preferredByVisualKey;
+
+  return coatings.find(isCompatible);
+}
+
+function repairDecorationsForShape(
+  activeDecorations: string[],
+  selectedDecorations: DecorationSelection[],
+  decorationInstances: DecorationInstance[],
+  decorations: IngredientDecoration[],
+  shape: CakeShape,
+): {
+  activeDecorations: string[];
+  selectedDecorations: DecorationSelection[];
+  decorationInstances: DecorationInstance[];
+} {
+  const registryShape = shape as RegistryCakeShape;
+  const normalizedActiveDecorations = asArray(activeDecorations);
+  const normalizedSelectedDecorations = asArray(selectedDecorations);
+  const normalizedDecorationInstances = asArray(decorationInstances);
+  const normalizedDecorations = asArray(decorations);
+
+  if (normalizedDecorationInstances.length > 0) {
+    const compatibleInstances = normalizedDecorationInstances.filter((instance) => {
+      const decoration = normalizedDecorations.find((item) => item.id === instance.decorationId);
+      return Boolean(
+        decoration?.available &&
+          decoration.visualKey === instance.visualKey &&
+          isDecoVisualKeyAvailable(registryShape, decoration.visualKey),
+      );
+    });
+    const synced = syncDecorationState(compatibleInstances);
+
+    return {
+      ...synced,
+      decorationInstances: compatibleInstances,
+    };
+  }
+
+  const compatibleActiveDecorations = normalizedActiveDecorations.filter((variantId) =>
+    isDecoVisualKeyAvailable(registryShape, variantId),
+  );
+  const compatibleSelections = normalizedSelectedDecorations.filter((selection) => {
+    if (!compatibleActiveDecorations.includes(selection.variantId)) return false;
+    const decoration = normalizedDecorations.find((item) => item.id === selection.decorationId);
+    return Boolean(
+      decoration?.available &&
+        decoration.visualKey === selection.variantId &&
+        isDecoVisualKeyAvailable(registryShape, decoration.visualKey),
+    );
+  });
+
+  const missingSelections = compatibleActiveDecorations.filter(
+    (variantId) => !compatibleSelections.some((selection) => selection.variantId === variantId),
+  );
+
+  return {
+    activeDecorations: compatibleActiveDecorations,
+    selectedDecorations: [
+      ...compatibleSelections,
+      ...buildDecorationSelections(missingSelections, normalizedDecorations),
+    ],
+    decorationInstances: [],
+  };
+}
+
+function repairSelectionsForCompatibility(
+  state: Pick<
+    ConstructorState,
+    | 'shape'
+    | 'tierCount'
+    | 'layers'
+    | 'coating'
+    | 'activeDecorations'
+    | 'selectedDecorations'
+    | 'decorationInstances'
+  >,
+  ingredients: ConstructorCatalog | null,
+): Pick<
+  ConstructorState,
+  'layers' | 'coating' | 'activeDecorations' | 'selectedDecorations' | 'decorationInstances' | 'hasCandle'
+> {
+  const normalizedLayers = buildLayers(state.tierCount, asArray(state.layers));
+  const normalizedCoating = normalizeCoating(state.coating);
+  const normalizedActiveDecorations = asArray(state.activeDecorations);
+  const normalizedSelectedDecorations = asArray(state.selectedDecorations);
+  const normalizedDecorationInstances = asArray(state.decorationInstances);
+
+  if (!ingredients) {
+    return {
+      layers: normalizedLayers,
+      coating: normalizedCoating,
+      activeDecorations: normalizedActiveDecorations,
+      selectedDecorations: normalizedSelectedDecorations,
+      decorationInstances: normalizedDecorationInstances,
+      hasCandle: normalizedDecorationInstances.length > 0
+        ? normalizedDecorationInstances.some((instance) => instance.visualKey === 'candle')
+        : normalizedActiveDecorations.includes('candle'),
+    };
+  }
+
+  const layers = normalizedLayers.map((layer, index) => ({
+    ...layer,
+    baseId: findCompatibleBaseId(
+      ingredients.bases,
+      state.shape,
+      layer.baseId,
+    ),
+    fillingId: findCompatibleFillingId(ingredients.fillings, state.shape, layer.fillingId),
+  }));
+  const compatibleCoating = findCompatibleCoating(
+    ingredients.coatings,
+    state.shape,
+    normalizedCoating.coatingId,
+    normalizedCoating.glazeVariant,
+  );
+  const coating = compatibleCoating
+    ? normalizeCoating({
+        ...normalizedCoating,
+        type: compatibleCoating.type,
+        coatingId: compatibleCoating.id,
+        glazeVariant: compatibleCoating.visualKey,
+        visual: {
+          ...normalizedCoating.visual,
+          primaryColor: getGlazeColor(compatibleCoating.visualKey),
+        },
+      })
+    : normalizedCoating;
+  const decorations = repairDecorationsForShape(
+    normalizedActiveDecorations,
+    normalizedSelectedDecorations,
+    normalizedDecorationInstances,
+    ingredients.decorations,
+    state.shape,
+  );
+
+  return {
+    layers,
+    coating,
+    activeDecorations: decorations.activeDecorations,
+    selectedDecorations: decorations.selectedDecorations,
+    decorationInstances: decorations.decorationInstances,
+    hasCandle: decorations.activeDecorations.includes('candle'),
+  };
 }
 
 function applyDefaultSelections(
@@ -225,14 +598,24 @@ function applyDefaultSelections(
   ingredients: ConstructorCatalog,
 ): Partial<ConstructorState> {
   const updates: Partial<ConstructorState> = {};
+  const normalizedCoating = normalizeCoating(state.coating);
 
-  if (!state.coating.coatingId && ingredients.coatings.length > 0) {
+  if (!normalizedCoating.coatingId && ingredients.coatings.length > 0) {
     const defaultCoating = ingredients.coatings.find((c) => c.type === 'cream') ?? ingredients.coatings[0];
-    updates.coating = { ...state.coating, coatingId: defaultCoating.id };
+    updates.coating = {
+      ...normalizedCoating,
+      coatingId: defaultCoating.id,
+      glazeVariant: defaultCoating.visualKey,
+      visual: {
+        ...normalizedCoating.visual,
+        primaryColor: getGlazeColor(defaultCoating.visualKey),
+      },
+    };
   }
 
-  if (state.layers[0] && !state.layers[0].baseId && ingredients.bases.length > 0) {
-    const layers = state.layers.map((l, i) => ({
+  const layersForDefaults = asArray(state.layers);
+  if (layersForDefaults[0] && !layersForDefaults[0].baseId && ingredients.bases.length > 0) {
+    const layers = layersForDefaults.map((l, i) => ({
       ...l,
       baseId: l.baseId || (ingredients.bases[i % ingredients.bases.length]?.id ?? ''),
       fillingId: l.fillingId || (ingredients.fillings[0]?.id ?? ''),
@@ -243,137 +626,399 @@ function applyDefaultSelections(
   return updates;
 }
 
+function normalizeConfig(config: Partial<ConstructorConfig> & {
+  minWeight?: number;
+  maxWeight?: number;
+  maxInscription?: number;
+}): ConstructorConfig {
+  return {
+    maxDecorations: config.maxDecorations ?? 20,
+    maxInscriptionLength: config.maxInscriptionLength ?? config.maxInscription ?? 50,
+    minWeightPerTier: config.minWeightPerTier ?? (config.minWeight ? config.minWeight * 1000 : 500),
+    maxWeightPerTier: config.maxWeightPerTier ?? (config.maxWeight ? config.maxWeight * 1000 : 5000),
+    weightStep: config.weightStep ?? 500,
+  };
+}
+
+function normalizeCatalog(catalog: Partial<ConstructorCatalog> | null | undefined): ConstructorCatalog {
+  return {
+    bases: asArray(catalog?.bases).map((b: any) => ({
+      ...b,
+      available: b.available ?? b.isAvailable ?? true,
+      visualKey: b.visualKey ?? 'default',
+    })),
+    fillings: asArray(catalog?.fillings).map((f: any) => ({
+      ...f,
+      available: f.available ?? f.isAvailable ?? true,
+      imageUrl: f.imageUrl ?? f.image_url ?? null,
+      visualKey: f.visualKey ?? 'cream',
+    })),
+    coatings: asArray(catalog?.coatings).map((c: any) => ({
+      ...c,
+      available: c.available ?? c.isAvailable ?? true,
+      visualKey: c.visualKey ?? 'cream',
+    })),
+    decorations: asArray(catalog?.decorations).map((d: any) => ({
+      ...d,
+      available: d.available ?? d.isAvailable ?? true,
+      visualKey: d.visualKey ?? 'cream',
+    })),
+    shapes: asArray(catalog?.shapes),
+    tierSurcharges: asArray(catalog?.tierSurcharges),
+    config: normalizeConfig(catalog?.config ?? {}),
+  };
+}
+
+function buildPricingPayload(state: ConstructorState) {
+  const decorationInstances = asArray(state.decorationInstances);
+  const selectedDecorations = asArray(state.selectedDecorations);
+  const decorationSelections =
+    decorationInstances.length > 0
+      ? groupDecorationInstances(decorationInstances)
+      : selectedDecorations;
+  const decorations =
+    decorationSelections.length > 0
+      ? decorationSelections.map(({ decorationId, quantity }) => ({
+          decorationId,
+          quantity,
+        }))
+      : undefined;
+
+  return {
+    shape: state.shape,
+    tiers: asArray(state.layers).map((layer) => ({
+      baseId: layer.baseId,
+      fillingId: layer.fillingId,
+      weight: Math.round(layer.weight / 100),
+    })),
+    coatingId: normalizeCoating(state.coating).coatingId,
+    ...(decorations && decorations.length > 0 ? { decorations } : {}),
+    ...(state.inscription?.trim() ? { inscription: state.inscription.trim() } : {}),
+  };
+}
+
+function hasCompletePricingPayload(state: ConstructorState): boolean {
+  const layers = asArray(state.layers);
+  return (
+    layers.length > 0 &&
+    layers.every((layer) => layer.baseId && layer.fillingId && layer.weight > 0) &&
+    Boolean(normalizeCoating(state.coating).coatingId)
+  );
+}
+
+function markPriceStale(set: (partial: Partial<ConstructorState>) => void) {
+  set({
+    pricingStatus: 'stale',
+    priceError: null,
+    priceVerifiedAt: null,
+  });
+}
+
+function getCsrfToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+  return match?.[1] ?? null;
+}
+
 export const useConstructorStore = create<ConstructorState>()(
   persist(
     subscribeWithSelector((set, get) => ({
       currentStep: 1,
+      viewMode: 'orbit',
       shape: 'circle',
       tierCount: 1,
       layers: [{ ...DEFAULT_LAYER }],
       coating: { ...DEFAULT_COATING },
       activeDecorations: [],
       selectedDecorations: [],
+      decorationInstances: [],
       hasCandle: false,
       inscription: '',
       ingredients: null,
       totalPrice: 0,
+      pricingStatus: 'idle',
+      priceBreakdown: null,
+      priceError: null,
+      priceVerifiedAt: null,
+      lastPricingSignature: null,
       isLoading: false,
 
       setStep: (step) => set({ currentStep: step }),
 
+      setViewMode: (viewMode) => set({ viewMode }),
+
       setShape: (shape) => {
-        set({ shape, activeDecorations: [], selectedDecorations: [], hasCandle: false });
+        const current = get();
+        set({
+          shape,
+          ...repairSelectionsForCompatibility({ ...current, shape }, current.ingredients),
+        });
         get().recalculatePrice();
+        markPriceStale(set);
       },
 
       setTierCount: (count) => {
-        const existing = get().layers;
-        set({ tierCount: count, layers: buildLayers(count, existing) });
+        const current = get();
+        set({
+          tierCount: count,
+          ...repairSelectionsForCompatibility(
+            { ...current, tierCount: count, layers: buildLayers(count, current.layers) },
+            current.ingredients,
+          ),
+        });
         get().recalculatePrice();
+        markPriceStale(set);
       },
 
       setLayerBase: (tierIndex, baseId) => {
-        const layers = [...get().layers];
+        const layers = [...asArray(get().layers)];
         if (layers[tierIndex]) {
+          const { ingredients, shape } = get();
+          const base = ingredients?.bases.find((item) => item.id === baseId);
+          if (
+            base &&
+            !isFullTierVisualKeyAvailable(shape as RegistryCakeShape, base.visualKey)
+          ) {
+            return;
+          }
           layers[tierIndex] = { ...layers[tierIndex], baseId };
           set({ layers });
           get().recalculatePrice();
+          markPriceStale(set);
         }
       },
 
       setLayerFilling: (tierIndex, fillingId) => {
-        const layers = [...get().layers];
+        const layers = [...asArray(get().layers)];
         if (layers[tierIndex]) {
+          const { ingredients, shape } = get();
+          const filling = ingredients?.fillings.find((item) => item.id === fillingId);
+          if (
+            filling &&
+            !isFillVisualKeyAvailable(shape as RegistryCakeShape, filling.visualKey)
+          ) {
+            return;
+          }
           layers[tierIndex] = { ...layers[tierIndex], fillingId };
           set({ layers });
           get().recalculatePrice();
+          markPriceStale(set);
         }
       },
 
       setLayerWeight: (tierIndex, weight) => {
-        const layers = [...get().layers];
+        const layers = [...asArray(get().layers)];
         if (layers[tierIndex]) {
           layers[tierIndex] = { ...layers[tierIndex], weight };
           set({ layers });
           get().recalculatePrice();
+          markPriceStale(set);
         }
       },
 
       setCoatingType: (type) => {
         const ingredients = get().ingredients;
-        const matchingCoating = ingredients?.coatings.find((c) => c.type === type);
+        const shape = get().shape;
+        const matchingCoating = ingredients?.coatings.find(
+          (c) =>
+            c.type === type &&
+            c.available &&
+            isGlazeVisualKeyAvailable(shape as RegistryCakeShape, c.visualKey),
+        );
         set((state) => ({
           coating: {
-            ...state.coating,
+            ...normalizeCoating(state.coating),
             type,
-            coatingId: matchingCoating?.id ?? state.coating.coatingId,
+            coatingId: matchingCoating?.id ?? normalizeCoating(state.coating).coatingId,
+            glazeVariant: matchingCoating?.visualKey ?? normalizeCoating(state.coating).glazeVariant,
+            visual: {
+              ...normalizeCoating(state.coating).visual,
+              primaryColor: getGlazeColor(matchingCoating?.visualKey ?? normalizeCoating(state.coating).glazeVariant),
+            },
           },
         }));
         get().recalculatePrice();
+        markPriceStale(set);
       },
 
       setCoatingId: (id) => {
-        set((state) => ({ coating: { ...state.coating, coatingId: id } }));
+        const { ingredients, shape } = get();
+        const coating = ingredients?.coatings.find((item) => item.id === id);
+        if (
+          coating &&
+          !isGlazeVisualKeyAvailable(shape as RegistryCakeShape, coating.visualKey)
+        ) {
+          return;
+        }
+        set((state) => ({
+          coating: {
+            ...normalizeCoating(state.coating),
+            coatingId: id,
+            glazeVariant: coating?.visualKey ?? normalizeCoating(state.coating).glazeVariant,
+            type: coating?.type ?? normalizeCoating(state.coating).type,
+            visual: {
+              ...normalizeCoating(state.coating).visual,
+              primaryColor: getGlazeColor(coating?.visualKey ?? normalizeCoating(state.coating).glazeVariant),
+            },
+          },
+        }));
         get().recalculatePrice();
+        markPriceStale(set);
       },
 
       setGlazeVariant: (variant) => {
-        set((state) => ({ coating: { ...state.coating, glazeVariant: variant } }));
+        const { shape, ingredients } = get();
+        if (!isGlazeVisualKeyAvailable(shape as RegistryCakeShape, variant)) return;
+        const matchingCoating = ingredients?.coatings.find(
+          (coating) => coating.available && coating.visualKey === variant,
+        );
+        set((state) => ({
+          coating: {
+            ...normalizeCoating(state.coating),
+            glazeVariant: variant,
+            coatingId: matchingCoating?.id ?? normalizeCoating(state.coating).coatingId,
+            type: matchingCoating?.type ?? normalizeCoating(state.coating).type,
+            visual: {
+              ...normalizeCoating(state.coating).visual,
+              primaryColor: getGlazeColor(variant),
+            },
+          },
+        }));
+        markPriceStale(set);
       },
 
       setWithDrips: (withDrips) => {
-        set((state) => ({ coating: { ...state.coating, withDrips } }));
+        set((state) => ({ coating: { ...normalizeCoating(state.coating), withDrips } }));
+        markPriceStale(set);
       },
 
       setColorMode: (mode) => {
         set((state) => ({
-          coating: { ...state.coating, colorMode: mode, withDrips: mode === 'splashes' },
+          coating: {
+            ...normalizeCoating(state.coating),
+            colorMode: mode,
+            withDrips: mode === 'splashes',
+            visual: {
+              ...normalizeCoating(state.coating).visual,
+              mode,
+              splashes: mode === 'splashes',
+            },
+          },
         }));
+        markPriceStale(set);
       },
 
       setSecondaryGlazeVariant: (variant) => {
         set((state) => ({
-          coating: { ...state.coating, secondaryGlazeVariant: variant },
+          coating: {
+            ...normalizeCoating(state.coating),
+            secondaryGlazeVariant: variant,
+            visual: {
+              ...normalizeCoating(state.coating).visual,
+              secondaryColor: getGlazeColor(variant),
+            },
+          },
         }));
+        markPriceStale(set);
       },
 
-      addDecoration: (variantId) => {
-        const { activeDecorations, ingredients, selectedDecorations } = get();
-        const max = ingredients?.config?.maxDecorations ?? 3;
-        if (activeDecorations.length >= max || activeDecorations.includes(variantId)) return;
+      addDecoration: (variantId, decorationId) => {
+        get().addDecorationInstance(variantId, decorationId);
+      },
 
-        const selectedDecoration = createDecorationSelection(variantId, ingredients?.decorations ?? []);
+      addDecorationInstance: (visualKey, decorationId, position) => {
+        const { ingredients, shape } = get();
+        const decorationInstances = asArray(get().decorationInstances);
+        const max = ingredients?.config?.maxDecorations ?? 3;
+        if (decorationInstances.length >= max) return;
+        if (!isDecoVisualKeyAvailable(shape as RegistryCakeShape, visualKey)) return;
+
+        const selectedDecoration = createDecorationSelection(visualKey, ingredients?.decorations ?? [], decorationId);
+        if (!selectedDecoration) return;
+        const nextInstances: DecorationInstance[] = [
+          ...decorationInstances,
+          {
+            instanceId: createDecorationInstanceId(),
+            decorationId: selectedDecoration.decorationId,
+            visualKey,
+            position: normalizeDecorationPosition(position, decorationInstances.length),
+          },
+        ];
         set({
-          activeDecorations: [...activeDecorations, variantId],
-          selectedDecorations: selectedDecoration
-            ? [...selectedDecorations, selectedDecoration]
-            : selectedDecorations,
+          decorationInstances: nextInstances,
+          ...syncDecorationState(nextInstances),
         });
         get().recalculatePrice();
+        markPriceStale(set);
+      },
+
+      moveDecorationInstance: (instanceId, position) => {
+        const nextInstances = asArray(get().decorationInstances).map((instance) =>
+          instance.instanceId === instanceId
+            ? {
+                ...instance,
+                position: {
+                  ...instance.position,
+                  ...position,
+                },
+              }
+            : instance,
+        );
+        set({ decorationInstances: nextInstances });
+        markPriceStale(set);
+      },
+
+      removeDecorationInstance: (instanceId) => {
+        const nextInstances = asArray(get().decorationInstances).filter(
+          (instance) => instance.instanceId !== instanceId,
+        );
+        set({
+          decorationInstances: nextInstances,
+          ...syncDecorationState(nextInstances),
+        });
+        get().recalculatePrice();
+        markPriceStale(set);
       },
 
       removeDecoration: (variantId) => {
-        const { activeDecorations, selectedDecorations } = get();
+        const { activeDecorations, selectedDecorations, decorationInstances } = get();
+        const normalizedDecorationInstances = asArray(decorationInstances);
+        const nextInstances = normalizedDecorationInstances.filter((instance) => instance.visualKey !== variantId);
+        if (normalizedDecorationInstances.length > 0) {
+          set({
+            decorationInstances: nextInstances,
+            ...syncDecorationState(nextInstances),
+          });
+          get().recalculatePrice();
+          markPriceStale(set);
+          return;
+        }
+
         set({
-          activeDecorations: activeDecorations.filter((id) => id !== variantId),
-          selectedDecorations: selectedDecorations.filter((selection) => selection.variantId !== variantId),
+          activeDecorations: asArray(activeDecorations).filter((id) => id !== variantId),
+          selectedDecorations: asArray(selectedDecorations).filter((selection) => selection.variantId !== variantId),
+          decorationInstances: [],
         });
         get().recalculatePrice();
+        markPriceStale(set);
       },
 
       clearDecorations: () => {
-        set({ activeDecorations: [], selectedDecorations: [] });
+        set({ activeDecorations: [], selectedDecorations: [], decorationInstances: [], hasCandle: false });
         get().recalculatePrice();
+        markPriceStale(set);
       },
 
       setHasCandle: (hasCandle) => {
         set({ hasCandle });
         get().recalculatePrice();
+        markPriceStale(set);
       },
 
       setInscription: (text) => {
         const max = get().getConfig()?.maxInscriptionLength ?? 50;
         set({ inscription: text.slice(0, max) });
+        markPriceStale(set);
       },
 
       loadIngredients: async () => {
@@ -382,34 +1027,18 @@ export const useConstructorStore = create<ConstructorState>()(
           const res = await fetch('/api/constructor/ingredients');
           if (!res.ok) throw new Error('API unavailable');
           const envelope = (await res.json()) as { data?: ConstructorCatalog } | ConstructorCatalog;
-          const catalog: ConstructorCatalog = (
+          const catalog = normalizeCatalog(
             (envelope as { data?: ConstructorCatalog }).data ?? (envelope as ConstructorCatalog)
           );
-          // Normalize API field name (API returns isAvailable, mock returns available)
-          if (catalog.bases) {
-            catalog.bases = catalog.bases.map((b: any) => ({ ...b, available: b.available ?? b.isAvailable ?? true }));
-          }
-          if (catalog.fillings) {
-            catalog.fillings = catalog.fillings.map((f: any) => ({
-              ...f,
-              available: f.available ?? f.isAvailable ?? true,
-              imageUrl: f.imageUrl ?? f.image_url ?? null,
-            }));
-          }
-          if (catalog.coatings) {
-            catalog.coatings = catalog.coatings.map((c: any) => ({ ...c, available: c.available ?? c.isAvailable ?? true }));
-          }
-          if (catalog.decorations) {
-            catalog.decorations = catalog.decorations.map((d: any) => ({ ...d, available: d.available ?? d.isAvailable ?? true }));
-          }
           set({ ingredients: catalog, isLoading: false });
         } catch (err) {
           console.error('Failed to load constructor ingredients, using mock data:', err);
-          const mock = getMockIngredients();
+          const mock = normalizeCatalog(getMockIngredients());
           set({ ingredients: mock, isLoading: false });
         }
 
         // Set sensible defaults after loading
+        set(normalizeConstructorStateFields(get()));
         const state = get();
         const { ingredients } = state;
         if (!ingredients) return;
@@ -420,19 +1049,27 @@ export const useConstructorStore = create<ConstructorState>()(
         }
 
         const current = get();
-        set({
-          selectedDecorations: buildDecorationSelections(
-            current.activeDecorations,
-            ingredients.decorations,
+        set(
+          repairSelectionsForCompatibility(
+            {
+              ...current,
+              selectedDecorations: buildDecorationSelections(
+                asArray(current.activeDecorations),
+                ingredients.decorations,
+              ),
+            },
+            ingredients,
           ),
-        });
+        );
 
         get().recalculatePrice();
       },
 
       recalculatePrice: () => {
         const state = get();
-        const { ingredients, layers, shape, tierCount, coating } = state;
+        const { ingredients, shape, tierCount } = state;
+        const layers = asArray(state.layers);
+        const coating = normalizeCoating(state.coating);
         if (!ingredients) {
           set({ totalPrice: 0 });
           return;
@@ -454,23 +1091,16 @@ export const useConstructorStore = create<ConstructorState>()(
         }
 
         const decorationSelections =
-          state.selectedDecorations.length > 0
-            ? state.selectedDecorations
-            : buildDecorationSelections(state.activeDecorations, ingredients.decorations);
+          asArray(state.decorationInstances).length > 0
+            ? groupDecorationInstances(asArray(state.decorationInstances))
+            : asArray(state.selectedDecorations).length > 0
+              ? asArray(state.selectedDecorations)
+              : buildDecorationSelections(asArray(state.activeDecorations), ingredients.decorations);
 
         for (const selection of decorationSelections) {
           const decoIngredient = ingredients.decorations.find((d) => d.id === selection.decorationId);
           if (decoIngredient) {
             runningTotal += decoIngredient.pricePerUnit * selection.quantity;
-          }
-        }
-
-        if (state.hasCandle) {
-          const candleIngredient = ingredients.decorations.find(
-            (d) => d.category === 'candle' || d.name.toLowerCase().includes('свеч'),
-          );
-          if (candleIngredient) {
-            runningTotal += candleIngredient.pricePerUnit;
           }
         }
 
@@ -484,18 +1114,83 @@ export const useConstructorStore = create<ConstructorState>()(
         set({ totalPrice: Math.round(runningTotal) });
       },
 
+      syncServerPrice: async () => {
+        const state = get();
+        if (!hasCompletePricingPayload(state)) {
+          set({
+            pricingStatus: 'stale',
+            priceBreakdown: null,
+            priceError: 'Заполните основу, начинку и покрытие',
+            priceVerifiedAt: null,
+          });
+          return;
+        }
+
+        const payload = buildPricingPayload(state);
+        const signature = JSON.stringify(payload);
+        set({
+          pricingStatus: 'updating',
+          priceError: null,
+          lastPricingSignature: signature,
+        });
+
+        try {
+          const csrfToken = getCsrfToken();
+          const res = await fetch('/api/constructor/calculate', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(csrfToken ? { 'X-XSRF-TOKEN': csrfToken } : {}),
+            },
+            body: signature,
+          });
+          if (!res.ok) throw new Error(`API error: ${res.status}`);
+          const envelope = (await res.json()) as {
+            data?: { totalPrice: number; breakdown: ConstructorPriceBreakdown };
+            totalPrice?: number;
+            breakdown?: ConstructorPriceBreakdown;
+          };
+          const data = envelope.data ?? envelope;
+
+          if (get().lastPricingSignature !== signature) return;
+
+          set({
+            totalPrice: data.totalPrice ?? 0,
+            priceBreakdown: data.breakdown ?? null,
+            pricingStatus: 'verified',
+            priceError: null,
+            priceVerifiedAt: Date.now(),
+          });
+        } catch (err) {
+          if (get().lastPricingSignature !== signature) return;
+          set({
+            pricingStatus: 'error',
+            priceError: err instanceof Error ? err.message : 'Не удалось подтвердить цену',
+            priceVerifiedAt: null,
+          });
+        }
+      },
+
       reset: () => {
         set({
           currentStep: 1,
+          viewMode: 'orbit',
           shape: 'circle',
           tierCount: 1,
           layers: [{ ...DEFAULT_LAYER }],
           coating: { ...DEFAULT_COATING },
           activeDecorations: [],
           selectedDecorations: [],
+          decorationInstances: [],
           hasCandle: false,
           inscription: '',
           totalPrice: 0,
+          pricingStatus: 'idle',
+          priceBreakdown: null,
+          priceError: null,
+          priceVerifiedAt: null,
+          lastPricingSignature: null,
         });
       },
 
@@ -505,22 +1200,19 @@ export const useConstructorStore = create<ConstructorState>()(
     })),
     {
       name: 'bakery-constructor',
-      version: 2,
+      version: 3,
       migrate: (persisted: any, _version: number) => {
-        // Конвертировать старый decorVariant в activeDecorations
-        if (persisted && 'decorVariant' in persisted) {
-          persisted.activeDecorations = persisted.decorVariant ? [persisted.decorVariant] : [];
-          delete persisted.decorVariant;
-        }
-        if (persisted && !Array.isArray(persisted.selectedDecorations)) {
-          persisted.selectedDecorations = [];
-        }
-        // Добавить colorMode если отсутствует
-        if (persisted?.coating && !('colorMode' in persisted.coating)) {
-          persisted.coating.colorMode = 'solid';
-        }
-        return persisted;
+        return {
+          ...persisted,
+          viewMode: persisted?.viewMode ?? 'orbit',
+          ...normalizeConstructorStateFields(persisted ?? {}),
+        };
       },
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as Partial<ConstructorState>),
+        ...normalizeConstructorStateFields((persisted ?? {}) as Partial<ConstructorState>),
+      }),
       storage: {
         getItem: (key) => {
           const value = sessionStorage.getItem(key);
@@ -533,11 +1225,14 @@ export const useConstructorStore = create<ConstructorState>()(
         currentStep: state.currentStep,
         shape: state.shape,
         tierCount: state.tierCount,
-        layers: state.layers,
-        coating: state.coating,
-        activeDecorations: state.activeDecorations,
-        selectedDecorations: state.selectedDecorations,
-        hasCandle: state.hasCandle,
+        layers: asArray(state.layers),
+        coating: normalizeCoating(state.coating),
+        activeDecorations: asArray(state.activeDecorations),
+        selectedDecorations: asArray(state.selectedDecorations),
+        decorationInstances: asArray(state.decorationInstances),
+        hasCandle: asArray(state.decorationInstances).some((instance) => instance.visualKey === 'candle') ||
+          asArray(state.activeDecorations).includes('candle') ||
+          state.hasCandle,
         inscription: state.inscription,
       }) as unknown as ConstructorState,
     },

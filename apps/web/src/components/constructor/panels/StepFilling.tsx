@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { useConstructorStore, type FillingCategory } from '@/stores/constructor-store';
 import { TierTabs } from './TierTabs';
 import { formatPrice, cn } from '@/lib/utils';
+import { isFillVisualKeyAvailable, type CakeShape } from '@/lib/constructor/model-registry';
 
 const containerVariants = {
   hidden: {},
@@ -42,6 +44,7 @@ const CATEGORY_ORDER: FillingCategory[] = [
 
 export function StepFilling() {
   const tierCount = useConstructorStore((s) => s.tierCount);
+  const shape = useConstructorStore((s) => s.shape);
   const layers = useConstructorStore((s) => s.layers);
   const ingredients = useConstructorStore((s) => s.ingredients);
   const setLayerFilling = useConstructorStore((s) => s.setLayerFilling);
@@ -49,7 +52,9 @@ export function StepFilling() {
   const [activeTier, setActiveTier] = useState(0);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const fillings = ingredients?.fillings.filter((f) => f.available) ?? [];
+  const fillings = ingredients?.fillings.filter(
+    (f) => f.available && isFillVisualKeyAvailable(shape as CakeShape, f.visualKey),
+  ) ?? [];
   const layer = layers[activeTier];
 
   // Group by category when the API provides it; fall back to a flat list.
@@ -142,11 +147,15 @@ export function StepFilling() {
               />
               {/* Real photo on top when available */}
               {filling.imageUrl && (
-                <img
-                  src={filling.imageUrl}
-                  alt={filling.name}
-                  className="absolute top-3 left-3 right-3 w-[calc(100%-24px)] h-24 rounded-xl object-cover"
-                />
+                <div className="absolute left-3 right-3 top-3 h-24 overflow-hidden rounded-xl">
+                  <Image
+                    src={filling.imageUrl}
+                    alt={filling.name}
+                    fill
+                    sizes="224px"
+                    className="object-cover"
+                  />
+                </div>
               )}
               <p className="text-xs font-semibold text-[var(--color-graphite)] mb-1">
                 {filling.name}

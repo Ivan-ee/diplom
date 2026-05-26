@@ -15,6 +15,8 @@ export const constructorFillings = pgTable('constructor_fillings', {
   description: text('description'),
   pricePerKg: integer('price_per_kg').notNull(),
   category: fillingCategoryEnum('category').notNull().default('specialty'),
+  /** Stable visual key used by the web model registry to choose a GLB variant. */
+  visualKey: varchar('visual_key', { length: 64 }).notNull().default('cream'),
   imageUrl: text('image_url'),
   sortOrder: integer('sort_order').notNull().default(0),
   isAvailable: boolean('is_available').notNull().default(true),

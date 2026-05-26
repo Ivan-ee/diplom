@@ -3,6 +3,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsIn,
   MaxLength,
   Min,
   MinLength,
@@ -38,6 +39,20 @@ export class CreateIngredientDto {
   @IsInt()
   @Min(0)
   pricePerUnit?: number;
+
+  @ApiPropertyOptional({ description: 'Stable visual/model key used by the web 3D registry' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  visualKey?: string;
+
+  @ApiPropertyOptional({
+    description: 'Decoration category',
+    enum: ['berries', 'chocolate', 'toppers', 'flowers', 'figures', 'candle'],
+  })
+  @IsOptional()
+  @IsIn(['berries', 'chocolate', 'toppers', 'flowers', 'figures', 'candle'])
+  category?: 'berries' | 'chocolate' | 'toppers' | 'flowers' | 'figures' | 'candle';
 
   @ApiPropertyOptional({ description: 'Sort order' })
   @IsOptional()

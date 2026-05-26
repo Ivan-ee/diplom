@@ -28,7 +28,8 @@ type DecoVariant =
   | 'glaze-cream2'
   | 'glaze-choco'
   | 'glaze-pink'
-  | 'cream';
+  | 'cream'
+  | 'candle';
 
 // --- Layers -----------------------------------------------------------------
 
@@ -36,6 +37,7 @@ const LAYER_FILES: Record<CakeShape, Partial<Record<LayerVariant, string>>> = {
   circle: {
     default: 'cakeLayer.glb',
     red: 'CakeLayerRed.glb',
+    cherry: 'CakeLayerCherry.glb',
   },
   square: {
     default: 'CakeLayer.glb',
@@ -51,7 +53,10 @@ const LAYER_FILES: Record<CakeShape, Partial<Record<LayerVariant, string>>> = {
 
 const BIG_LAYER_FILES: Record<CakeShape, Partial<Record<BigLayerVariant, string>>> = {
   circle: {
+    cherry: 'CakeBigLayerCherry.glb',
     choco: 'CakeBigLayerChoco.glb',
+    cream: 'CakeBigLayerCream.glb',
+    glaze: 'CakeBigLayerGlaze.glb',
   },
   square: {
     default: 'CakeBigLayer.glb',
@@ -84,6 +89,8 @@ const FILL_FILES: Record<CakeShape, Partial<Record<FillVariant, string>>> = {
     meringue: 'CakeFillMeringue.glb',
   },
   heart: {
+    cream: 'CakeFillMeringuePink.glb',
+    meringue: 'CakeFillMeringue.glb',
     'meringue-pink': 'CakeFillMeringuePink.glb',
   },
 };
@@ -96,7 +103,7 @@ type GlazeEntry = [string, string | null];
 const GLAZE_FILES: Record<CakeShape, Partial<Record<GlazeVariant, GlazeEntry>>> = {
   circle: {
     cream: ['GlazeCream.glb', 'GlazeCream2.glb'],
-    choco: ['GlazeChoco.glb', null],
+    choco: ['GlazeChoco.glb', 'GlazeChoco2.glb'],
     milk: ['cakeGlazeMilk.glb', null],
     pink: ['cakeGlazePink.glb', null],
   },
@@ -118,16 +125,16 @@ const GLAZE_FILES: Record<CakeShape, Partial<Record<GlazeVariant, GlazeEntry>>> 
 const DECO_FILES: Record<CakeShape, Partial<Record<DecoVariant, string>>> = {
   circle: {
     blueberry: 'cakeDecorBlueberry.glb',
+    'chocolate-pink': 'cakeDecorPinkChocolate.glb',
     cream: 'cakeDecorCream.glb',
     'glaze-cream': 'cakeDecorGlaze.glb',
-    'chocolate-pink': 'cakeDecorPinkChocolate.glb',
   },
   square: {
     blueberry: 'DecoBlueberry.glb',
     chocolate: 'DecoChocolate.glb',
     'chocolate-choco': 'DecoChocolateChoco.glb',
-    'glaze-cream': 'DecoGlazeCream.glb',
     'glaze-choco': 'DecoGlazeChoco.glb',
+    'glaze-cream': 'DecoGlazeCream.glb',
     'glaze-pink': 'DecoGlazePink.glb',
     meringue: 'DecoMeringue.glb',
   },
@@ -152,12 +159,118 @@ const CANDLE_FILES: Record<CakeShape, string> = {
   heart: `${MODELS_BASE}/heart/DecoCandle3.glb`,
 };
 
+export interface ModelYBounds {
+  minY: number;
+  maxY: number;
+}
+
+const MODEL_Y_BOUNDS: Record<string, ModelYBounds> = {
+  '/models/candle/DecoCandle.glb': { minY: -0.003, maxY: 0.3471 },
+  '/models/candle/DecoCandle2.glb': { minY: -0.0197, maxY: 0.3523 },
+
+  '/models/circle/CakeBigLayerCherry.glb': { minY: -0.0114, maxY: 0.9357 },
+  '/models/circle/CakeBigLayerChoco.glb': { minY: -0.0114, maxY: 0.9357 },
+  '/models/circle/CakeBigLayerCream.glb': { minY: -0.0114, maxY: 0.9357 },
+  '/models/circle/CakeBigLayerGlaze.glb': { minY: -0.0114, maxY: 0.9357 },
+  '/models/circle/CakeFillCreamChoco.glb': { minY: 0.1949, maxY: 0.382 },
+  '/models/circle/CakeFillCreamPink.glb': { minY: 0.1949, maxY: 0.382 },
+  '/models/circle/CakeLayerCherry.glb': { minY: 0.0083, maxY: 0.2343 },
+  '/models/circle/CakeLayerRed.glb': { minY: 0.0083, maxY: 0.2343 },
+  '/models/circle/GlazeChoco.glb': { minY: 0.6127, maxY: 0.9407 },
+  '/models/circle/GlazeChoco2.glb': { minY: 0.1743, maxY: 0.9385 },
+  '/models/circle/GlazeCream.glb': { minY: 0.6127, maxY: 0.9407 },
+  '/models/circle/GlazeCream2.glb': { minY: 0.1743, maxY: 0.9385 },
+  '/models/circle/cakeDecorBlueberry.glb': { minY: -0.0831, maxY: 0.167 },
+  '/models/circle/cakeDecorCream.glb': { minY: -0.007, maxY: 0.1354 },
+  '/models/circle/cakeDecorGlaze.glb': { minY: -0.056, maxY: 0.7453 },
+  '/models/circle/cakeDecorPinkChocolate.glb': { minY: -0.0259, maxY: 0.3759 },
+  '/models/circle/cakeFillCream.glb': { minY: -0.0936, maxY: 0.0936 },
+  '/models/circle/cakeFillMeringua.glb': { minY: -0.0355, maxY: 0.1627 },
+  '/models/circle/cakeGlazeMilk.glb': { minY: -0.7463, maxY: 0.018 },
+  '/models/circle/cakeGlazePink.glb': { minY: -0.3155, maxY: 0.0125 },
+  '/models/circle/cakeLayer.glb': { minY: 0.0083, maxY: 0.2343 },
+
+  '/models/cube/CakeBigLayer.glb': { minY: 0.0016, maxY: 0.9099 },
+  '/models/cube/CakeBigLayerCherry.glb': { minY: 0.0016, maxY: 0.9099 },
+  '/models/cube/CakeBigLayerCream.glb': { minY: 0.0016, maxY: 0.9099 },
+  '/models/cube/CakeBigLayerGlaze.glb': { minY: 0.0016, maxY: 0.9099 },
+  '/models/cube/CakeFillGlaze.glb': { minY: 0.2767, maxY: 0.4763 },
+  '/models/cube/CakeFillGlazeChoco.glb': { minY: 0.2767, maxY: 0.4763 },
+  '/models/cube/CakeFillGlazeCream.glb': { minY: 0.2767, maxY: 0.4763 },
+  '/models/cube/CakeFillGlazeCream2.glb': { minY: 0.2767, maxY: 0.4763 },
+  '/models/cube/CakeFillMeringue.glb': { minY: 0.2857, maxY: 0.4839 },
+  '/models/cube/CakeLayer.glb': { minY: 0.0056, maxY: 0.3269 },
+  '/models/cube/CakeLayerCherry.glb': { minY: 0.0056, maxY: 0.3269 },
+  '/models/cube/CakeLayerRed.glb': { minY: 0.0056, maxY: 0.3269 },
+  '/models/cube/DecoBlueberry.glb': { minY: -0.0432, maxY: 0.1905 },
+  '/models/cube/DecoCandle1.glb': { minY: -0.0031, maxY: 0.3514 },
+  '/models/cube/DecoChocolate.glb': { minY: -0.0471, maxY: 0.4461 },
+  '/models/cube/DecoChocolateChoco.glb': { minY: -0.0471, maxY: 0.4461 },
+  '/models/cube/DecoGlazeChoco.glb': { minY: -0.0023, maxY: 0.1385 },
+  '/models/cube/DecoGlazeCream.glb': { minY: -0.0023, maxY: 0.1385 },
+  '/models/cube/DecoGlazePink.glb': { minY: -0.0023, maxY: 0.1385 },
+  '/models/cube/DecoMeringue.glb': { minY: -0.0821, maxY: 0.4143 },
+  '/models/cube/GlazeChoco.glb': { minY: -0.2349, maxY: 0.4699 },
+  '/models/cube/GlazeCream.glb': { minY: -0.2349, maxY: 0.4699 },
+  '/models/cube/GlazeCreamGlaze.glb': { minY: -0.2349, maxY: 0.4699 },
+  '/models/cube/GlazePink.glb': { minY: -0.2349, maxY: 0.4699 },
+
+  '/models/heart/CakeBigLayerChoco.glb': { minY: 0.0034, maxY: 0.9398 },
+  '/models/heart/CakeBigLayerCream.glb': { minY: 0.0034, maxY: 0.9398 },
+  '/models/heart/CakeBigLayerGlaze.glb': { minY: 0.0034, maxY: 0.9398 },
+  '/models/heart/CakeBigLayerPink.glb': { minY: 0.0034, maxY: 0.9398 },
+  '/models/heart/CakeFillMeringue.glb': { minY: -0.036, maxY: 0.1628 },
+  '/models/heart/CakeFillMeringuePink.glb': { minY: -0.036, maxY: 0.1628 },
+  '/models/heart/CakeLayer.glb': { minY: 0.0081, maxY: 0.249 },
+  '/models/heart/CakeLayerCherry.glb': { minY: 0.0081, maxY: 0.249 },
+  '/models/heart/CakeLayerRed.glb': { minY: 0.0081, maxY: 0.249 },
+  '/models/heart/DecoBlueberry.glb': { minY: -0.0568, maxY: 0.1948 },
+  '/models/heart/DecoCandle3.glb': { minY: -0.0109, maxY: 0.3507 },
+  '/models/heart/DecoChocolateChoco.glb': { minY: -0.0683, maxY: 0.425 },
+  '/models/heart/DecoChocolatePink.glb': { minY: -0.0683, maxY: 0.425 },
+  '/models/heart/DecoGlazeChoco.glb': { minY: -0.0097, maxY: 0.0871 },
+  '/models/heart/DecoGlazeCream.glb': { minY: -0.0097, maxY: 0.0871 },
+  '/models/heart/DecoGlazeCream2.glb': { minY: -0.0097, maxY: 0.0871 },
+  '/models/heart/DecoGlazePink.glb': { minY: -0.0097, maxY: 0.0871 },
+  '/models/heart/DecoMeringue.glb': { minY: -0.0025, maxY: 0.4207 },
+  '/models/heart/GlazeChoco.glb': { minY: 0.5656, maxY: 0.9447 },
+  '/models/heart/GlazeChoco2.glb': { minY: 0.3897, maxY: 0.9447 },
+  '/models/heart/GlazeCream.glb': { minY: 0.5656, maxY: 0.9447 },
+  '/models/heart/GlazeCream2.glb': { minY: 0.3897, maxY: 0.9447 },
+  '/models/heart/GlazePink.glb': { minY: 0.5656, maxY: 0.9447 },
+  '/models/heart/GlazePink2.glb': { minY: 0.3897, maxY: 0.9447 },
+};
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function p(folder: string, file: string): string {
   return `${MODELS_BASE}/${folder}/${file}`;
+}
+
+function normalizeModelPath(modelPath: string): string {
+  const modelMarker = '/models/';
+  const markerIndex = modelPath.indexOf(modelMarker);
+  if (markerIndex >= 0) return modelPath.slice(markerIndex);
+
+  const knownSuffix = Object.keys(MODEL_Y_BOUNDS).find((knownPath) => {
+    const suffix = knownPath.replace(/^\/models\//, '/');
+    return modelPath.endsWith(suffix);
+  });
+
+  return knownSuffix ?? modelPath;
+}
+
+export function getModelYBounds(modelPath: string | null): ModelYBounds | null {
+  if (!modelPath) return null;
+  return MODEL_Y_BOUNDS[normalizeModelPath(modelPath)] ?? null;
+}
+
+export function getModelVisualHeight(modelPath: string | null): number | null {
+  const bounds = getModelYBounds(modelPath);
+  if (!bounds) return null;
+  return bounds.maxY - bounds.minY;
 }
 
 // ---------------------------------------------------------------------------
@@ -175,28 +288,31 @@ export function getLayerModelPath(
   shape: CakeShape,
   baseVariant: string,
   isBig: boolean,
-): string {
+): string | null {
   const folder = SHAPE_FOLDER[shape];
 
   if (isBig) {
     const bigMap = BIG_LAYER_FILES[shape];
-    const file =
-      bigMap[baseVariant as BigLayerVariant] ??
-      // fallback: first available big layer
-      Object.values(bigMap)[0] ??
-      // last-resort fallback: regular layer
-      Object.values(LAYER_FILES[shape])[0];
-
-    if (file) return p(folder, file);
+    const bigFile = bigMap[baseVariant as BigLayerVariant];
+    return bigFile ? p(folder, bigFile) : null;
   }
 
   const layerMap = LAYER_FILES[shape];
-  const file =
-    layerMap[baseVariant as LayerVariant] ??
-    layerMap['default'] ??
-    Object.values(layerMap)[0]!;
+  const file = layerMap[baseVariant as LayerVariant];
 
-  return p(folder, file);
+  return file ? p(folder, file) : null;
+}
+
+/**
+ * Returns the canonical full-tier GLB for a cake tier.
+ * Every rendered Ярус uses this exact BigLayer model; regular CakeLayer files
+ * are kept in the registry for compatibility/preload checks but are not full tiers.
+ */
+export function getFullTierModelPath(shape: CakeShape, baseVariant: string): string | null {
+  const folder = SHAPE_FOLDER[shape];
+  const bigFile = BIG_LAYER_FILES[shape][baseVariant as BigLayerVariant];
+
+  return bigFile ? p(folder, bigFile) : null;
 }
 
 /**
@@ -205,22 +321,13 @@ export function getLayerModelPath(
  * @param shape       - cake shape
  * @param fillVariant - 'cream' | 'choco' | 'pink' | 'meringue' | 'glaze' | etc.
  */
-export function getFillModelPath(shape: CakeShape, fillVariant: string): string {
+export function getFillModelPath(shape: CakeShape, fillVariant: string): string | null {
   const folder = SHAPE_FOLDER[shape];
   const fillMap = FILL_FILES[shape];
 
-  const file =
-    fillMap[fillVariant as FillVariant] ??
-    // fallback: cream, then first available
-    fillMap['cream'] ??
-    Object.values(fillMap)[0];
+  const file = fillMap[fillVariant as FillVariant];
 
-  if (!file) {
-    // absolute last resort — circle cream fill always exists
-    return `${MODELS_BASE}/circle/cakeFillCream.glb`;
-  }
-
-  return p(folder, file);
+  return file ? p(folder, file) : null;
 }
 
 /**
@@ -234,18 +341,12 @@ export function getGlazeModelPath(
   shape: CakeShape,
   glazeVariant: string,
   withDrips: boolean,
-): string {
+): string | null {
   const folder = SHAPE_FOLDER[shape];
   const glazeMap = GLAZE_FILES[shape];
 
-  const entry =
-    glazeMap[glazeVariant as GlazeVariant] ??
-    glazeMap['cream'] ??
-    (Object.values(glazeMap)[0] as GlazeEntry | undefined);
-
-  if (!entry) {
-    return `${MODELS_BASE}/circle/GlazeCream.glb`;
-  }
+  const entry = glazeMap[glazeVariant as GlazeVariant];
+  if (!entry) return null;
 
   const [base, drips] = entry;
   const file = withDrips && drips !== null ? drips : base;
@@ -261,6 +362,8 @@ export function getGlazeModelPath(
  * @param decorVariant - 'blueberry' | 'chocolate' | 'meringue' | 'glaze-cream' | etc.
  */
 export function getDecoModelPath(shape: CakeShape, decorVariant: string): string | null {
+  if (decorVariant === 'candle') return CANDLE_FILES[shape];
+
   const folder = SHAPE_FOLDER[shape];
   const decoMap = DECO_FILES[shape];
 
@@ -275,6 +378,52 @@ export function getDecoModelPath(shape: CakeShape, decorVariant: string): string
  */
 export function getCandleModelPath(shape: CakeShape): string {
   return CANDLE_FILES[shape];
+}
+
+export function isLayerVisualKeyAvailable(
+  shape: CakeShape,
+  visualKey: string,
+  isBig = false,
+): boolean {
+  return getLayerModelPath(shape, visualKey, isBig) !== null;
+}
+
+export function isFullTierVisualKeyAvailable(
+  shape: CakeShape,
+  visualKey: string,
+): boolean {
+  return getFullTierModelPath(shape, visualKey) !== null;
+}
+
+export function isFillVisualKeyAvailable(shape: CakeShape, visualKey: string): boolean {
+  return getFillModelPath(shape, visualKey) !== null;
+}
+
+export function isDecoVisualKeyAvailable(shape: CakeShape, visualKey: string): boolean {
+  return getDecoModelPath(shape, visualKey) !== null;
+}
+
+export function isGlazeVisualKeyAvailable(shape: CakeShape, visualKey: string): boolean {
+  return GLAZE_FILES[shape][visualKey as GlazeVariant] !== undefined;
+}
+
+export function getDeclaredModelPaths(): string[] {
+  const paths = new Set<string>();
+
+  for (const shape of Object.keys(SHAPE_FOLDER) as CakeShape[]) {
+    const folder = SHAPE_FOLDER[shape];
+    for (const file of Object.values(LAYER_FILES[shape])) paths.add(p(folder, file));
+    for (const file of Object.values(BIG_LAYER_FILES[shape])) paths.add(p(folder, file));
+    for (const file of Object.values(FILL_FILES[shape])) paths.add(p(folder, file));
+    for (const [base, drips] of Object.values(GLAZE_FILES[shape])) {
+      paths.add(p(folder, base));
+      if (drips) paths.add(p(folder, drips));
+    }
+    for (const file of Object.values(DECO_FILES[shape])) paths.add(p(folder, file));
+    paths.add(CANDLE_FILES[shape]);
+  }
+
+  return Array.from(paths).sort();
 }
 
 // ---------------------------------------------------------------------------
@@ -337,6 +486,7 @@ const DECO_META: Record<DecoVariant, { label: string; description: string }> = {
   'glaze-choco': { label: 'Шоколадная глазурь', description: 'Декор из шоколадной глазури' },
   'glaze-pink': { label: 'Розовая глазурь', description: 'Декор из розовой глазури' },
   cream: { label: 'Кремовый декор', description: 'Розочки и узоры из крема' },
+  candle: { label: 'Свеча', description: 'Праздничная свеча' },
 };
 
 export function getAvailableDecos(shape: CakeShape): DecoOption[] {
@@ -361,11 +511,11 @@ const LAYER_VARIANT_META: Record<LayerVariant, string> = {
 };
 
 export function getAvailableBaseVariants(shape: CakeShape): BaseVariant[] {
-  const layerMap = LAYER_FILES[shape];
+  const layerMap = BIG_LAYER_FILES[shape];
 
-  return (Object.keys(layerMap) as LayerVariant[]).map((variant) => ({
+  return (Object.keys(layerMap) as BigLayerVariant[]).map((variant) => ({
     id: variant,
-    label: LAYER_VARIANT_META[variant] ?? variant,
+    label: LAYER_VARIANT_META[variant as LayerVariant] ?? variant,
   }));
 }
 

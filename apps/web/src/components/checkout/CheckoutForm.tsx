@@ -13,6 +13,7 @@ import { useCartStore, type CartItem, type PromoResult } from '@/stores/cart-sto
 import { useAuthStore } from '@/stores/auth-store';
 import { fetchClient } from '@/lib/api';
 import { cakeConfigToOrderDto } from '@/lib/constructor/order-adapter';
+import { CHECKOUT_SUCCESS_PENDING_KEY } from '@/lib/constants';
 import { formatPrice, cn } from '@/lib/utils';
 
 // ── Validation schema ────────────────────────────────────────────────────────
@@ -343,7 +344,13 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError, promoResul
                 {item.name}
               </p>
               <p className="text-[11px] text-[var(--color-graphite-light)]">
-                {item.priceType === 'per_kg'
+                {item.type === 'constructor' && item.cakeConfig
+                  ? [
+                      `${item.cakeConfig.tierCount} ярус${item.cakeConfig.tierCount > 1 ? 'а' : ''}`,
+                      item.cakeConfig.layers?.[0]?.fillingName,
+                      item.cakeConfig.coating?.coatingName,
+                    ].filter(Boolean).join(' · ')
+                  : item.priceType === 'per_kg'
                   ? `${(item.weight / 1000).toLocaleString('ru-RU')} кг`
                   : `× ${item.quantity}`}
               </p>
@@ -497,8 +504,6 @@ export function CheckoutForm() {
         body: JSON.stringify(payload),
       });
 
-      clearCart();
-
       const order = res.data.order ?? res.data;
       const params = new URLSearchParams({
         orderNumber: String(order.orderNumber ?? order.id),
@@ -506,6 +511,8 @@ export function CheckoutForm() {
         timeSlot: order.pickupTimeSlot ?? data.timeSlot,
       });
 
+      window.sessionStorage.setItem(CHECKOUT_SUCCESS_PENDING_KEY, '1');
+      clearCart();
       router.push(`/checkout/success?${params.toString()}`);
     } catch (err) {
       console.error('Order creation failed:', err);
@@ -541,12 +548,15 @@ export function CheckoutForm() {
               Контактная информация
             </h2>
             <div data-field="phone">
-              <label className="block text-sm font-medium text-[var(--color-graphite)] mb-1.5">
+              <label htmlFor="checkout-phone" className="block text-sm font-medium text-[var(--color-graphite)] mb-1.5">
                 Телефон <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <input
+                  id="checkout-phone"
+                  name="phone"
                   type="tel"
+                  autoComplete="tel"
                   placeholder="+7 (___) ___-__-__"
                   value={phoneValue ? formatPhone(phoneValue) : ''}
                   onChange={(e) => {
@@ -613,9 +623,9 @@ export function CheckoutForm() {
 
             {/* Date — CalendarPicker */}
             <div className="mb-5">
-              <label className="block text-sm font-medium text-[var(--color-graphite)] mb-1.5">
+              <p className="block text-sm font-medium text-[var(--color-graphite)] mb-1.5">
                 Дата <span className="text-red-400">*</span>
-              </label>
+              </p>
               <Controller
                 name="pickupDate"
                 control={control}
@@ -708,12 +718,15 @@ export function CheckoutForm() {
               Комментарий к заказу
             </h2>
             <div className="relative">
+              <label htmlFor="checkout-comment" className="sr-only">
+                Комментарий к заказу
+              </label>
               <Controller
                 name="comment"
                 control={control}
                 render={({ field }) => (
                   <textarea
-                    id="comment"
+                    id="checkout-comment"
                     rows={4}
                     placeholder="Пожелания по упаковке, аллергии, особые требования..."
                     {...field}

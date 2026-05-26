@@ -3,6 +3,7 @@
     "name": "Крем-чиз",
     "type": "cream",
     "pricePerKg": 30000,
+    "visualKey": "cream",
     "roughness": "0.45",
     "sortOrder": 1,
     "isAvailable": true
@@ -11,6 +12,7 @@
     "name": "Взбитые сливки",
     "type": "cream",
     "pricePerKg": 25000,
+    "visualKey": "milk",
     "roughness": "0.35",
     "sortOrder": 2,
     "isAvailable": true
@@ -19,6 +21,7 @@
     "name": "Мастика",
     "type": "fondant",
     "pricePerKg": 40000,
+    "visualKey": "pink",
     "roughness": "0.80",
     "sortOrder": 3,
     "isAvailable": true

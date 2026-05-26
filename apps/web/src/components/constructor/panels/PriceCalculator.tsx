@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Loader2, TriangleAlert } from 'lucide-react';
 import { useConstructorStore } from '@/stores/constructor-store';
 import { formatPrice, cn } from '@/lib/utils';
 
@@ -56,66 +56,38 @@ export function PriceCalculator() {
   const [expanded, setExpanded] = useState(false);
 
   const totalPrice = useConstructorStore((s) => s.totalPrice);
-  const layers = useConstructorStore((s) => s.layers);
-  const coating = useConstructorStore((s) => s.coating);
-  const activeDecorations = useConstructorStore((s) => s.activeDecorations);
-  const selectedDecorations = useConstructorStore((s) => s.selectedDecorations);
-  const hasCandle = useConstructorStore((s) => s.hasCandle);
-  const shape = useConstructorStore((s) => s.shape);
-  const tierCount = useConstructorStore((s) => s.tierCount);
-  const ingredients = useConstructorStore((s) => s.ingredients);
+  const pricingStatus = useConstructorStore((s) => s.pricingStatus);
+  const priceBreakdown = useConstructorStore((s) => s.priceBreakdown);
+  const priceError = useConstructorStore((s) => s.priceError);
 
   const animatedTotal = useAnimatedPrice(totalPrice);
 
   const breakdown: PriceBreakdownRow[] = [];
 
-  if (ingredients) {
-    let baseCost = 0;
-    for (const layer of layers) {
-      const base = ingredients.bases.find((b) => b.id === layer.baseId);
-      if (base) baseCost += (layer.weight * base.pricePerKg) / 1000;
-    }
-    if (baseCost > 0) breakdown.push({ label: 'Бисквит', value: Math.round(baseCost) });
+  if (priceBreakdown) {
+    const baseCost = priceBreakdown.tiers?.reduce((sum, tier) => sum + tier.baseCost, 0) ?? 0;
+    const fillingCost = priceBreakdown.tiers?.reduce((sum, tier) => sum + tier.fillingCost, 0) ?? 0;
+    const decorCost = priceBreakdown.decorations?.reduce((sum, item) => sum + item.cost, 0) ?? 0;
+    const decorCount = priceBreakdown.decorations?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
-    let fillingCost = 0;
-    for (const layer of layers) {
-      const filling = ingredients.fillings.find((f) => f.id === layer.fillingId);
-      if (filling) fillingCost += (layer.weight * filling.pricePerKg) / 1000;
+    if (baseCost > 0) breakdown.push({ label: 'Основа торта', value: baseCost });
+    if (fillingCost > 0) breakdown.push({ label: 'Начинка', value: fillingCost });
+    if ((priceBreakdown.coating?.cost ?? 0) > 0) {
+      breakdown.push({ label: 'Покрытие', value: priceBreakdown.coating!.cost });
     }
-    if (fillingCost > 0) breakdown.push({ label: 'Начинка', value: Math.round(fillingCost) });
-
-    const totalWeight = layers.reduce((sum, l) => sum + l.weight, 0);
-    const coatingIngredient = ingredients.coatings.find((c) => c.id === coating.coatingId);
-    if (coatingIngredient) {
-      const coatingCost = (totalWeight * coatingIngredient.pricePerKg) / 1000;
-      if (coatingCost > 0) breakdown.push({ label: 'Покрытие', value: Math.round(coatingCost) });
-    }
-
-    let decorCost = 0;
-    let decorationCount = 0;
-    for (const selection of selectedDecorations) {
-      const decoIngredient = ingredients.decorations.find((d) => d.id === selection.decorationId);
-      decorationCount += selection.quantity;
-      if (decoIngredient) decorCost += decoIngredient.pricePerUnit * selection.quantity;
-    }
-    if (hasCandle) {
-      const candleIngredient = ingredients.decorations.find(d => d.name.toLowerCase().includes('свеч'));
-      if (candleIngredient) decorCost += candleIngredient.pricePerUnit;
-    }
-    if (decorCost > 0) breakdown.push({ label: `Декор (${decorationCount || activeDecorations.length} шт.)`, value: Math.round(decorCost) });
-
-    const shapeInfo = ingredients.shapes.find((s) => s.id === shape);
-    if (shapeInfo && shapeInfo.surchargePercent > 0) {
-      const subTotal = baseCost + fillingCost + (coatingIngredient ? (totalWeight * coatingIngredient.pricePerKg) / 1000 : 0) + decorCost;
-      const surcharge = Math.round((subTotal * shapeInfo.surchargePercent) / 100);
-      if (surcharge > 0) breakdown.push({ label: `Форма (+${shapeInfo.surchargePercent}%)`, value: surcharge });
-    }
-
-    const tierSurcharge = ingredients.tierSurcharges.find((t) => t.tierCount === tierCount);
-    if (tierSurcharge && tierSurcharge.surcharge > 0) {
-      breakdown.push({ label: 'Многоярусность', value: tierSurcharge.surcharge });
-    }
+    if (decorCost > 0) breakdown.push({ label: `Декор (${decorCount} шт.)`, value: decorCost });
+    if (priceBreakdown.shapeSurcharge > 0) breakdown.push({ label: 'Наценка за форму', value: priceBreakdown.shapeSurcharge });
+    if (priceBreakdown.tierSurcharge > 0) breakdown.push({ label: 'Многоярусность', value: priceBreakdown.tierSurcharge });
   }
+
+  const statusLabel =
+    pricingStatus === 'verified'
+      ? 'Цена подтверждена'
+      : pricingStatus === 'updating'
+        ? 'Обновляем цену'
+        : pricingStatus === 'error'
+          ? 'Ошибка расчета'
+          : 'Цена требует проверки';
 
   return (
     <div className="border-t border-[var(--border-default)] bg-[var(--surface-elevated)]">
@@ -157,6 +129,9 @@ export function PriceCalculator() {
       >
         <div className="flex items-center gap-2">
           <span className="text-sm text-[var(--color-graphite-light)]">Итого</span>
+          {pricingStatus === 'verified' && <CheckCircle2 size={14} className="text-emerald-600" />}
+          {pricingStatus === 'updating' && <Loader2 size={14} className="animate-spin text-[var(--color-caramel)]" />}
+          {pricingStatus === 'error' && <TriangleAlert size={14} className="text-red-500" />}
           <motion.div
             animate={{ rotate: expanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
@@ -166,9 +141,17 @@ export function PriceCalculator() {
         </div>
 
         <div className="flex items-baseline gap-1">
-          <span className="font-heading font-bold text-2xl text-[var(--color-caramel)]">
-            {formatPrice(animatedTotal)}
-          </span>
+          <div className="text-right">
+            <span className="font-heading font-bold text-2xl text-[var(--color-caramel)]">
+              {formatPrice(animatedTotal)}
+            </span>
+            <p className={cn(
+              'text-[10px] leading-none',
+              pricingStatus === 'error' ? 'text-red-500' : 'text-[var(--color-graphite-light)]',
+            )}>
+              {pricingStatus === 'error' && priceError ? priceError : statusLabel}
+            </p>
+          </div>
         </div>
       </button>
     </div>

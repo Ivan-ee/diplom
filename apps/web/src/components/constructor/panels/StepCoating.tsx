@@ -105,7 +105,10 @@ export function StepCoating() {
   const handleTypeSelect = (type: CoatingType) => {
     setCoatingType(type);
     const match = coatings.find((c) => c.type === type);
-    if (match) setCoatingId(match.id);
+    if (match) {
+      setCoatingId(match.id);
+      setGlazeVariant(match.visualKey);
+    }
   };
 
   return (

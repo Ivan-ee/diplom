@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Chip } from '@heroui/react';
 import { useCartStore, type CartItem as CartItemType } from '@/stores/cart-store';
 import { formatPrice, cn } from '@/lib/utils';
 
@@ -29,11 +28,36 @@ function ConstructorConfigSummary({ config }: { config: unknown }) {
   if (typeof c.tierCount === 'number') {
     parts.push(`${c.tierCount} ярус${c.tierCount > 1 ? (c.tierCount === 2 ? 'а' : 'ов') : ''}`);
   }
-  if (typeof c.filling === 'string' && c.filling) {
-    parts.push(c.filling);
+  if (Array.isArray(c.layers)) {
+    const layerNames = c.layers
+      .map((layer, index) => {
+        if (!layer || typeof layer !== 'object') return null;
+        const row = layer as Record<string, unknown>;
+        const base = typeof row.baseName === 'string' ? row.baseName : undefined;
+        const filling = typeof row.fillingName === 'string' ? row.fillingName : undefined;
+        if (!base && !filling) return null;
+        return `${index + 1}: ${[base, filling].filter(Boolean).join(' / ')}`;
+      })
+      .filter(Boolean);
+    if (layerNames.length > 0) parts.push(layerNames.join('; '));
   }
-  if (typeof c.coating === 'string' && c.coating) {
+  if (c.coating && typeof c.coating === 'object') {
+    const coating = c.coating as Record<string, unknown>;
+    if (typeof coating.coatingName === 'string') parts.push(coating.coatingName);
+  } else if (typeof c.coating === 'string' && c.coating) {
     parts.push(c.coating);
+  }
+  if (Array.isArray(c.selectedDecorations) && c.selectedDecorations.length > 0) {
+    const decor = c.selectedDecorations
+      .map((item) => {
+        if (!item || typeof item !== 'object') return null;
+        const row = item as Record<string, unknown>;
+        const name = typeof row.name === 'string' ? row.name : undefined;
+        const quantity = typeof row.quantity === 'number' ? row.quantity : 1;
+        return name ? `${name} x${quantity}` : null;
+      })
+      .filter(Boolean);
+    if (decor.length > 0) parts.push(decor.join(', '));
   }
   if (typeof c.inscription === 'string' && c.inscription) {
     parts.push(`"${c.inscription}"`);
@@ -128,14 +152,9 @@ export function CartItem({ item, isUnavailable = false }: CartItemProps) {
                   {item.name}
                 </h3>
                 {isConstructor && (
-                  <Chip
-                    size="sm"
-                    color="accent"
-                    variant="soft"
-                    className="text-[10px] font-medium"
-                  >
+                  <span className="inline-flex h-5 shrink-0 items-center rounded-full border border-[var(--color-caramel)]/20 bg-[var(--color-caramel)]/10 px-2 text-[10px] font-medium text-[var(--color-caramel)]">
                     Собранный торт
-                  </Chip>
+                  </span>
                 )}
               </div>
 

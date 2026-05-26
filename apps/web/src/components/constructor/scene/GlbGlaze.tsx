@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo, useEffect, Component, type ReactNode } from 'react';
+import { useMemo, Component, type ReactNode } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import type { CakeShape } from '@/lib/constructor/model-registry';
-import { getGlazeModelPath, getGlazeColor } from '@/lib/constructor/model-registry';
-import type { ColorMode } from '@/stores/constructor-store';
+import { getGlazeModelPath } from '@/lib/constructor/model-registry';
+import type { CoatingVisual } from '@/stores/constructor-store';
+import { applyCoatingShader } from './GlbCoatingShader';
 
 class GlbErrorBoundary extends Component<
   { fallback?: ReactNode; children: ReactNode },
@@ -25,62 +26,40 @@ interface GlbGlazeProps {
   shape: CakeShape;
   glazeVariant: string;
   withDrips: boolean;
+  visual: CoatingVisual;
   yOffset: number;
-  colorMode?: ColorMode;
-  secondaryGlazeVariant?: string;
 }
 
 interface GlazeModelProps {
   url: string;
-  yOffset: number;
-  colorMode?: ColorMode;
-  secondaryColor?: string;
+  topY: number;
+  visual: CoatingVisual;
 }
 
-function GlazeModel({ url, yOffset, colorMode, secondaryColor }: GlazeModelProps) {
+function GlazeModel({ url, topY, visual }: GlazeModelProps) {
   const gltf = useGLTF(url);
-  const clonedScene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
-
-  useEffect(() => {
-    if (colorMode !== 'gradient' || !secondaryColor) return;
-
-    const targetColor = new THREE.Color(secondaryColor);
-
-    clonedScene.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.material) {
-        const mat = child.material as THREE.MeshStandardMaterial;
-        if (mat.color) {
-          const newMat = mat.clone();
-          newMat.color = mat.color.clone().lerp(targetColor, 0.4);
-          child.material = newMat;
-        }
-      }
-    });
-  }, [clonedScene, colorMode, secondaryColor]);
+  const clonedScene = useMemo(() => {
+    const clone = gltf.scene.clone(true);
+    applyCoatingShader(clone, visual);
+    return clone;
+  }, [gltf.scene, visual]);
+  const topOffset = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(clonedScene);
+    return Number.isFinite(box.max.y) ? -box.max.y : 0;
+  }, [clonedScene]);
 
   return (
-    <group position={[0, yOffset, 0]}>
-      <primitive object={clonedScene} />
+    <group position={[0, topY, 0]}>
+      <primitive object={clonedScene} position={[0, topOffset, 0]} />
     </group>
   );
 }
 
-function GlbGlazeInner({ shape, glazeVariant, withDrips, yOffset, colorMode, secondaryGlazeVariant }: GlbGlazeProps) {
-  const effectiveDrips = colorMode === 'splashes' ? true : withDrips;
-  const url = getGlazeModelPath(shape, glazeVariant, effectiveDrips);
+function GlbGlazeInner({ shape, glazeVariant, withDrips, visual, yOffset }: GlbGlazeProps) {
+  const url = getGlazeModelPath(shape, glazeVariant, withDrips);
+  if (!url) return null;
 
-  const secondaryColor = secondaryGlazeVariant
-    ? getGlazeColor(secondaryGlazeVariant)
-    : undefined;
-
-  return (
-    <GlazeModel
-      url={url}
-      yOffset={yOffset}
-      colorMode={colorMode}
-      secondaryColor={secondaryColor}
-    />
-  );
+  return <GlazeModel url={url} topY={yOffset} visual={visual} />;
 }
 
 export function GlbGlaze(props: GlbGlazeProps) {

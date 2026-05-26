@@ -1,7 +1,5 @@
 'use client';
 
-import { Environment } from '@react-three/drei';
-
 export function LightingRig() {
   return (
     <>
@@ -27,7 +25,7 @@ export function LightingRig() {
       {/* Accent light — left upper */}
       <directionalLight position={[-3, 5, 3]} intensity={0.3} color="#ffd9c8" />
 
-      <Environment preset="apartment" />
+      <hemisphereLight args={['#fff7ed', '#7a5a3a', 0.55]} />
     </>
   );
 }

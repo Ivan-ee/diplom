@@ -58,11 +58,6 @@ export function CakeViewport({ className }: CakeViewportProps) {
         </Suspense>
       </ErrorBoundary>
 
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none">
-        <p className="text-xs text-[var(--color-graphite-light)] bg-[var(--color-milk-white)]/70 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-          Вращайте мышью · Прокрутите для зума
-        </p>
-      </div>
     </div>
   );
 }

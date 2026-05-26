@@ -64,8 +64,9 @@ export function StepNavigation() {
   const coating = useConstructorStore((s) => s.coating);
   const activeDecorations = useConstructorStore((s) => s.activeDecorations);
   const selectedDecorations = useConstructorStore((s) => s.selectedDecorations);
-  const hasCandle = useConstructorStore((s) => s.hasCandle);
+  const decorationInstances = useConstructorStore((s) => s.decorationInstances);
   const inscription = useConstructorStore((s) => s.inscription);
+  const pricingStatus = useConstructorStore((s) => s.pricingStatus);
   const ingredients = useConstructorStore((s) => s.ingredients);
   const reset = useConstructorStore((s) => s.reset);
   const addItem = useCartStore((s) => s.addItem);
@@ -108,6 +109,7 @@ export function StepNavigation() {
   const isValid = useStepValid();
   const isFirst = currentStep === 1;
   const isLast = currentStep === 5;
+  const isPriceVerified = pricingStatus === 'verified';
 
   const handleBack = () => {
     if (!isFirst) setStep((currentStep - 1) as ConstructorStep);
@@ -147,11 +149,25 @@ export function StepNavigation() {
       cakeConfig: {
         shape,
         tierCount,
-        layers,
-        coating,
+        layers: layers.map((layer) => ({
+          ...layer,
+          baseName: ingredients?.bases.find((base) => base.id === layer.baseId)?.name,
+          fillingName: ingredients?.fillings.find((filling) => filling.id === layer.fillingId)?.name,
+        })),
+        coating: {
+          ...coating,
+          coatingName: ingredients?.coatings.find((item) => item.id === coating.coatingId)?.name,
+        },
         activeDecorations,
-        selectedDecorations,
-        hasCandle,
+        selectedDecorations: selectedDecorations.map((selection) => ({
+          ...selection,
+          name: ingredients?.decorations.find((item) => item.id === selection.decorationId)?.name,
+        })),
+        decorationInstances: decorationInstances.map((instance) => ({
+          ...instance,
+          name: ingredients?.decorations.find((item) => item.id === instance.decorationId)?.name,
+        })),
+        hasCandle: false,
         inscription,
       },
     });
@@ -205,7 +221,7 @@ export function StepNavigation() {
         variant="default"
         size="default"
         onClick={handleNext}
-        disabled={!isValid || isCapturing}
+        disabled={!isValid || isCapturing || (isLast && !isPriceVerified)}
         className={cn(
           'flex-1 font-semibold rounded-xl transition-all duration-200 bg-[var(--color-caramel)] hover:bg-[var(--color-caramel-hover)] text-white',
           isLast && 'gap-2'
@@ -219,7 +235,7 @@ export function StepNavigation() {
             ) : (
               <ShoppingCart size={16} strokeWidth={2} />
             )}
-            {isCapturing ? 'Сохранение...' : 'Добавить в корзину'}
+            {isCapturing ? 'Сохранение...' : isPriceVerified ? 'Добавить в корзину' : 'Ждём цену'}
           </>
         ) : (
           <>

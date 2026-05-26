@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, X } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
@@ -93,12 +94,15 @@ export function ConstructorSuccessModal({
               </div>
 
               {/* Screenshot preview */}
-              <div className="mb-4 aspect-square overflow-hidden rounded-xl bg-[var(--color-warm-ivory)]">
+              <div className="relative mb-4 aspect-square overflow-hidden rounded-xl bg-[var(--color-warm-ivory)]">
                 {screenshotUrl ? (
-                  <img
+                  <Image
                     src={screenshotUrl}
                     alt="Превью торта"
-                    className="h-full w-full object-cover"
+                    fill
+                    unoptimized
+                    sizes="320px"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-6xl">

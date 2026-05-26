@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import { Loader2, X } from 'lucide-react';
 import { type PromoResult } from '@/stores/cart-store';
 import { formatPrice } from '@/lib/utils';
@@ -26,6 +27,7 @@ export function PromoCodeInput({
   onRemove,
   compact = false,
 }: PromoCodeInputProps) {
+  const inputId = useId();
   const wrapperClass = compact
     ? ''
     : 'mt-4 pt-4 border-t border-[var(--color-champagne)]';
@@ -35,6 +37,8 @@ export function PromoCodeInput({
       <p className="text-sm font-medium text-[var(--color-graphite)] mb-2">Промокод</p>
       <div className="flex gap-2">
         <input
+          id={inputId}
+          name="promoCode"
           type="text"
           value={promoCode}
           onChange={(e) => {

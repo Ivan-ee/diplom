@@ -8,6 +8,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Ванильный бисквит',
         description: 'Классический нежный бисквит с ароматом ванили',
         pricePerKg: 80000,
+        visualKey: 'default',
         color: '#FFF8E7',
         available: true,
       },
@@ -16,6 +17,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Шоколадный бисквит',
         description: 'Насыщенный бисквит на бельгийском какао',
         pricePerKg: 90000,
+        visualKey: 'choco',
         color: '#5C3D2E',
         available: true,
       },
@@ -24,6 +26,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Красный бархат',
         description: 'Бархатистый бисквит с характерным красным цветом',
         pricePerKg: 100000,
+        visualKey: 'red',
         color: '#C0392B',
         available: true,
       },
@@ -36,6 +39,7 @@ export function getMockIngredients(): ConstructorCatalog {
         description: 'Нежный крем-чиз с пюре свежей клубники — лёгкий, слегка кисловатый, с ярким ягодным ароматом. Идеально сочетается с ванильным и лимонным бисквитом.',
         imageUrl: undefined,
         pricePerKg: 40000,
+        visualKey: 'cream',
         available: true,
       },
       {
@@ -44,6 +48,7 @@ export function getMockIngredients(): ConstructorCatalog {
         description: 'Шёлковый ганаш из тёмного бельгийского шоколада 70% с добавлением сливок. Насыщенный вкус какао без лишней сладости, тает во рту.',
         imageUrl: undefined,
         pricePerKg: 45000,
+        visualKey: 'choco',
         available: true,
       },
       {
@@ -52,6 +57,7 @@ export function getMockIngredients(): ConstructorCatalog {
         description: 'Домашняя варёная карамель с щепоткой морской соли — обволакивающий сладко-солёный вкус. Прекрасно дополняет шоколадный и банановый бисквит.',
         imageUrl: undefined,
         pricePerKg: 50000,
+        visualKey: 'glaze-cream',
         available: true,
       },
     ],
@@ -62,6 +68,7 @@ export function getMockIngredients(): ConstructorCatalog {
         type: 'cream',
         name: 'Крем-чиз',
         pricePerKg: 20000,
+        visualKey: 'cream',
         available: true,
       },
       {
@@ -69,6 +76,7 @@ export function getMockIngredients(): ConstructorCatalog {
         type: 'fondant',
         name: 'Мастика',
         pricePerKg: 35000,
+        visualKey: 'pink',
         available: true,
       },
     ],
@@ -79,6 +87,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Клубника',
         category: 'Ягоды',
         pricePerUnit: 5000,
+        visualKey: 'blueberry',
         available: true,
       },
       {
@@ -86,6 +95,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Черника',
         category: 'Ягоды',
         pricePerUnit: 5000,
+        visualKey: 'blueberry',
         available: true,
       },
       {
@@ -93,6 +103,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Малина',
         category: 'Ягоды',
         pricePerUnit: 6000,
+        visualKey: 'blueberry',
         available: true,
       },
       {
@@ -100,6 +111,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Шоколадные подтёки',
         category: 'Шоколад',
         pricePerUnit: 8000,
+        visualKey: 'glaze-choco',
         available: true,
       },
       {
@@ -107,6 +119,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Шоколадные фигурки',
         category: 'Шоколад',
         pricePerUnit: 12000,
+        visualKey: 'chocolate-choco',
         available: true,
       },
       {
@@ -114,6 +127,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Топпер «Звезда»',
         category: 'Топперы',
         pricePerUnit: 15000,
+        visualKey: 'meringue',
         available: true,
       },
       {
@@ -121,6 +135,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Топпер «Сердце»',
         category: 'Топперы',
         pricePerUnit: 15000,
+        visualKey: 'chocolate-pink',
         available: true,
       },
       {
@@ -128,6 +143,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Роза из крема',
         category: 'Цветы',
         pricePerUnit: 10000,
+        visualKey: 'cream',
         available: true,
       },
       {
@@ -135,6 +151,7 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Лилия из мастики',
         category: 'Цветы',
         pricePerUnit: 20000,
+        visualKey: 'glaze-cream',
         available: true,
       },
       {
@@ -142,6 +159,15 @@ export function getMockIngredients(): ConstructorCatalog {
         name: 'Фигурка из мастики',
         category: 'Фигурки',
         pricePerUnit: 18000,
+        visualKey: 'chocolate',
+        available: true,
+      },
+      {
+        id: 'decor-candle-gold',
+        name: 'Свеча золотая',
+        category: 'candle',
+        pricePerUnit: 15000,
+        visualKey: 'candle',
         available: true,
       },
     ],

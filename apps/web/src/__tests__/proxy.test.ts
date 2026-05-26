@@ -19,6 +19,10 @@ function createRequest(path: string, token?: string): NextRequest {
   return req;
 }
 
+function loginRedirect(path: string): string {
+  return `http://localhost:3000/?auth=login&from=${encodeURIComponent(path)}`;
+}
+
 // ── Proxy ─────────────────────────────────────────────────────────────────────
 
 describe('proxy', () => {
@@ -29,14 +33,14 @@ describe('proxy', () => {
       const req = createRequest('/account/profile');
       const res = proxy(req);
       expect(res.status).toBe(307);
-      expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
+      expect(res.headers.get('location')).toBe(loginRedirect('/account/profile'));
     });
 
     it('redirects to /?auth=login for /admin routes', () => {
       const req = createRequest('/admin/orders');
       const res = proxy(req);
       expect(res.status).toBe(307);
-      expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
+      expect(res.headers.get('location')).toBe(loginRedirect('/admin/orders'));
     });
   });
 
@@ -56,7 +60,7 @@ describe('proxy', () => {
       const req = createRequest('/admin/dashboard', token);
       const res = proxy(req);
       expect(res.status).toBe(307);
-      expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
+      expect(res.headers.get('location')).toBe(loginRedirect('/admin/dashboard'));
     });
   });
 
@@ -103,7 +107,7 @@ describe('proxy', () => {
       const req = createRequest('/admin/orders', 'not-a-jwt');
       const res = proxy(req);
       expect(res.status).toBe(307);
-      expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
+      expect(res.headers.get('location')).toBe(loginRedirect('/admin/orders'));
     });
 
     it('redirects when token has two parts (missing signature)', () => {

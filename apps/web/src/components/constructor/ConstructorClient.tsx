@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useConstructorStore } from '@/stores/constructor-store';
 
 function ConstructorPageSkeleton() {
@@ -62,20 +62,52 @@ const ConstructorLayout = dynamic(
 
 export default function ConstructorClient() {
   const loadIngredients = useConstructorStore((s) => s.loadIngredients);
+  const syncServerPrice = useConstructorStore((s) => s.syncServerPrice);
   const currentStep = useConstructorStore((s) => s.currentStep);
   const layers = useConstructorStore((s) => s.layers);
-  const activeDecorations = useConstructorStore((s) => s.activeDecorations);
+  const shape = useConstructorStore((s) => s.shape);
+  const tierCount = useConstructorStore((s) => s.tierCount);
+  const coating = useConstructorStore((s) => s.coating);
+  const decorationInstances = useConstructorStore((s) => s.decorationInstances);
   const inscription = useConstructorStore((s) => s.inscription);
+  const ingredients = useConstructorStore((s) => s.ingredients);
+  const pricingStatus = useConstructorStore((s) => s.pricingStatus);
+  const safeLayers = Array.isArray(layers) ? layers : [];
+  const safeDecorationInstances = Array.isArray(decorationInstances) ? decorationInstances : [];
+  const safeInscription = inscription ?? '';
 
   const isDirty =
     currentStep > 1 ||
-    layers.some((l) => l.baseId !== '' || l.fillingId !== '') ||
-    activeDecorations.length > 0 ||
-    inscription.trim() !== '';
+    safeLayers.some((l) => l.baseId !== '' || l.fillingId !== '') ||
+    safeDecorationInstances.length > 0 ||
+    safeInscription.trim() !== '';
 
   useEffect(() => {
     loadIngredients();
   }, [loadIngredients]);
+
+  const pricingSignature = useMemo(
+    () => JSON.stringify({
+      shape,
+      tierCount,
+      layers: safeLayers,
+      coating,
+      decorationInstances: safeDecorationInstances,
+      inscription: safeInscription,
+    }),
+    [shape, tierCount, safeLayers, coating, safeDecorationInstances, safeInscription],
+  );
+
+  useEffect(() => {
+    if (!ingredients) return;
+    if (pricingStatus === 'updating' || pricingStatus === 'verified') return;
+
+    const timer = window.setTimeout(() => {
+      void syncServerPrice();
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [ingredients, pricingSignature, pricingStatus, syncServerPrice]);
 
   useEffect(() => {
     function handleBeforeUnload(e: BeforeUnloadEvent) {

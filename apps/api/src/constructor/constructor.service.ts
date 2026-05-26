@@ -27,11 +27,17 @@ const TIER_SURCHARGES = [
 
 /** Global limits for constructor validation. */
 const CONSTRUCTOR_CONFIG = {
-  minWeight: 1,
-  maxWeight: 10,
+  minWeightPerTier: 500,
+  maxWeightPerTier: 5000,
+  weightStep: 500,
   maxDecorations: 20,
-  maxInscription: 50,
+  maxInscriptionLength: 50,
 };
+const MAX_TOTAL_WEIGHT_TENTHS = 100;
+
+function mapIngredientRow<T extends { isAvailable: boolean }>(row: T): T & { available: boolean } {
+  return { ...row, available: row.isAvailable };
+}
 
 @Injectable()
 export class ConstructorService {
@@ -70,10 +76,10 @@ export class ConstructorService {
     ]);
 
     return {
-      bases,
-      fillings,
-      coatings,
-      decorations,
+      bases: bases.map(mapIngredientRow),
+      fillings: fillings.map(mapIngredientRow),
+      coatings: coatings.map(mapIngredientRow),
+      decorations: decorations.map(mapIngredientRow),
       shapes: SHAPE_CONFIG,
       tierSurcharges: TIER_SURCHARGES,
       config: CONSTRUCTOR_CONFIG,
@@ -196,15 +202,15 @@ export class ConstructorService {
     }
 
     const totalWeightTenths = tiers.reduce((sum, t) => sum + t.weight, 0);
-    if (totalWeightTenths > CONSTRUCTOR_CONFIG.maxWeight * 10) {
+    if (totalWeightTenths > MAX_TOTAL_WEIGHT_TENTHS) {
       throw new BadRequestException(
-        `Total cake weight cannot exceed ${CONSTRUCTOR_CONFIG.maxWeight} kg`,
+        `Total cake weight cannot exceed ${MAX_TOTAL_WEIGHT_TENTHS / 10} kg`,
       );
     }
 
-    if (inscription !== undefined && inscription.length > CONSTRUCTOR_CONFIG.maxInscription) {
+    if (inscription !== undefined && inscription.length > CONSTRUCTOR_CONFIG.maxInscriptionLength) {
       throw new BadRequestException(
-        `Inscription cannot exceed ${CONSTRUCTOR_CONFIG.maxInscription} characters`,
+        `Inscription cannot exceed ${CONSTRUCTOR_CONFIG.maxInscriptionLength} characters`,
       );
     }
   }

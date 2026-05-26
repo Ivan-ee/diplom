@@ -832,7 +832,17 @@ export class AdminService {
         .orderBy(asc(schema.constructorDecorations.sortOrder)),
     ]);
 
-    return { bases, fillings, coatings, decorations };
+    const withAvailable = <T extends { isAvailable: boolean }>(row: T) => ({
+      ...row,
+      available: row.isAvailable,
+    });
+
+    return {
+      bases: bases.map(withAvailable),
+      fillings: fillings.map(withAvailable),
+      coatings: coatings.map(withAvailable),
+      decorations: decorations.map(withAvailable),
+    };
   }
 
   async updateIngredient(id: string, dto: UpdateIngredientDto) {
@@ -853,6 +863,7 @@ export class AdminService {
   private async updateBase(id: string, dto: UpdateIngredientDto) {
     const values: Record<string, unknown> = {};
     if (dto.pricePerKg !== undefined) values['pricePerKg'] = dto.pricePerKg;
+    if (dto.visualKey !== undefined) values['visualKey'] = dto.visualKey;
     if (dto.isAvailable !== undefined) values['isAvailable'] = dto.isAvailable;
     return this.updateIngredientTable(
       schema.constructorBases,
@@ -866,6 +877,7 @@ export class AdminService {
   private async updateFilling(id: string, dto: UpdateIngredientDto) {
     const values: Record<string, unknown> = {};
     if (dto.pricePerKg !== undefined) values['pricePerKg'] = dto.pricePerKg;
+    if (dto.visualKey !== undefined) values['visualKey'] = dto.visualKey;
     if (dto.isAvailable !== undefined) values['isAvailable'] = dto.isAvailable;
     return this.updateIngredientTable(
       schema.constructorFillings,
@@ -879,6 +891,7 @@ export class AdminService {
   private async updateCoating(id: string, dto: UpdateIngredientDto) {
     const values: Record<string, unknown> = {};
     if (dto.pricePerKg !== undefined) values['pricePerKg'] = dto.pricePerKg;
+    if (dto.visualKey !== undefined) values['visualKey'] = dto.visualKey;
     if (dto.isAvailable !== undefined) values['isAvailable'] = dto.isAvailable;
     return this.updateIngredientTable(
       schema.constructorCoatings,
@@ -892,6 +905,8 @@ export class AdminService {
   private async updateDecoration(id: string, dto: UpdateIngredientDto) {
     const values: Record<string, unknown> = {};
     if (dto.pricePerUnit !== undefined) values['pricePerUnit'] = dto.pricePerUnit;
+    if (dto.visualKey !== undefined) values['visualKey'] = dto.visualKey;
+    if (dto.category !== undefined) values['category'] = dto.category;
     if (dto.isAvailable !== undefined) values['isAvailable'] = dto.isAvailable;
     return this.updateIngredientTable(
       schema.constructorDecorations,
@@ -937,6 +952,7 @@ export class AdminService {
             name: dto.name,
             description: dto.description ?? null,
             pricePerKg: dto.pricePerKg ?? 0,
+            visualKey: dto.visualKey ?? 'default',
             sortOrder: dto.sortOrder ?? 0,
             isAvailable: dto.isAvailable ?? true,
           })
@@ -951,6 +967,7 @@ export class AdminService {
             name: dto.name,
             description: dto.description ?? null,
             pricePerKg: dto.pricePerKg ?? 0,
+            visualKey: dto.visualKey ?? 'cream',
             sortOrder: dto.sortOrder ?? 0,
             isAvailable: dto.isAvailable ?? true,
           })
@@ -965,6 +982,7 @@ export class AdminService {
             name: dto.name,
             pricePerKg: dto.pricePerKg ?? 0,
             type: 'cream',
+            visualKey: dto.visualKey ?? 'cream',
             sortOrder: dto.sortOrder ?? 0,
             isAvailable: dto.isAvailable ?? true,
           })
@@ -978,7 +996,8 @@ export class AdminService {
           .values({
             name: dto.name,
             pricePerUnit: dto.pricePerUnit ?? 0,
-            category: 'berries',
+            category: dto.category ?? 'berries',
+            visualKey: dto.visualKey ?? 'cream',
             sortOrder: dto.sortOrder ?? 0,
             isAvailable: dto.isAvailable ?? true,
           })

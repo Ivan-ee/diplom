@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { shopConfig } from '@/config/shop.config';
 
 const navLinks = [
@@ -9,6 +12,9 @@ const navLinks = [
 ];
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname === '/constructor' || pathname === '/cake-constructor') return null;
+
   return (
     <footer className="bg-[var(--surface-secondary)] border-t border-[var(--border-default)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
