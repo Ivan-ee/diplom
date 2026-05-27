@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, Layers3, Sparkles } from 'lucide-react';
+import { CheckCircle2, Layers3 } from 'lucide-react';
 import { useConstructorStore } from '@/stores/constructor-store';
 import { cn } from '@/lib/utils';
 import { PriceCalculator } from './PriceCalculator';
@@ -98,7 +98,6 @@ export function OrderSpecPanel() {
 
         <section className="mt-5">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <Sparkles size={15} className="text-[#d8b37a]" />
             Отделка
           </div>
           <div className="space-y-2 text-xs text-white/55">

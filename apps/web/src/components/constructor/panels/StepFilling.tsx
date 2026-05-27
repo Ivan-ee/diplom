@@ -206,19 +206,6 @@ export function StepFilling() {
           ))}
         </motion.div>
       </div>
-
-      {/* Tip */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.25 }}
-        className="flex items-start gap-2.5 p-3 bg-[var(--surface-secondary)] border border-[var(--border-subtle)] rounded-[var(--radius-control)]"
-      >
-        <span className="text-base leading-none mt-0.5">🍓</span>
-        <p className="text-xs text-[var(--color-graphite-light)] leading-relaxed">
-          Начинка располагается между слоями бисквита. Можно выбрать разные начинки для каждого яруса.
-        </p>
-      </motion.div>
     </div>
   );
 }

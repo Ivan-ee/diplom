@@ -95,7 +95,7 @@ export function StepBase() {
                   </p>
                   {base.description && (
                     <p className="text-xs text-[var(--color-graphite-light)] mt-0.5 leading-snug line-clamp-1">
-                      {isCompatible ? base.description : 'Для этой формы нужна готовая BigLayer-модель'}
+                      {isCompatible ? base.description : 'Недоступно для выбранной формы'}
                     </p>
                   )}
                 </div>

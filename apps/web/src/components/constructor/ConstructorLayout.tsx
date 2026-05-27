@@ -1,7 +1,7 @@
 'use client';
 
 import type { ComponentType } from 'react';
-import { RotateCcw, ScanEye, Sparkles, SquareStack, View } from 'lucide-react';
+import { RotateCcw, ScanEye, SquareStack, View } from 'lucide-react';
 import { CakeViewport } from './scene/CakeViewport';
 import { SettingsPanel } from './panels/SettingsPanel';
 import { useConstructorStore, type CakeShape, type TierCount, type ViewMode } from '@/stores/constructor-store';
@@ -158,20 +158,8 @@ function ConstructorCommandBar() {
   };
 
   return (
-    <div className="flex h-16 items-center justify-between gap-4 border-b border-white/10 bg-[#151311] px-4">
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d8b37a]/15 text-[#d8b37a]">
-          <Sparkles size={17} />
-        </div>
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#d8b37a]">
-            Cake Atelier Pro
-          </p>
-          <p className="truncate text-sm text-white/70">Студия сборки конфигурации торта</p>
-        </div>
-      </div>
-
-      <div className="flex min-w-0 flex-1 items-center justify-center gap-2 overflow-x-auto">
+    <div className="flex h-14 items-center justify-between gap-4 border-b border-white/10 bg-[#151311] px-4">
+      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
         {PRESETS.map((preset) => {
           const available = isPresetAvailable(preset);
           return (
@@ -180,7 +168,7 @@ function ConstructorCommandBar() {
               type="button"
               onClick={() => applyPreset(preset)}
               disabled={!available}
-              title={available ? preset.label : 'Для пресета нужна чистая full-tier GLB-модель'}
+              title={available ? preset.label : 'Недоступно для выбранной формы'}
               className={cn(
                 'whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition',
                 available

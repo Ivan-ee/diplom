@@ -105,7 +105,7 @@ export function StepShape() {
                     {label}
                   </p>
                   <p className="text-[10px] text-[var(--color-graphite-light)] mt-0.5 leading-tight">
-                    {isAvailable ? description : 'Нужна чистая full-tier GLB-модель'}
+                    {isAvailable ? description : 'Недоступно для выбранной формы'}
                   </p>
                 </div>
               </motion.button>
@@ -155,18 +155,6 @@ export function StepShape() {
           </motion.p>
         )}
       </div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="flex items-start gap-2.5 p-3 bg-[var(--surface-secondary)] border border-[var(--border-subtle)] rounded-[var(--radius-control)]"
-      >
-        <span className="text-base leading-none mt-0.5 select-none" aria-hidden="true">💡</span>
-        <p className="text-xs text-[var(--color-graphite-light)] leading-relaxed">
-          Форма торта влияет на сложность приготовления. Круглая — классика, сердце и квадрат требуют дополнительной обработки.
-        </p>
-      </motion.div>
     </div>
   );
 }

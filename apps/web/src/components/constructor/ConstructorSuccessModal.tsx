@@ -105,8 +105,8 @@ export function ConstructorSuccessModal({
                     className="object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-6xl">
-                    🎂
+                  <div className="flex h-full w-full items-center justify-center px-4 text-center text-sm text-[var(--color-graphite-light)]">
+                    Превью недоступно
                   </div>
                 )}
               </div>
