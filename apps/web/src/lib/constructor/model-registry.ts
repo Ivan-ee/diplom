@@ -16,7 +16,15 @@ const SHAPE_FOLDER: Record<CakeShape, string> = {
 
 type LayerVariant = 'default' | 'red' | 'cherry' | 'choco' | 'cream' | 'glaze' | 'pink';
 type FillVariant = 'cream' | 'choco' | 'pink' | 'meringue' | 'glaze' | 'glaze-choco' | 'glaze-cream' | 'glaze-cream2' | 'meringue-pink';
-type GlazeVariant = 'cream' | 'choco' | 'pink' | 'milk' | 'cream-glaze';
+type GlazeVariant =
+  | 'cream'
+  | 'cream-2'
+  | 'choco'
+  | 'choco-2'
+  | 'pink'
+  | 'pink-2'
+  | 'milk'
+  | 'cream-glaze';
 type DecoVariant =
   | 'blueberry'
   | 'chocolate'
@@ -107,26 +115,28 @@ const FILL_FILES: Record<CakeShape, Partial<Record<FillVariant, string>>> = {
 
 // --- Glazes -----------------------------------------------------------------
 
-// [withoutDrips, withDrips] — withDrips is null when no *2 variant exists
-type GlazeEntry = [string, string | null];
-
-const GLAZE_FILES: Record<CakeShape, Partial<Record<GlazeVariant, GlazeEntry>>> = {
+const GLAZE_FILES: Record<CakeShape, Partial<Record<GlazeVariant, string>>> = {
   circle: {
-    cream: ['GlazeCream.glb', 'GlazeCream2.glb'],
-    choco: ['GlazeChoco.glb', 'GlazeChoco2.glb'],
-    milk: ['cakeGlazeMilk.glb', null],
-    pink: ['cakeGlazePink.glb', null],
+    cream: 'GlazeCream.glb',
+    'cream-2': 'GlazeCream2.glb',
+    choco: 'GlazeChoco.glb',
+    'choco-2': 'GlazeChoco2.glb',
+    milk: 'cakeGlazeMilk.glb',
+    pink: 'cakeGlazePink.glb',
   },
   square: {
-    cream: ['GlazeCream.glb', null],
-    choco: ['GlazeChoco.glb', null],
-    pink: ['GlazePink.glb', null],
-    'cream-glaze': ['GlazeCreamGlaze.glb', null],
+    cream: 'GlazeCream.glb',
+    choco: 'GlazeChoco.glb',
+    pink: 'GlazePink.glb',
+    'cream-glaze': 'GlazeCreamGlaze.glb',
   },
   heart: {
-    cream: ['GlazeCream.glb', 'GlazeCream2.glb'],
-    choco: ['GlazeChoco.glb', 'GlazeChoco2.glb'],
-    pink: ['GlazePink.glb', 'GlazePink2.glb'],
+    cream: 'GlazeCream.glb',
+    'cream-2': 'GlazeCream2.glb',
+    choco: 'GlazeChoco.glb',
+    'choco-2': 'GlazeChoco2.glb',
+    pink: 'GlazePink.glb',
+    'pink-2': 'GlazePink2.glb',
   },
 };
 
@@ -360,8 +370,8 @@ export function getFillModelPath(shape: CakeShape, fillVariant: string): string 
  * Returns the path to a Glaze GLB.
  *
  * @param shape        - cake shape
- * @param glazeVariant - 'cream' | 'choco' | 'pink' | 'milk' | 'cream-glaze'
- * @param withDrips    - true for the *2 drip variant
+ * @param glazeVariant - exact coating visual key backed by a GLB
+ * @param withDrips    - ignored legacy flag; *-2 models use explicit visual keys
  */
 export function getGlazeModelPath(
   shape: CakeShape,
@@ -371,13 +381,10 @@ export function getGlazeModelPath(
   const folder = SHAPE_FOLDER[shape];
   const glazeMap = GLAZE_FILES[shape];
 
-  const entry = glazeMap[glazeVariant as GlazeVariant];
-  if (!entry) return null;
+  void withDrips;
+  const file = glazeMap[glazeVariant as GlazeVariant];
 
-  const [base, drips] = entry;
-  const file = withDrips && drips !== null ? drips : base;
-
-  return p(folder, file);
+  return file ? p(folder, file) : null;
 }
 
 /**
@@ -441,10 +448,7 @@ export function getDeclaredModelPaths(): string[] {
     for (const file of Object.values(LAYER_FILES[shape])) paths.add(p(folder, file));
     for (const file of Object.values(FULL_TIER_FILES[shape])) paths.add(p(folder, file));
     for (const file of Object.values(FILL_FILES[shape])) paths.add(p(folder, file));
-    for (const [base, drips] of Object.values(GLAZE_FILES[shape])) {
-      paths.add(p(folder, base));
-      if (drips) paths.add(p(folder, drips));
-    }
+    for (const file of Object.values(GLAZE_FILES[shape])) paths.add(p(folder, file));
     for (const file of Object.values(DECO_FILES[shape])) paths.add(p(folder, file));
     paths.add(CANDLE_FILES[shape]);
   }
@@ -465,8 +469,11 @@ export interface GlazeOption {
 
 const GLAZE_META: Record<GlazeVariant, { label: string; color: string }> = {
   cream: { label: 'Кремовая', color: '#FFF5E0' },
+  'cream-2': { label: 'Кремовая версия 2', color: '#FFF5E0' },
   choco: { label: 'Шоколадная', color: '#4A2C17' },
+  'choco-2': { label: 'Шоколадная версия 2', color: '#4A2C17' },
   pink: { label: 'Розовая', color: '#FFB6C1' },
+  'pink-2': { label: 'Розовая версия 2', color: '#FFB6C1' },
   milk: { label: 'Молочная', color: '#FFF8E7' },
   'cream-glaze': { label: 'Кремово-зеркальная', color: '#F5DEB3' },
 };
@@ -474,14 +481,14 @@ const GLAZE_META: Record<GlazeVariant, { label: string; color: string }> = {
 export function getAvailableGlazes(shape: CakeShape): GlazeOption[] {
   const glazeMap = GLAZE_FILES[shape];
 
-  return (Object.entries(glazeMap) as [GlazeVariant, GlazeEntry][]).map(
-    ([variant, [, drips]]) => {
+  return (Object.keys(glazeMap) as GlazeVariant[]).map(
+    (variant) => {
       const meta = GLAZE_META[variant] ?? { label: variant, color: '#FFFFFF' };
       return {
         id: variant,
         label: meta.label,
         color: meta.color,
-        hasDripsVariant: drips !== null,
+        hasDripsVariant: false,
       };
     },
   );
@@ -649,9 +656,8 @@ export function getAllGlazePaths(shape: CakeShape): string[] {
   const folder = SHAPE_FOLDER[shape];
   const paths: string[] = [];
 
-  for (const [base, drips] of Object.values(GLAZE_FILES[shape]) as GlazeEntry[]) {
-    paths.push(p(folder, base));
-    if (drips) paths.push(p(folder, drips));
+  for (const file of Object.values(GLAZE_FILES[shape])) {
+    if (file) paths.push(p(folder, file));
   }
 
   return paths;

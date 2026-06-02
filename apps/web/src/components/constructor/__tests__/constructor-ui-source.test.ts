@@ -86,4 +86,20 @@ describe('constructor UI source regressions', () => {
     expect(cameraController).not.toContain('const ORBIT_DISTANCE = 5.6;');
     expect(cameraController).not.toContain('distance independent from tier count');
   });
+
+  it('renders model-backed coating choices instead of hardcoded coating type tabs', () => {
+    const stepCoating = source('src/components/constructor/panels/StepCoating.tsx');
+
+    expect(stepCoating).toContain('visibleCoatings');
+    expect(stepCoating).toContain('isGlazeVisualKeyAvailable(shape as CakeShape, coating.visualKey)');
+    expect(stepCoating).not.toContain('const coatingTypes');
+    expect(stepCoating).not.toContain('handleTypeSelect');
+    expect(stepCoating).not.toContain('Режим покрытия');
+    expect(stepCoating).not.toContain('Градиент');
+    expect(stepCoating).not.toContain('Брызги');
+    expect(stepCoating).not.toContain('Однотон');
+    expect(stepCoating).not.toContain('setColorMode');
+    expect(stepCoating).not.toContain('setSecondaryGlazeVariant');
+    expect(stepCoating).not.toContain('GlazePalette');
+  });
 });

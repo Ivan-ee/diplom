@@ -58,14 +58,14 @@ function CakeModelGroup({
         shape: config.shape,
         tiers: visualTiers,
         glazeVariant: showCoating ? coating.glazeVariant : '',
-        withDrips: showCoating ? coating.withDrips : false,
+        withDrips: false,
         decorations: decorationInstances.map((instance) => ({
           instanceId: instance.instanceId,
           variantId: instance.visualKey,
           position: instance.position,
         })),
       }),
-    [decorationInstances, coating.glazeVariant, coating.withDrips, config.shape, showCoating, visualTiers],
+    [decorationInstances, coating.glazeVariant, config.shape, showCoating, visualTiers],
   );
 
   return (
@@ -86,8 +86,6 @@ function CakeModelGroup({
         <GlbGlaze
           shape={config.shape}
           glazeVariant={coating.glazeVariant}
-          withDrips={coating.withDrips}
-          visual={coating.visual}
           yOffset={layout.glaze.topY}
         />
       )}

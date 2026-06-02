@@ -129,7 +129,7 @@ describe('constructor-store', () => {
     expect(layers).toHaveLength(4);
   });
 
-  it('setColorMode gradient chooses a secondary color different from primary', () => {
+  it('normalizes legacy coating modes to model-backed solid coating', () => {
     useConstructorStore.setState({
       ingredients: getMockIngredients(),
       shape: 'square',
@@ -137,23 +137,58 @@ describe('constructor-store', () => {
         type: 'cream',
         coatingId: 'coating-cream',
         glazeVariant: 'cream',
-        withDrips: false,
-        colorMode: 'solid',
+        withDrips: true,
+        colorMode: 'gradient' as never,
+        secondaryGlazeVariant: 'choco',
         visual: {
-          mode: 'solid',
+          mode: 'gradient' as never,
           primaryColor: '#FFF5E0',
+          secondaryColor: '#4A2C17',
+          splashes: true,
         },
       },
     });
 
-    useConstructorStore.getState().setColorMode('gradient');
+    useConstructorStore.getState().setCoatingId('coating-cream');
 
     const coating = useConstructorStore.getState().coating;
-    expect(coating.colorMode).toBe('gradient');
-    expect(coating.secondaryGlazeVariant).toBeDefined();
-    expect(coating.secondaryGlazeVariant).not.toBe(coating.glazeVariant);
-    expect(coating.visual.secondaryColor).toBeDefined();
-    expect(coating.visual.secondaryColor).not.toBe(coating.visual.primaryColor);
+    expect(coating.glazeVariant).toBe('cream');
+    expect(coating.withDrips).toBe(false);
+    expect(coating.colorMode).toBe('solid');
+    expect(coating.secondaryGlazeVariant).toBeUndefined();
+    expect(coating.visual).toEqual({
+      mode: 'solid',
+      primaryColor: '#FFF5E0',
+      splashes: false,
+    });
+  });
+
+  it('repairs coating id and visual key together when shape changes', () => {
+    useConstructorStore.setState({
+      ingredients: getMockIngredients(),
+      shape: 'circle',
+      tierCount: 1,
+      layers: [{ baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 }],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-milk',
+        glazeVariant: 'milk',
+        withDrips: false,
+        colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF8E7',
+        },
+      },
+    });
+
+    useConstructorStore.getState().setShape('heart');
+
+    const coating = useConstructorStore.getState().coating;
+    expect(coating.glazeVariant).not.toBe('milk');
+    expect(coating.coatingId).toBe('coating-cream');
+    expect(coating.glazeVariant).toBe('cream');
+    expect(coating.type).toBe('cream');
   });
 
   it('setTierCount back to 1 trims to one layer', () => {

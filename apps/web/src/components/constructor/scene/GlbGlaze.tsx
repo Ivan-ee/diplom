@@ -1,12 +1,19 @@
 'use client';
 
-import { useMemo, Component, type ReactNode } from 'react';
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  Component,
+  type ReactNode,
+} from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import type { CakeShape } from '@/lib/constructor/model-registry';
 import { getGlazeModelPath } from '@/lib/constructor/model-registry';
-import type { CoatingVisual } from '@/stores/constructor-store';
-import { applyCoatingShader } from './GlbCoatingShader';
 
 class GlbErrorBoundary extends Component<
   { fallback?: ReactNode; children: ReactNode },
@@ -25,24 +32,17 @@ class GlbErrorBoundary extends Component<
 interface GlbGlazeProps {
   shape: CakeShape;
   glazeVariant: string;
-  withDrips: boolean;
-  visual: CoatingVisual;
   yOffset: number;
 }
 
 interface GlazeModelProps {
   url: string;
   topY: number;
-  visual: CoatingVisual;
 }
 
-function GlazeModel({ url, topY, visual }: GlazeModelProps) {
+function GlazeModel({ url, topY }: GlazeModelProps) {
   const gltf = useGLTF(url);
-  const clonedScene = useMemo(() => {
-    const clone = gltf.scene.clone(true);
-    applyCoatingShader(clone, visual);
-    return clone;
-  }, [gltf.scene, visual]);
+  const clonedScene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const topOffset = useMemo(() => {
     const box = new THREE.Box3().setFromObject(clonedScene);
     return Number.isFinite(box.max.y) ? -box.max.y : 0;
@@ -55,11 +55,62 @@ function GlazeModel({ url, topY, visual }: GlazeModelProps) {
   );
 }
 
-function GlbGlazeInner({ shape, glazeVariant, withDrips, visual, yOffset }: GlbGlazeProps) {
-  const url = getGlazeModelPath(shape, glazeVariant, withDrips);
+function GlbGlazeInner({ shape, glazeVariant, yOffset }: GlbGlazeProps) {
+  const url = getGlazeModelPath(shape, glazeVariant, false);
+  const requestedGlazeUrlRef = useRef(url);
+  const [visibleGlazeUrl, setVisibleGlazeUrl] = useState<string | null>(url);
+
+  useEffect(() => {
+    requestedGlazeUrlRef.current = url;
+
+    if (!url) {
+      setVisibleGlazeUrl(null);
+      return;
+    }
+
+    setVisibleGlazeUrl((current) => current ?? url);
+  }, [url]);
+
+  const handleModelReady = useCallback((readyUrl: string) => {
+    if (requestedGlazeUrlRef.current !== readyUrl) return;
+    setVisibleGlazeUrl(readyUrl);
+  }, []);
+
   if (!url) return null;
 
-  return <GlazeModel url={url} topY={yOffset} visual={visual} />;
+  return (
+    <>
+      {visibleGlazeUrl && (
+        <Suspense fallback={null}>
+          <GlazeModel url={visibleGlazeUrl} topY={yOffset} />
+        </Suspense>
+      )}
+      {url !== visibleGlazeUrl && (
+        <Suspense fallback={null}>
+          <GlbGlazeModelPreloader
+            url={url}
+            onReady={handleModelReady}
+          />
+        </Suspense>
+      )}
+    </>
+  );
+}
+
+function GlbGlazeModelPreloader({
+  url,
+  onReady,
+}: {
+  url: string;
+  onReady: (url: string) => void;
+}) {
+  const gltf = useGLTF(url);
+
+  useEffect(() => {
+    onReady(url);
+  }, [gltf.scene, onReady, url]);
+
+  return null;
 }
 
 export function GlbGlaze(props: GlbGlazeProps) {

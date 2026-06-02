@@ -46,21 +46,8 @@ describe('constructor scene GLB-only purity', () => {
       { label: 'shader material', pattern: /ShaderMaterial/ },
     ];
 
-    const shaderAllowlist = new Set([
-      'src/components/constructor/scene/GlbCoatingShader.tsx',
-    ]);
-
     const failures = readSceneSources().flatMap(({ relativePath, source }) =>
       forbidden.flatMap(({ label, pattern }) => {
-        if (shaderAllowlist.has(relativePath) && (
-          label === 'scene traversal mutation' ||
-          label === 'material assignment' ||
-          label === 'material cloning' ||
-          label === 'shader material'
-        )) {
-          return [];
-        }
-
         return pattern.test(source) ? [`${relativePath}: ${label}`] : [];
       }),
     );
@@ -93,5 +80,22 @@ describe('constructor scene GLB-only purity', () => {
     expect(tierSource).toContain('GlbTierModelPreloader');
     expect(tierSource).toContain('<Suspense fallback={null}>');
     expect(canvasSource).toContain('preloadFullTierModels(shape)');
+  });
+
+  it('renders coating GLB files with original materials and retained loading', () => {
+    const sceneSources = readSceneSources();
+    const glazeSource = sceneSources.find(
+      ({ relativePath }) => relativePath === 'src/components/constructor/scene/GlbGlaze.tsx',
+    )?.source;
+    const canvasSource = sceneSources.find(
+      ({ relativePath }) => relativePath === 'src/components/constructor/scene/CakeCanvasInner.tsx',
+    )?.source;
+
+    expect(glazeSource).toBeDefined();
+    expect(glazeSource).toContain('visibleGlazeUrl');
+    expect(glazeSource).toContain('GlbGlazeModelPreloader');
+    expect(glazeSource).not.toContain('applyCoatingShader');
+    expect(glazeSource).not.toContain('visual.mode');
+    expect(canvasSource).toContain('preloadGlazeModels(shape)');
   });
 });

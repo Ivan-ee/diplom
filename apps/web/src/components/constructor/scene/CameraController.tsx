@@ -60,7 +60,7 @@ export function CameraController() {
         baseVariant: ingredients?.bases.find((base) => base.id === layer.baseId)?.visualKey ?? 'default',
       })),
       glazeVariant: safeCoating.glazeVariant,
-      withDrips: safeCoating.withDrips,
+      withDrips: false,
       decorations: safeDecorationInstances.map((instance) => ({
         instanceId: instance.instanceId,
         variantId: instance.visualKey,
@@ -72,7 +72,6 @@ export function CameraController() {
   }, [
     ingredients,
     safeCoating.glazeVariant,
-    safeCoating.withDrips,
     safeDecorationInstances,
     safeLayers,
     shape,

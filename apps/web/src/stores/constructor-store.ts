@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist, subscribeWithSelector } from 'zustand/middleware';
 import { getMockIngredients } from '@/lib/constructor/mock-ingredients';
 import {
-  getAvailableGlazes,
   getGlazeColor,
   isDecoVisualKeyAvailable,
   isFillVisualKeyAvailable,
@@ -15,7 +14,7 @@ export type CakeShape = 'circle' | 'square' | 'heart';
 export type TierCount = 1 | 2 | 3 | 4;
 export type CoatingType = 'cream' | 'fondant';
 export type ConstructorStep = 1 | 2 | 3 | 4 | 5;
-export type ColorMode = 'solid' | 'gradient' | 'splashes';
+export type ColorMode = 'solid';
 export type ViewMode = 'orbit' | 'top' | 'focus';
 export type PricingStatus = 'idle' | 'stale' | 'updating' | 'verified' | 'error';
 
@@ -169,9 +168,6 @@ export interface ConstructorState {
   setCoatingType: (type: CoatingType) => void;
   setCoatingId: (id: string) => void;
   setGlazeVariant: (variant: string) => void;
-  setWithDrips: (withDrips: boolean) => void;
-  setColorMode: (mode: ColorMode) => void;
-  setSecondaryGlazeVariant: (variant: string) => void;
   addDecoration: (variantId: string, decorationId?: string) => void;
   addDecorationInstance: (
     visualKey: string,
@@ -256,33 +252,20 @@ function enforceTopDecorationSingleton(instances: DecorationInstance[]): Decorat
   );
 }
 
-function isColorMode(value: unknown): value is ColorMode {
-  return value === 'solid' || value === 'gradient' || value === 'splashes';
-}
-
 export function normalizeCoating(coating?: Partial<CakeCoating> | null): CakeCoating {
   const glazeVariant = coating?.glazeVariant ?? DEFAULT_COATING.glazeVariant;
-  const colorMode = isColorMode(coating?.colorMode)
-    ? coating.colorMode
-    : isColorMode(coating?.visual?.mode)
-      ? coating.visual.mode
-      : DEFAULT_COATING.colorMode;
-  const visualMode = isColorMode(coating?.visual?.mode) ? coating.visual.mode : colorMode;
-  const secondaryColor = coating?.visual?.secondaryColor ??
-    (coating?.secondaryGlazeVariant ? getGlazeColor(coating.secondaryGlazeVariant) : undefined);
 
   return {
     type: coating?.type ?? DEFAULT_COATING.type,
     coatingId: coating?.coatingId ?? DEFAULT_COATING.coatingId,
     glazeVariant,
-    withDrips: coating?.withDrips ?? DEFAULT_COATING.withDrips,
-    colorMode,
-    secondaryGlazeVariant: coating?.secondaryGlazeVariant,
+    withDrips: false,
+    colorMode: 'solid',
+    secondaryGlazeVariant: undefined,
     visual: {
-      mode: visualMode,
-      primaryColor: coating?.visual?.primaryColor ?? getGlazeColor(glazeVariant),
-      ...(secondaryColor ? { secondaryColor } : {}),
-      splashes: coating?.visual?.splashes ?? visualMode === 'splashes',
+      mode: 'solid',
+      primaryColor: getGlazeColor(glazeVariant),
+      splashes: false,
     },
   };
 }
@@ -459,51 +442,6 @@ function findCompatibleShape(
   return catalogShapeOrder(ingredients).find((shape) => shapeHasCompatibleBase(bases, shape)) ?? preferredShape;
 }
 
-function findSecondaryGlazeVariant(
-  shape: CakeShape,
-  primaryVariant: string,
-  preferredVariant?: string,
-): string | undefined {
-  if (
-    preferredVariant &&
-    preferredVariant !== primaryVariant &&
-    isGlazeVisualKeyAvailable(shape as RegistryCakeShape, preferredVariant)
-  ) {
-    return preferredVariant;
-  }
-
-  return getAvailableGlazes(shape as RegistryCakeShape).find((option) => option.id !== primaryVariant)?.id;
-}
-
-function ensureGradientVisual(coating: CakeCoating, shape: CakeShape): CakeCoating {
-  const normalized = normalizeCoating(coating);
-  if (normalized.colorMode !== 'gradient' && normalized.visual.mode !== 'gradient') {
-    return normalized;
-  }
-
-  const secondaryGlazeVariant = findSecondaryGlazeVariant(
-    shape,
-    normalized.glazeVariant,
-    normalized.secondaryGlazeVariant,
-  );
-  const secondaryColor = secondaryGlazeVariant
-    ? getGlazeColor(secondaryGlazeVariant)
-    : normalized.visual.secondaryColor;
-
-  return {
-    ...normalized,
-    colorMode: 'gradient',
-    secondaryGlazeVariant,
-    visual: {
-      ...normalized.visual,
-      mode: 'gradient',
-      primaryColor: getGlazeColor(normalized.glazeVariant),
-      ...(secondaryColor ? { secondaryColor } : {}),
-      splashes: false,
-    },
-  };
-}
-
 function findCompatibleFillingId(
   fillings: IngredientFilling[],
   shape: CakeShape,
@@ -653,21 +591,19 @@ function repairSelectionsForCompatibility(
     normalizedCoating.coatingId,
     normalizedCoating.glazeVariant,
   );
-  const coating = ensureGradientVisual(
-    compatibleCoating
-      ? normalizeCoating({
+  const coating = compatibleCoating
+    ? normalizeCoating({
         ...normalizedCoating,
         type: compatibleCoating.type,
         coatingId: compatibleCoating.id,
         glazeVariant: compatibleCoating.visualKey,
+        withDrips: false,
         visual: {
           ...normalizedCoating.visual,
           primaryColor: getGlazeColor(compatibleCoating.visualKey),
         },
       })
-      : normalizedCoating,
-    compatibleShape,
-  );
+    : normalizedCoating;
   const decorations = repairDecorationsForShape(
     normalizedActiveDecorations,
     normalizedSelectedDecorations,
@@ -707,6 +643,7 @@ function applyDefaultSelections(
       ...normalizedCoating,
       coatingId: defaultCoating.id,
       glazeVariant: defaultCoating.visualKey,
+      withDrips: false,
       visual: {
         ...normalizedCoating.visual,
         primaryColor: getGlazeColor(defaultCoating.visualKey),
@@ -925,18 +862,17 @@ export const useConstructorStore = create<ConstructorState>()(
             c.available &&
             isGlazeVisualKeyAvailable(shape as RegistryCakeShape, c.visualKey),
         );
-        set((state) => ({
-          coating: ensureGradientVisual({
-            ...normalizeCoating(state.coating),
-            type,
-            coatingId: matchingCoating?.id ?? normalizeCoating(state.coating).coatingId,
-            glazeVariant: matchingCoating?.visualKey ?? normalizeCoating(state.coating).glazeVariant,
-            visual: {
-              ...normalizeCoating(state.coating).visual,
-              primaryColor: getGlazeColor(matchingCoating?.visualKey ?? normalizeCoating(state.coating).glazeVariant),
-            },
-          }, shape),
-        }));
+        set((state) => {
+          const currentCoating = normalizeCoating(state.coating);
+          return {
+            coating: normalizeCoating({
+              ...currentCoating,
+              type,
+              coatingId: matchingCoating?.id ?? currentCoating.coatingId,
+              glazeVariant: matchingCoating?.visualKey ?? currentCoating.glazeVariant,
+            }),
+          };
+        });
         get().recalculatePrice();
         markPriceStale(set);
       },
@@ -950,18 +886,17 @@ export const useConstructorStore = create<ConstructorState>()(
         ) {
           return;
         }
-        set((state) => ({
-          coating: ensureGradientVisual({
-            ...normalizeCoating(state.coating),
-            coatingId: id,
-            glazeVariant: coating?.visualKey ?? normalizeCoating(state.coating).glazeVariant,
-            type: coating?.type ?? normalizeCoating(state.coating).type,
-            visual: {
-              ...normalizeCoating(state.coating).visual,
-              primaryColor: getGlazeColor(coating?.visualKey ?? normalizeCoating(state.coating).glazeVariant),
-            },
-          }, shape),
-        }));
+        set((state) => {
+          const currentCoating = normalizeCoating(state.coating);
+          return {
+            coating: normalizeCoating({
+              ...currentCoating,
+              coatingId: id,
+              glazeVariant: coating?.visualKey ?? currentCoating.glazeVariant,
+              type: coating?.type ?? currentCoating.type,
+            }),
+          };
+        });
         get().recalculatePrice();
         markPriceStale(set);
       },
@@ -972,56 +907,17 @@ export const useConstructorStore = create<ConstructorState>()(
         const matchingCoating = ingredients?.coatings.find(
           (coating) => coating.available && coating.visualKey === variant,
         );
-        set((state) => ({
-          coating: ensureGradientVisual({
-            ...normalizeCoating(state.coating),
-            glazeVariant: variant,
-            coatingId: matchingCoating?.id ?? normalizeCoating(state.coating).coatingId,
-            type: matchingCoating?.type ?? normalizeCoating(state.coating).type,
-            visual: {
-              ...normalizeCoating(state.coating).visual,
-              primaryColor: getGlazeColor(variant),
-            },
-          }, shape),
-        }));
-        markPriceStale(set);
-      },
-
-      setWithDrips: (withDrips) => {
-        set((state) => ({ coating: { ...normalizeCoating(state.coating), withDrips } }));
-        markPriceStale(set);
-      },
-
-      setColorMode: (mode) => {
-        const shape = get().shape;
-        set((state) => ({
-          coating: ensureGradientVisual({
-            ...normalizeCoating(state.coating),
-            colorMode: mode,
-            withDrips: mode === 'splashes',
-            visual: {
-              ...normalizeCoating(state.coating).visual,
-              mode,
-              splashes: mode === 'splashes',
-            },
-          }, shape),
-        }));
-        markPriceStale(set);
-      },
-
-      setSecondaryGlazeVariant: (variant) => {
-        const shape = get().shape;
-        if (!isGlazeVisualKeyAvailable(shape as RegistryCakeShape, variant)) return;
-        set((state) => ({
-          coating: {
-            ...normalizeCoating(state.coating),
-            secondaryGlazeVariant: variant,
-            visual: {
-              ...normalizeCoating(state.coating).visual,
-              secondaryColor: getGlazeColor(variant),
-            },
-          },
-        }));
+        set((state) => {
+          const currentCoating = normalizeCoating(state.coating);
+          return {
+            coating: normalizeCoating({
+              ...currentCoating,
+              glazeVariant: variant,
+              coatingId: matchingCoating?.id ?? currentCoating.coatingId,
+              type: matchingCoating?.type ?? currentCoating.type,
+            }),
+          };
+        });
         markPriceStale(set);
       },
 

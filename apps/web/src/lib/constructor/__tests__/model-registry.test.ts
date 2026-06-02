@@ -7,9 +7,12 @@ import {
   getDeclaredModelPaths,
   getDecoModelPath,
   getFillModelPath,
+  getAllGlazePaths,
   getAllFullTierPaths,
+  getAvailableGlazes,
   getFullTierModelPath,
   getFullTierVariantMeta,
+  getGlazeModelPath,
   getLayerModelPath,
   getModelVisualHeight,
   getModelYBounds,
@@ -18,9 +21,32 @@ import {
   isDecoVisualKeyAvailable,
   isFillVisualKeyAvailable,
   isLayerVisualKeyAvailable,
+  isGlazeVisualKeyAvailable,
 } from '@/lib/constructor/model-registry';
 
 const IGNORED_RUNTIME_MODELS = new Set(['/models/candle/DecoCandle2.glb']);
+const COATING_SOURCE_FOLDERS: Record<string, string> = {
+  CakeCircle: 'circle',
+  CakeCube: 'cube',
+  CakeHeart: 'heart',
+};
+const NON_COATING_GLAZE_ROLE_PATHS = new Set([
+  '/models/circle/CakeBigLayerGlaze.glb',
+  '/models/circle/cakeDecorGlaze.glb',
+  '/models/cube/CakeBigLayerGlaze.glb',
+  '/models/cube/CakeFillGlaze.glb',
+  '/models/cube/CakeFillGlazeChoco.glb',
+  '/models/cube/CakeFillGlazeCream.glb',
+  '/models/cube/CakeFillGlazeCream2.glb',
+  '/models/cube/DecoGlazeChoco.glb',
+  '/models/cube/DecoGlazeCream.glb',
+  '/models/cube/DecoGlazePink.glb',
+  '/models/heart/CakeBigLayerGlaze.glb',
+  '/models/heart/DecoGlazeChoco.glb',
+  '/models/heart/DecoGlazeCream.glb',
+  '/models/heart/DecoGlazeCream2.glb',
+  '/models/heart/DecoGlazePink.glb',
+]);
 
 function runtimeModelPaths(): string[] {
   const modelsDir = path.resolve(process.cwd(), 'public/models');
@@ -41,12 +67,44 @@ function runtimeModelPaths(): string[] {
   return files.sort();
 }
 
+function canonicalCoatingPathsFromCakes(): string[] {
+  const cakesDir = path.resolve(process.cwd(), '../../Cakes');
+  const paths: string[] = [];
+
+  for (const [sourceFolder, runtimeFolder] of Object.entries(COATING_SOURCE_FOLDERS)) {
+    const shapeDir = path.join(cakesDir, sourceFolder);
+    for (const fileName of readdirSync(shapeDir)) {
+      const isCoatingModel =
+        (fileName.startsWith('Glaze') || fileName.startsWith('cakeGlaze')) &&
+        fileName.endsWith('.glb');
+      if (!isCoatingModel) continue;
+      paths.push(`/models/${runtimeFolder}/${fileName}`);
+    }
+  }
+
+  return paths.sort();
+}
+
+function runtimeGlazeNamedPaths(): string[] {
+  return runtimeModelPaths().filter((modelPath) => /glaze/i.test(path.basename(modelPath)));
+}
+
 function seedBases(): Array<{ name: string; visualKey: string; color: string; isAvailable: boolean }> {
   const seedPath = path.resolve(process.cwd(), '../../packages/db/seed-data/constructor-bases.json');
   return JSON.parse(readFileSync(seedPath, 'utf8')) as Array<{
     name: string;
     visualKey: string;
     color: string;
+    isAvailable: boolean;
+  }>;
+}
+
+function seedCoatings(): Array<{ name: string; visualKey: string; pricePerKg: number; isAvailable: boolean }> {
+  const seedPath = path.resolve(process.cwd(), '../../packages/db/seed-data/constructor-coatings.json');
+  return JSON.parse(readFileSync(seedPath, 'utf8')) as Array<{
+    name: string;
+    visualKey: string;
+    pricePerKg: number;
     isAvailable: boolean;
   }>;
 }
@@ -79,6 +137,80 @@ describe('constructor model registry', () => {
     expect(getFillModelPath('heart', 'meringue')).toBe('/models/heart/CakeFillMeringue.glb');
     expect(getDecoModelPath('square', 'top-glaze-cream2')).toBe('/models/cube/CakeFillGlazeCream2.glb');
     expect(getDecoModelPath('heart', 'top-meringue-pink')).toBe('/models/heart/CakeFillMeringuePink.glb');
+  });
+
+  it('exposes every ready coating GLB as a standalone visual key', () => {
+    expect(getGlazeModelPath('circle', 'cream', false)).toBe('/models/circle/GlazeCream.glb');
+    expect(getGlazeModelPath('circle', 'cream-2', false)).toBe('/models/circle/GlazeCream2.glb');
+    expect(getGlazeModelPath('circle', 'choco', false)).toBe('/models/circle/GlazeChoco.glb');
+    expect(getGlazeModelPath('circle', 'choco-2', false)).toBe('/models/circle/GlazeChoco2.glb');
+    expect(getGlazeModelPath('circle', 'milk', false)).toBe('/models/circle/cakeGlazeMilk.glb');
+    expect(getGlazeModelPath('circle', 'pink', false)).toBe('/models/circle/cakeGlazePink.glb');
+    expect(getAvailableGlazes('circle').map((option) => option.id)).toEqual([
+      'cream',
+      'cream-2',
+      'choco',
+      'choco-2',
+      'milk',
+      'pink',
+    ]);
+
+    expect(getGlazeModelPath('square', 'cream', false)).toBe('/models/cube/GlazeCream.glb');
+    expect(getGlazeModelPath('square', 'choco', false)).toBe('/models/cube/GlazeChoco.glb');
+    expect(getGlazeModelPath('square', 'pink', false)).toBe('/models/cube/GlazePink.glb');
+    expect(getGlazeModelPath('square', 'cream-glaze', false)).toBe('/models/cube/GlazeCreamGlaze.glb');
+    expect(getAvailableGlazes('square').map((option) => option.id)).toEqual([
+      'cream',
+      'choco',
+      'pink',
+      'cream-glaze',
+    ]);
+
+    expect(getGlazeModelPath('heart', 'cream', false)).toBe('/models/heart/GlazeCream.glb');
+    expect(getGlazeModelPath('heart', 'cream-2', false)).toBe('/models/heart/GlazeCream2.glb');
+    expect(getGlazeModelPath('heart', 'choco', false)).toBe('/models/heart/GlazeChoco.glb');
+    expect(getGlazeModelPath('heart', 'choco-2', false)).toBe('/models/heart/GlazeChoco2.glb');
+    expect(getGlazeModelPath('heart', 'pink', false)).toBe('/models/heart/GlazePink.glb');
+    expect(getGlazeModelPath('heart', 'pink-2', false)).toBe('/models/heart/GlazePink2.glb');
+    expect(getAvailableGlazes('heart').map((option) => option.id)).toEqual([
+      'cream',
+      'cream-2',
+      'choco',
+      'choco-2',
+      'pink',
+      'pink-2',
+    ]);
+
+    expect(getGlazeModelPath('circle', 'cream', true)).toBe('/models/circle/GlazeCream.glb');
+    expect(isGlazeVisualKeyAvailable('heart', 'milk')).toBe(false);
+  });
+
+  it('declares every Step 4 coating GLB from Cakes and runtime models', () => {
+    const registryCoatingPaths = (['circle', 'square', 'heart'] as const)
+      .flatMap((shape) => getAllGlazePaths(shape))
+      .sort();
+    const cakesCoatingPaths = canonicalCoatingPathsFromCakes();
+    const runtimeCoatingPaths = runtimeGlazeNamedPaths()
+      .filter((modelPath) => !NON_COATING_GLAZE_ROLE_PATHS.has(modelPath))
+      .sort();
+
+    expect(registryCoatingPaths).toEqual(cakesCoatingPaths);
+    expect(registryCoatingPaths).toEqual(runtimeCoatingPaths);
+    for (const modelPath of registryCoatingPaths) {
+      expect(getDeclaredModelPaths()).toContain(modelPath);
+      expect(runtimeModelPaths()).toContain(modelPath);
+    }
+  });
+
+  it('classifies Glaze-named assets from other roles outside Step 4 coatings', () => {
+    const registryCoatingPaths = new Set(
+      (['circle', 'square', 'heart'] as const).flatMap((shape) => getAllGlazePaths(shape)),
+    );
+
+    for (const modelPath of NON_COATING_GLAZE_ROLE_PATHS) {
+      expect(runtimeModelPaths(), `${modelPath} missing from runtime models`).toContain(modelPath);
+      expect(registryCoatingPaths, `${modelPath} leaked into Step 4 coatings`).not.toContain(modelPath);
+    }
   });
 
   it('requires an explicit full-tier model for every rendered Ярус', () => {
@@ -134,6 +266,53 @@ describe('constructor model registry', () => {
       expect(duplicateVisualKeys, `${sourceName} has duplicate base visualKeys`).toEqual([]);
       expect(unsupportedVisualKeys, `${sourceName} has unavailable base visualKeys`).toEqual([]);
       expect(availableBases.some((base) => base.visualKey === 'red'), `${sourceName} still exposes red`).toBe(false);
+    }
+  });
+
+  it('keeps mock and seed coatings unique and backed by at least one coating GLB', () => {
+    for (const [sourceName, coatings] of [
+      ['mock', getMockIngredients().coatings.map((coating) => ({
+        name: coating.name,
+        visualKey: coating.visualKey,
+        pricePerKg: coating.pricePerKg,
+        isAvailable: coating.available,
+      }))],
+      ['seed', seedCoatings()],
+    ] as const) {
+      const availableCoatings = coatings.filter((coating) => coating.isAvailable);
+      const duplicateVisualKeys = availableCoatings
+        .map((coating) => coating.visualKey)
+        .filter((visualKey, index, visualKeys) => visualKeys.indexOf(visualKey) !== index);
+      const unsupportedVisualKeys = availableCoatings
+        .map((coating) => coating.visualKey)
+        .filter((visualKey) => !(['circle', 'square', 'heart'] as const).some((shape) =>
+          isGlazeVisualKeyAvailable(shape, visualKey),
+        ));
+
+      expect(duplicateVisualKeys, `${sourceName} has duplicate coating visualKeys`).toEqual([]);
+      expect(unsupportedVisualKeys, `${sourceName} has unavailable coating visualKeys`).toEqual([]);
+      expect(availableCoatings.map((coating) => coating.visualKey)).toEqual([
+        'cream',
+        'cream-2',
+        'milk',
+        'choco',
+        'choco-2',
+        'pink',
+        'pink-2',
+        'cream-glaze',
+      ]);
+      expect(
+        availableCoatings.find((coating) => coating.visualKey === 'cream-2')?.pricePerKg,
+        `${sourceName} cream-2 price`,
+      ).toBe(availableCoatings.find((coating) => coating.visualKey === 'cream')?.pricePerKg);
+      expect(
+        availableCoatings.find((coating) => coating.visualKey === 'choco-2')?.pricePerKg,
+        `${sourceName} choco-2 price`,
+      ).toBe(availableCoatings.find((coating) => coating.visualKey === 'choco')?.pricePerKg);
+      expect(
+        availableCoatings.find((coating) => coating.visualKey === 'pink-2')?.pricePerKg,
+        `${sourceName} pink-2 price`,
+      ).toBe(availableCoatings.find((coating) => coating.visualKey === 'pink')?.pricePerKg);
     }
   });
 
