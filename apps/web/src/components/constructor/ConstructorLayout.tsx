@@ -21,10 +21,10 @@ const VIEW_MODES: Array<{ id: ViewMode; label: string; icon: ComponentType<{ siz
 ];
 
 const PRESETS = [
-  { label: 'Классика', shape: 'circle', tierCount: 1, base: 'default', filling: 'cream', coating: 'cream', decor: ['cream'] },
-  { label: 'Шоколад', shape: 'circle', tierCount: 2, bases: ['choco', 'red'], fillings: ['choco', 'cream'], coating: 'cream', decor: ['cream'] },
-  { label: 'Бархат', shape: 'heart', tierCount: 1, base: 'red', filling: 'cream', coating: 'pink', decor: ['chocolate-pink'] },
-  { label: 'Ягоды', shape: 'circle', tierCount: 1, base: 'default', filling: 'pink', coating: 'milk', decor: ['blueberry'] },
+  { label: 'Классика', shape: 'circle', tierCount: 1, base: 'cream', filling: 'cream', coating: 'cream', decor: ['cream'] },
+  { label: 'Шоколад', shape: 'circle', tierCount: 2, bases: ['choco', 'cream'], fillings: ['choco', 'cream'], coating: 'choco', decor: ['top-choco'] },
+  { label: 'Бархат', shape: 'heart', tierCount: 1, base: 'pink', filling: 'cream', coating: 'pink', decor: ['chocolate-pink'] },
+  { label: 'Ягоды', shape: 'circle', tierCount: 1, base: 'cream', filling: 'pink', coating: 'milk', decor: ['blueberry'] },
   { label: 'Праздник', shape: 'square', tierCount: 3, base: 'default', filling: 'glaze-cream', coating: 'cream', decor: ['meringue', 'candle'] },
   { label: 'Минимал', shape: 'square', tierCount: 1, base: 'default', filling: 'glaze-cream', coating: 'cream', decor: [] },
 ] as const;

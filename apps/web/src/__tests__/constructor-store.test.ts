@@ -103,8 +103,8 @@ describe('constructor-store', () => {
     const priceForSquare = useConstructorStore.getState().totalPrice;
 
     expect(priceForSquare).toBeGreaterThan(priceForCircle);
-    // base + repaired square-compatible filling + coating = 150000, +10% = 165000
-    expect(priceForSquare).toBe(165000);
+    // base + repaired square-compatible filling + coating = 155000, +10% = 170500
+    expect(priceForSquare).toBe(170500);
   });
 
   // ── setTierCount ───────────────────────────────────────────────────────────
@@ -120,6 +120,13 @@ describe('constructor-store', () => {
   it('setTierCount to 3 creates three layers', () => {
     useConstructorStore.getState().setTierCount(3);
     expect(useConstructorStore.getState().layers).toHaveLength(3);
+  });
+
+  it('setTierCount to 4 creates four layers', () => {
+    useConstructorStore.getState().setTierCount(4);
+    const { layers, tierCount } = useConstructorStore.getState();
+    expect(tierCount).toBe(4);
+    expect(layers).toHaveLength(4);
   });
 
   it('setColorMode gradient chooses a secondary color different from primary', () => {
@@ -170,7 +177,7 @@ describe('constructor-store', () => {
     expect(layers[0]).toMatchObject({ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1500 });
   });
 
-  it('setTierCount repairs shape and tiers to clean full-tier model compatibility', () => {
+  it('setTierCount repairs tiers to full-tier model compatibility', () => {
     const ingredients = getMockIngredients();
     useConstructorStore.setState({
       ingredients,
@@ -192,10 +199,10 @@ describe('constructor-store', () => {
 
     useConstructorStore.getState().setTierCount(2);
 
-    expect(useConstructorStore.getState().shape).toBe('square');
+    expect(useConstructorStore.getState().shape).toBe('circle');
     expect(useConstructorStore.getState().layers).toEqual([
-      { baseId: 'base-vanilla', fillingId: 'filling-caramel', weight: 1000 },
-      { baseId: 'base-vanilla', fillingId: 'filling-caramel', weight: 1000 },
+      { baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 },
+      { baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 },
     ]);
   });
 
@@ -206,12 +213,12 @@ describe('constructor-store', () => {
     const ingredients = getMockIngredients();
 
     // Single tier, weight 1000g
-    // base-vanilla: pricePerKg = 80000 → cost = (1000 * 80000) / 1000 = 80000
+    // base-vanilla/default: pricePerKg = 85000 → cost = (1000 * 85000) / 1000 = 85000
     // filling-strawberry: pricePerKg = 40000 → cost = 40000
     // coating-cream: pricePerKg = 20000 → cost = (1000 * 20000) / 1000 = 20000
     // shape circle: surchargePercent = 0
     // tierCount 1: surcharge = 0
-    // Expected total = 80000 + 40000 + 20000 = 140000
+    // Expected total = 85000 + 40000 + 20000 = 145000
 
     useConstructorStore.setState({
       ingredients,
@@ -235,15 +242,15 @@ describe('constructor-store', () => {
     });
 
     useConstructorStore.getState().recalculatePrice();
-    expect(useConstructorStore.getState().totalPrice).toBe(140000);
+    expect(useConstructorStore.getState().totalPrice).toBe(145000);
   });
 
   it('recalculatePrice applies shape surcharge correctly', () => {
     const ingredients = getMockIngredients();
 
     // heart shape: surchargePercent = 15
-    // base + filling + coating = 80000 + 40000 + 20000 = 140000
-    // surcharge = 140000 * 0.15 = 21000 → total = 161000
+    // base + filling + coating = 85000 + 40000 + 20000 = 145000
+    // surcharge = 145000 * 0.15 = 21750 → total = 166750
 
     useConstructorStore.setState({
       ingredients,
@@ -267,17 +274,17 @@ describe('constructor-store', () => {
     });
 
     useConstructorStore.getState().recalculatePrice();
-    expect(useConstructorStore.getState().totalPrice).toBe(161000);
+    expect(useConstructorStore.getState().totalPrice).toBe(166750);
   });
 
   it('recalculatePrice applies tier surcharge correctly', () => {
     const ingredients = getMockIngredients();
 
     // 2 tiers each 1000g, circle shape (0%), tierCount=2 surcharge=30000
-    // Tier 0: vanilla(80000) + strawberry(40000) = 120000
-    // Tier 1: vanilla(80000) + strawberry(40000) = 120000
+    // Tier 0: default base(85000) + strawberry(40000) = 125000
+    // Tier 1: default base(85000) + strawberry(40000) = 125000
     // Coating: totalWeight=2000g * 20000/kg = 40000
-    // subtotal = 280000 + tier surcharge 30000 = 310000
+    // subtotal = 290000 + tier surcharge 30000 = 320000
 
     useConstructorStore.setState({
       ingredients,
@@ -304,17 +311,17 @@ describe('constructor-store', () => {
     });
 
     useConstructorStore.getState().recalculatePrice();
-    expect(useConstructorStore.getState().totalPrice).toBe(310000);
+    expect(useConstructorStore.getState().totalPrice).toBe(320000);
   });
 
   it('recalculatePrice includes decoration costs', () => {
     const ingredients = getMockIngredients();
 
-    // Base price = 140000 (from first test)
+    // Base price = 145000 (from first test)
     // 2× decor-strawberry at pricePerUnit 5000 = 10000
     // 1× decor-rose at pricePerUnit 10000 = 10000
     // shape circle surcharge = 0
-    // total = 140000 + 10000 + 10000 = 160000
+    // total = 145000 + 10000 + 10000 = 165000
 
     useConstructorStore.setState({
       ingredients,
@@ -357,7 +364,7 @@ describe('constructor-store', () => {
     });
 
     useConstructorStore.getState().recalculatePrice();
-    expect(useConstructorStore.getState().totalPrice).toBe(160000);
+    expect(useConstructorStore.getState().totalPrice).toBe(165000);
   });
 
   it('adds multiple decoration instances of the same visual key and groups them for pricing', async () => {
@@ -427,6 +434,45 @@ describe('constructor-store', () => {
     const requestBody = JSON.parse(String(requestInit.body));
     expect(requestBody.decorations).toEqual([
       { decorationId: 'decor-strawberry', quantity: 2 },
+    ]);
+  });
+
+  it('keeps only one top decoration instance while preserving regular decorations', () => {
+    const ingredients = getMockIngredients();
+    useConstructorStore.setState({
+      ingredients,
+      shape: 'circle',
+      tierCount: 1,
+      layers: [{ baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 }],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
+      },
+      activeDecorations: [],
+      selectedDecorations: [],
+      decorationInstances: [],
+    });
+
+    useConstructorStore.getState().addDecorationInstance('blueberry', 'decor-strawberry');
+    useConstructorStore.getState().addDecorationInstance('top-cream', 'decor-top-cream');
+    useConstructorStore.getState().addDecorationInstance('top-choco', 'decor-top-choco');
+
+    const state = useConstructorStore.getState();
+    expect(state.decorationInstances).toHaveLength(2);
+    expect(state.decorationInstances.map((instance) => instance.visualKey)).toEqual([
+      'blueberry',
+      'top-choco',
+    ]);
+    expect(state.selectedDecorations).toEqual([
+      { variantId: 'blueberry', decorationId: 'decor-strawberry', quantity: 1 },
+      { variantId: 'top-choco', decorationId: 'decor-top-choco', quantity: 1 },
     ]);
   });
 
@@ -599,16 +645,16 @@ describe('constructor-store', () => {
     expect(state.currentStep).toBe(1);
   });
 
-  it('reset keeps the constructor on a compatible clean-tier shape when ingredients are loaded', () => {
+  it('reset keeps the constructor on a compatible full-tier shape when ingredients are loaded', () => {
     useConstructorStore.setState({ ingredients: getMockIngredients() });
 
     useConstructorStore.getState().reset();
 
     const state = useConstructorStore.getState();
-    expect(state.shape).toBe('square');
+    expect(state.shape).toBe('circle');
     expect(state.layers[0]).toMatchObject({
-      baseId: 'base-vanilla',
-      fillingId: 'filling-caramel',
+      baseId: 'base-chocolate',
+      fillingId: 'filling-strawberry',
     });
     expect(state.coating.coatingId).toBe('coating-cream');
   });

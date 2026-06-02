@@ -24,11 +24,12 @@ const SHAPES: { id: CakeShape; label: string; description: string }[] = [
   { id: 'heart', label: 'Сердце', description: '+15% к цене' },
 ];
 
-const TIERS: TierCount[] = [1, 2, 3];
+const TIERS: TierCount[] = [1, 2, 3, 4];
 const TIER_LABELS: Record<TierCount, string> = {
   1: '1 ярус',
   2: '2 яруса',
   3: '3 яруса',
+  4: '4 яруса',
 };
 
 const containerVariants = {
@@ -51,7 +52,7 @@ export function StepShape() {
 
   const getTierSurcharge = (tiers: number): number => {
     const found = ingredients?.tierSurcharges?.find((s) => s.tierCount === tiers);
-    return found ? Math.round(found.surcharge / 100) : tiers === 2 ? 300 : 600;
+    return found ? Math.round(found.surcharge / 100) : Math.max(0, tiers - 1) * 300;
   };
 
   return (

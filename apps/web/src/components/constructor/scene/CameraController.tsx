@@ -1,25 +1,45 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import * as THREE from 'three';
 import { normalizeCoating, useConstructorStore } from '@/stores/constructor-store';
 import { buildCakeStackLayout } from '@/lib/constructor/geometry';
+import {
+  computeConstructorCameraFrame,
+  type ConstructorCameraFrame,
+} from '@/lib/constructor/camera-framing';
 
 // Smooth lerp speed — fraction of remaining distance closed per second.
 // At 60 fps this gives ~500 ms to close 98 % of the gap (1 - 0.92^30 ≈ 0.92).
 const LERP_SPEED = 4.5;
 
-// Keep camera distance independent from tier count: GLB size must not appear
-// smaller just because the Конфигурация торта has more Ярусы.
-const ORBIT_DISTANCE = 5.6;
-const TOP_VIEW_DISTANCE = 5.4;
-const FOCUS_DISTANCE = 4.4;
+function getCameraPose(frame: ConstructorCameraFrame, viewMode: 'orbit' | 'top' | 'focus') {
+  if (viewMode === 'top') {
+    return {
+      position: new THREE.Vector3(0, frame.targetY + frame.topDistance, 0.01),
+      target: new THREE.Vector3(0, frame.targetY, 0),
+    };
+  }
+
+  if (viewMode === 'focus') {
+    return {
+      position: new THREE.Vector3(2.2, frame.focusTargetY + 1.0, frame.focusDistance),
+      target: new THREE.Vector3(0, frame.focusTargetY, 0),
+    };
+  }
+
+  return {
+    position: new THREE.Vector3(0, frame.targetY + frame.orbitYOffset, frame.orbitDistance),
+    target: new THREE.Vector3(0, frame.targetY, 0),
+  };
+}
 
 export function CameraController() {
   const controlsRef = useRef<OrbitControlsImpl>(null);
+  const { camera, size } = useThree();
 
   // Store subscriptions
   const shape = useConstructorStore((s) => s.shape);
@@ -59,99 +79,47 @@ export function CameraController() {
     tierCount,
   ]);
 
-  // Ideal camera distance and vertical target centre
-  const idealDistance = ORBIT_DISTANCE;
-  const idealTargetY = totalHeight / 2;
+  const cameraFov = camera instanceof THREE.PerspectiveCamera ? camera.fov : 45;
+  const cameraFrame = useMemo(
+    () =>
+      computeConstructorCameraFrame({
+        totalHeight,
+        fovDeg: cameraFov,
+        aspect: size.width / Math.max(size.height, 1),
+      }),
+    [cameraFov, size.height, size.width, totalHeight],
+  );
+  const cameraPose = useMemo(() => getCameraPose(cameraFrame, viewMode), [cameraFrame, viewMode]);
 
-  // Refs that drive the useFrame lerp — plain refs so the closure is always fresh
-  const targetDistanceRef = useRef(idealDistance);
-  const targetCenterYRef = useRef(idealTargetY);
+  // Refs that drive the useFrame lerp — plain refs so the closure is always fresh.
+  const targetPositionRef = useRef(cameraPose.position.clone());
+  const targetControlsTargetRef = useRef(cameraPose.target.clone());
   const isAnimatingRef = useRef(false);
+  const hasAppliedInitialPoseRef = useRef(false);
 
-  // Track previous tierCount so we only trigger on real changes (not on mount)
-  const prevTierCountRef = useRef<number | null>(null);
-
-  // On tier-count change: update lerp targets and activate animation.
-  // We explicitly guard against the very first render (prevTierCount === null).
-  useEffect(() => {
-    if (prevTierCountRef.current === null) {
-      // First mount — set refs silently without animating
-      prevTierCountRef.current = tierCount;
-      targetDistanceRef.current = idealDistance;
-      targetCenterYRef.current = idealTargetY;
-      return;
-    }
-
-    if (prevTierCountRef.current === tierCount) return;
-
-    prevTierCountRef.current = tierCount;
-    targetDistanceRef.current = idealDistance;
-    targetCenterYRef.current = idealTargetY;
-    isAnimatingRef.current = true;
-  }, [tierCount, idealDistance, idealTargetY]);
-
-  // One-time entry animation: rotate 15 degrees on first mount (preserved from original)
-  useEffect(() => {
-    const controls = controlsRef.current;
-    if (!controls) return;
-
-    const camera = controls.object;
-    const startPos = camera.position.clone();
-    const spherical = new THREE.Spherical().setFromVector3(startPos);
-    const startTheta = spherical.theta;
-    const targetTheta = startTheta + (15 * Math.PI) / 180;
-    const duration = 1500;
-    const startTime = performance.now();
-
-    let rafId: number;
-
-    const animate = (now: number) => {
-      const elapsed = now - startTime;
-      const t = Math.min(elapsed / duration, 1);
-      // ease-out cubic
-      const eased = 1 - Math.pow(1 - t, 3);
-      const theta = startTheta + (targetTheta - startTheta) * eased;
-
-      spherical.theta = theta;
-      camera.position.setFromSpherical(spherical);
-      camera.lookAt(controls.target);
-      controls.update();
-
-      if (t < 1) {
-        rafId = requestAnimationFrame(animate);
-      }
-    };
-
-    rafId = requestAnimationFrame(animate);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-    };
-  }, []);
-
+  // Any change that affects stack height or viewport size updates the camera frame.
+  // The render loop only mutates refs/camera objects; React state is not touched from useFrame.
   useEffect(() => {
     const controls = controlsRef.current;
     if (!controls) return;
 
     const camera = controls.object as THREE.PerspectiveCamera;
-    const distance = targetDistanceRef.current;
+    targetPositionRef.current.copy(cameraPose.position);
+    targetControlsTargetRef.current.copy(cameraPose.target);
 
-    if (viewMode === 'top') {
-      camera.position.set(0, idealTargetY + TOP_VIEW_DISTANCE, 0.01);
-      controls.target.set(0, idealTargetY, 0);
-    } else if (viewMode === 'focus') {
-      camera.position.set(2.2, idealTargetY + 1.2, FOCUS_DISTANCE);
-      controls.target.set(0, Math.max(0.35, totalHeight * 0.72), 0);
-    } else {
-      camera.position.set(0, idealTargetY + 2.4, distance);
-      controls.target.set(0, idealTargetY, 0);
+    if (!hasAppliedInitialPoseRef.current) {
+      camera.position.copy(cameraPose.position);
+      controls.target.copy(cameraPose.target);
+      camera.lookAt(controls.target);
+      controls.update();
+      hasAppliedInitialPoseRef.current = true;
+      return;
     }
 
-    camera.lookAt(controls.target);
-    controls.update();
-  }, [viewMode, totalHeight, idealTargetY]);
+    isAnimatingRef.current = true;
+  }, [cameraPose]);
 
-  // Per-frame lerp: smoothly move camera distance and orbit target centre.
+  // Per-frame lerp: smoothly move camera position and orbit target.
   // Runs inside the R3F render loop — no competing rAF with OrbitControls damping.
   useFrame((_state, delta) => {
     if (!isAnimatingRef.current) return;
@@ -162,26 +130,14 @@ export function CameraController() {
     const camera = controls.object as THREE.PerspectiveCamera;
     const lerpFactor = 1 - Math.exp(-LERP_SPEED * delta);
 
-    // --- Distance: move camera radially, preserving user's theta/phi ---
-    const currentPos = camera.position.clone();
-    const currentDistance = currentPos.length();
-    const newDistance = currentDistance + (targetDistanceRef.current - currentDistance) * lerpFactor;
-
-    if (currentDistance > 0.001) {
-      camera.position.multiplyScalar(newDistance / currentDistance);
-    }
-
-    // --- Orbit target Y: shift the vertical centre the camera orbits around ---
-    const currentTargetY = controls.target.y;
-    const newTargetY = currentTargetY + (targetCenterYRef.current - currentTargetY) * lerpFactor;
-    controls.target.y = newTargetY;
-
+    camera.position.lerp(targetPositionRef.current, lerpFactor);
+    controls.target.lerp(targetControlsTargetRef.current, lerpFactor);
+    camera.lookAt(controls.target);
     controls.update();
 
-    // Stop animating once both values are close enough
-    const distanceDone = Math.abs(newDistance - targetDistanceRef.current) < 0.005;
-    const targetDone = Math.abs(newTargetY - targetCenterYRef.current) < 0.005;
-    if (distanceDone && targetDone) {
+    const positionDone = camera.position.distanceTo(targetPositionRef.current) < 0.01;
+    const targetDone = controls.target.distanceTo(targetControlsTargetRef.current) < 0.005;
+    if (positionDone && targetDone) {
       isAnimatingRef.current = false;
     }
   });
@@ -192,8 +148,8 @@ export function CameraController() {
       enablePan={false}
       enableDamping
       dampingFactor={0.05}
-      minDistance={3}
-      maxDistance={12}
+      minDistance={cameraFrame.minDistance}
+      maxDistance={cameraFrame.maxDistance}
       minPolarAngle={Math.PI * 0.1}
       maxPolarAngle={Math.PI * 0.85}
       makeDefault

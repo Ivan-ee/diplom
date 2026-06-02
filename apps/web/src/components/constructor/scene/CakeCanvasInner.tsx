@@ -12,6 +12,7 @@ import {
   DECORATION_POINTER_DROP_EVENT,
   type DecorationPointerDropDetail,
 } from '@/lib/constructor/decoration-drag';
+import { preloadFullTierModels } from '@/lib/constructor/model-loader';
 
 /** Registers the WebGL renderer into the module-level glRef so that
  *  components outside the R3F tree (e.g. StepNavigation) can take screenshots. */
@@ -99,6 +100,16 @@ function DecorationDropTarget() {
   return null;
 }
 
+function FullTierModelPreloader() {
+  const shape = useConstructorStore((s) => s.shape);
+
+  useEffect(() => {
+    preloadFullTierModels(shape);
+  }, [shape]);
+
+  return null;
+}
+
 export default function CakeCanvasInner() {
   return (
     <Canvas
@@ -114,6 +125,7 @@ export default function CakeCanvasInner() {
       style={{ width: '100%', height: '100%' }}
     >
       <GlRegistrar />
+      <FullTierModelPreloader />
       <DecorationDropTarget />
       <SceneSetup />
       <Suspense fallback={null}>

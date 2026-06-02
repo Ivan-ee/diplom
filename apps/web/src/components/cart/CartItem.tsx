@@ -12,6 +12,10 @@ interface CartItemProps {
   isUnavailable?: boolean;
 }
 
+function tierWord(count: number): string {
+  return count === 1 ? 'ярус' : count > 1 && count < 5 ? 'яруса' : 'ярусов';
+}
+
 function ConstructorConfigSummary({ config }: { config: unknown }) {
   if (!config || typeof config !== 'object') return null;
   const c = config as Record<string, unknown>;
@@ -26,7 +30,7 @@ function ConstructorConfigSummary({ config }: { config: unknown }) {
     parts.push(shapeMap[c.shape] ?? c.shape);
   }
   if (typeof c.tierCount === 'number') {
-    parts.push(`${c.tierCount} ярус${c.tierCount > 1 ? (c.tierCount === 2 ? 'а' : 'ов') : ''}`);
+    parts.push(`${c.tierCount} ${tierWord(c.tierCount)}`);
   }
   if (Array.isArray(c.layers)) {
     const layerNames = c.layers

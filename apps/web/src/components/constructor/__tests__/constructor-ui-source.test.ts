@@ -63,4 +63,27 @@ describe('constructor UI source regressions', () => {
     expect(uiSource).not.toContain('Начинка располагается');
     expect(uiSource).not.toMatch(/[💡🍓🎨🎂]/u);
   });
+
+  it('hides incompatible base choices instead of rendering disabled base cards', () => {
+    const stepBase = source('src/components/constructor/panels/StepBase.tsx');
+
+    expect(stepBase).toContain('isFullTierVisualKeyAvailable(shape as CakeShape, b.visualKey)');
+    expect(stepBase).not.toContain("disabled={!isCompatible}");
+    expect(stepBase).not.toContain('Недоступно для выбранной формы');
+  });
+
+  it('offers four tier-count options in the constructor shape step', () => {
+    const stepShape = source('src/components/constructor/panels/StepShape.tsx');
+
+    expect(stepShape).toContain('const TIERS: TierCount[] = [1, 2, 3, 4];');
+    expect(stepShape).toContain("4: '4 яруса'");
+  });
+
+  it('frames the camera from stack height instead of a fixed orbit distance', () => {
+    const cameraController = source('src/components/constructor/scene/CameraController.tsx');
+
+    expect(cameraController).toContain('computeConstructorCameraFrame');
+    expect(cameraController).not.toContain('const ORBIT_DISTANCE = 5.6;');
+    expect(cameraController).not.toContain('distance independent from tier count');
+  });
 });

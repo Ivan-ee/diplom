@@ -100,13 +100,133 @@
     "isAvailable": true
   },
   {
+    "name": "Шоколадная глазурь",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "glaze-choco",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 11,
+    "isAvailable": true
+  },
+  {
+    "name": "Розовая глазурь",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "glaze-pink",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 12,
+    "isAvailable": true
+  },
+  {
+    "name": "Кремовая глазурь 2",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "glaze-cream2",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 13,
+    "isAvailable": true
+  },
+  {
+    "name": "Крем сверху",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "top-cream",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 14,
+    "isAvailable": true
+  },
+  {
+    "name": "Шоколад сверху",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "top-choco",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 15,
+    "isAvailable": true
+  },
+  {
+    "name": "Розовый крем сверху",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "top-pink",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 16,
+    "isAvailable": true
+  },
+  {
+    "name": "Меренга сверху",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "top-meringue",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 17,
+    "isAvailable": true
+  },
+  {
+    "name": "Глазурь сверху",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "top-glaze",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 18,
+    "isAvailable": true
+  },
+  {
+    "name": "Шоколадная глазурь сверху",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "top-glaze-choco",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 19,
+    "isAvailable": true
+  },
+  {
+    "name": "Кремовая глазурь сверху",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "top-glaze-cream",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 20,
+    "isAvailable": true
+  },
+  {
+    "name": "Кремовая глазурь сверху 2",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "top-glaze-cream2",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 21,
+    "isAvailable": true
+  },
+  {
+    "name": "Розовая меренга сверху",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "top-meringue-pink",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 22,
+    "isAvailable": true
+  },
+  {
     "name": "Свеча золотая",
     "category": "candle",
     "pricePerUnit": 15000,
     "visualKey": "candle",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 11,
+    "sortOrder": 23,
     "isAvailable": true
   }
 ]

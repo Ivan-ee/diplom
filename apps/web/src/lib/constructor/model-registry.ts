@@ -14,8 +14,7 @@ const SHAPE_FOLDER: Record<CakeShape, string> = {
 // Internal static maps — exact filenames from public/models/
 // ---------------------------------------------------------------------------
 
-type LayerVariant = 'default' | 'red' | 'cherry' | 'choco';
-type BigLayerVariant = 'default' | 'cherry' | 'cream' | 'glaze' | 'choco' | 'pink';
+type LayerVariant = 'default' | 'red' | 'cherry' | 'choco' | 'cream' | 'glaze' | 'pink';
 type FillVariant = 'cream' | 'choco' | 'pink' | 'meringue' | 'glaze' | 'glaze-choco' | 'glaze-cream' | 'glaze-cream2' | 'meringue-pink';
 type GlazeVariant = 'cream' | 'choco' | 'pink' | 'milk' | 'cream-glaze';
 type DecoVariant =
@@ -29,7 +28,16 @@ type DecoVariant =
   | 'glaze-choco'
   | 'glaze-pink'
   | 'cream'
-  | 'candle';
+  | 'candle'
+  | 'top-cream'
+  | 'top-choco'
+  | 'top-pink'
+  | 'top-meringue'
+  | 'top-glaze'
+  | 'top-glaze-choco'
+  | 'top-glaze-cream'
+  | 'top-glaze-cream2'
+  | 'top-meringue-pink';
 
 // --- Layers -----------------------------------------------------------------
 
@@ -51,15 +59,7 @@ const LAYER_FILES: Record<CakeShape, Partial<Record<LayerVariant, string>>> = {
   },
 };
 
-const CLEAN_TIER_BODY_FILES: Record<CakeShape, Partial<Record<LayerVariant, string>>> = {
-  circle: {},
-  square: {
-    default: 'CakeBigLayer.glb',
-  },
-  heart: {},
-};
-
-const BAKED_COATED_TIER_FILES: Record<CakeShape, Partial<Record<BigLayerVariant, string>>> = {
+const FULL_TIER_FILES: Record<CakeShape, Partial<Record<LayerVariant, string>>> = {
   circle: {
     cherry: 'CakeBigLayerCherry.glb',
     choco: 'CakeBigLayerChoco.glb',
@@ -80,7 +80,7 @@ const BAKED_COATED_TIER_FILES: Record<CakeShape, Partial<Record<BigLayerVariant,
   },
 };
 
-export type TierModelRole = 'tierBody' | 'bakedCoatedTier';
+export type TierModelRole = 'tierBody';
 
 // --- Fills ------------------------------------------------------------------
 
@@ -138,6 +138,10 @@ const DECO_FILES: Record<CakeShape, Partial<Record<DecoVariant, string>>> = {
     'chocolate-pink': 'cakeDecorPinkChocolate.glb',
     cream: 'cakeDecorCream.glb',
     'glaze-cream': 'cakeDecorGlaze.glb',
+    'top-cream': 'cakeFillCream.glb',
+    'top-choco': 'CakeFillCreamChoco.glb',
+    'top-pink': 'CakeFillCreamPink.glb',
+    'top-meringue': 'cakeFillMeringua.glb',
   },
   square: {
     blueberry: 'DecoBlueberry.glb',
@@ -147,6 +151,11 @@ const DECO_FILES: Record<CakeShape, Partial<Record<DecoVariant, string>>> = {
     'glaze-cream': 'DecoGlazeCream.glb',
     'glaze-pink': 'DecoGlazePink.glb',
     meringue: 'DecoMeringue.glb',
+    'top-glaze': 'CakeFillGlaze.glb',
+    'top-glaze-choco': 'CakeFillGlazeChoco.glb',
+    'top-glaze-cream': 'CakeFillGlazeCream.glb',
+    'top-glaze-cream2': 'CakeFillGlazeCream2.glb',
+    'top-meringue': 'CakeFillMeringue.glb',
   },
   heart: {
     blueberry: 'DecoBlueberry.glb',
@@ -157,6 +166,8 @@ const DECO_FILES: Record<CakeShape, Partial<Record<DecoVariant, string>>> = {
     'glaze-choco': 'DecoGlazeChoco.glb',
     'glaze-pink': 'DecoGlazePink.glb',
     meringue: 'DecoMeringue.glb',
+    'top-meringue': 'CakeFillMeringue.glb',
+    'top-meringue-pink': 'CakeFillMeringuePink.glb',
   },
 };
 
@@ -302,7 +313,7 @@ export function getLayerModelPath(
   const folder = SHAPE_FOLDER[shape];
 
   if (isBig) {
-    const bigMap = CLEAN_TIER_BODY_FILES[shape];
+    const bigMap = FULL_TIER_FILES[shape];
     const bigFile = bigMap[baseVariant as LayerVariant];
     return bigFile ? p(folder, bigFile) : null;
   }
@@ -320,21 +331,13 @@ export function getLayerModelPath(
  */
 export function getFullTierModelPath(shape: CakeShape, baseVariant: string): string | null {
   const folder = SHAPE_FOLDER[shape];
-  const bigFile = CLEAN_TIER_BODY_FILES[shape][baseVariant as LayerVariant];
+  const bigFile = FULL_TIER_FILES[shape][baseVariant as LayerVariant];
 
   return bigFile ? p(folder, bigFile) : null;
 }
 
-export function getBakedCoatedTierModelPath(shape: CakeShape, variant: string): string | null {
-  const folder = SHAPE_FOLDER[shape];
-  const file = BAKED_COATED_TIER_FILES[shape][variant as BigLayerVariant];
-
-  return file ? p(folder, file) : null;
-}
-
 export function getTierModelRole(shape: CakeShape, variant: string): TierModelRole | null {
-  if (CLEAN_TIER_BODY_FILES[shape][variant as LayerVariant]) return 'tierBody';
-  if (BAKED_COATED_TIER_FILES[shape][variant as BigLayerVariant]) return 'bakedCoatedTier';
+  if (FULL_TIER_FILES[shape][variant as LayerVariant]) return 'tierBody';
   return null;
 }
 
@@ -436,8 +439,7 @@ export function getDeclaredModelPaths(): string[] {
   for (const shape of Object.keys(SHAPE_FOLDER) as CakeShape[]) {
     const folder = SHAPE_FOLDER[shape];
     for (const file of Object.values(LAYER_FILES[shape])) paths.add(p(folder, file));
-    for (const file of Object.values(CLEAN_TIER_BODY_FILES[shape])) paths.add(p(folder, file));
-    for (const file of Object.values(BAKED_COATED_TIER_FILES[shape])) paths.add(p(folder, file));
+    for (const file of Object.values(FULL_TIER_FILES[shape])) paths.add(p(folder, file));
     for (const file of Object.values(FILL_FILES[shape])) paths.add(p(folder, file));
     for (const [base, drips] of Object.values(GLAZE_FILES[shape])) {
       paths.add(p(folder, base));
@@ -511,6 +513,15 @@ const DECO_META: Record<DecoVariant, { label: string; description: string }> = {
   'glaze-pink': { label: 'Розовая глазурь', description: 'Декор из розовой глазури' },
   cream: { label: 'Кремовый декор', description: 'Розочки и узоры из крема' },
   candle: { label: 'Свеча', description: 'Праздничная свеча' },
+  'top-cream': { label: 'Крем сверху', description: 'Верхний кремовый декор' },
+  'top-choco': { label: 'Шоколад сверху', description: 'Верхний шоколадный декор' },
+  'top-pink': { label: 'Розовый крем сверху', description: 'Верхний розовый декор' },
+  'top-meringue': { label: 'Меренга сверху', description: 'Верхний декор из меренги' },
+  'top-glaze': { label: 'Глазурь сверху', description: 'Верхний глазурный декор' },
+  'top-glaze-choco': { label: 'Шоколадная глазурь сверху', description: 'Верхний шоколадный глазурный декор' },
+  'top-glaze-cream': { label: 'Кремовая глазурь сверху', description: 'Верхний кремовый глазурный декор' },
+  'top-glaze-cream2': { label: 'Кремовая глазурь сверху 2', description: 'Второй верхний кремовый глазурный декор' },
+  'top-meringue-pink': { label: 'Розовая меренга сверху', description: 'Верхний розовый декор из меренги' },
 };
 
 export function getAvailableDecos(shape: CakeShape): DecoOption[] {
@@ -525,22 +536,61 @@ export function getAvailableDecos(shape: CakeShape): DecoOption[] {
 export interface BaseVariant {
   id: string;
   label: string;
+  color: string;
 }
 
 const LAYER_VARIANT_META: Record<LayerVariant, string> = {
-  default: 'Ванильный',
+  default: 'Тёмный',
   red: 'Красный бархат',
   cherry: 'Вишнёвый',
   choco: 'Шоколадный',
+  cream: 'Кремовый',
+  glaze: 'Кремовая глазурь',
+  pink: 'Розовый',
 };
 
-export function getAvailableBaseVariants(shape: CakeShape): BaseVariant[] {
-  const layerMap = CLEAN_TIER_BODY_FILES[shape];
+const FULL_TIER_VARIANT_META: Record<
+  CakeShape,
+  Partial<Record<LayerVariant, { label: string; color: string }>>
+> = {
+  circle: {
+    cherry: { label: 'Вишнёвый', color: '#E7A8B4' },
+    choco: { label: 'Шоколадный', color: '#3B260E' },
+    cream: { label: 'Кремовый', color: '#E7CEAB' },
+    glaze: { label: 'Кремовая глазурь', color: '#E8C092' },
+  },
+  square: {
+    default: { label: 'Тёмный', color: '#462F1E' },
+    cherry: { label: 'Вишнёвый', color: '#FFABAE' },
+    cream: { label: 'Кремовый', color: '#E7CEAB' },
+    glaze: { label: 'Кремовая глазурь', color: '#E8C092' },
+  },
+  heart: {
+    choco: { label: 'Шоколадный', color: '#3B260E' },
+    cream: { label: 'Кремовый', color: '#E7CEAB' },
+    glaze: { label: 'Кремовая глазурь', color: '#E8C092' },
+    pink: { label: 'Розовый', color: '#FFABAE' },
+  },
+};
 
-  return (Object.keys(layerMap) as LayerVariant[]).map((variant) => ({
-    id: variant,
-    label: LAYER_VARIANT_META[variant] ?? variant,
-  }));
+export function getFullTierVariantMeta(
+  shape: CakeShape,
+  visualKey: string,
+): { label: string; color: string } | null {
+  return FULL_TIER_VARIANT_META[shape][visualKey as LayerVariant] ?? null;
+}
+
+export function getAvailableBaseVariants(shape: CakeShape): BaseVariant[] {
+  const layerMap = FULL_TIER_FILES[shape];
+
+  return (Object.keys(layerMap) as LayerVariant[]).map((variant) => {
+    const meta = getFullTierVariantMeta(shape, variant);
+    return {
+      id: variant,
+      label: meta?.label ?? LAYER_VARIANT_META[variant] ?? variant,
+      color: meta?.color ?? '#FFFFFF',
+    };
+  });
 }
 
 const FILL_VARIANT_META: Record<FillVariant, string> = {
@@ -577,10 +627,18 @@ export function getAllLayerPaths(shape: CakeShape): string[] {
   for (const file of Object.values(LAYER_FILES[shape])) {
     if (file) paths.push(p(folder, file));
   }
-  for (const file of Object.values(CLEAN_TIER_BODY_FILES[shape])) {
+  for (const file of Object.values(FULL_TIER_FILES[shape])) {
     if (file) paths.push(p(folder, file));
   }
-  for (const file of Object.values(BAKED_COATED_TIER_FILES[shape])) {
+
+  return paths;
+}
+
+export function getAllFullTierPaths(shape: CakeShape): string[] {
+  const folder = SHAPE_FOLDER[shape];
+  const paths: string[] = [];
+
+  for (const file of Object.values(FULL_TIER_FILES[shape])) {
     if (file) paths.push(p(folder, file));
   }
 

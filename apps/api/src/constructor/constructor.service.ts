@@ -23,6 +23,7 @@ const TIER_SURCHARGES = [
   { tierCount: 1, surcharge: 0 },
   { tierCount: 2, surcharge: 3000_00 },
   { tierCount: 3, surcharge: 6000_00 },
+  { tierCount: 4, surcharge: 9000_00 },
 ];
 
 /** Global limits for constructor validation. */

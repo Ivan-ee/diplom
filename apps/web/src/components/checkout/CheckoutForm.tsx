@@ -16,6 +16,10 @@ import { cakeConfigToOrderDto } from '@/lib/constructor/order-adapter';
 import { CHECKOUT_SUCCESS_PENDING_KEY } from '@/lib/constants';
 import { formatPrice, cn } from '@/lib/utils';
 
+function tierWord(count: number): string {
+  return count === 1 ? 'ярус' : count > 1 && count < 5 ? 'яруса' : 'ярусов';
+}
+
 // ── Validation schema ────────────────────────────────────────────────────────
 
 function getTomorrow(): string {
@@ -346,7 +350,7 @@ function OrderSummary({ items, totalPrice, isSubmitting, submitError, promoResul
               <p className="text-[11px] text-[var(--color-graphite-light)]">
                 {item.type === 'constructor' && item.cakeConfig
                   ? [
-                      `${item.cakeConfig.tierCount} ярус${item.cakeConfig.tierCount > 1 ? 'а' : ''}`,
+                      `${item.cakeConfig.tierCount} ${tierWord(item.cakeConfig.tierCount)}`,
                       item.cakeConfig.layers?.[0]?.fillingName,
                       item.cakeConfig.coating?.coatingName,
                     ].filter(Boolean).join(' · ')

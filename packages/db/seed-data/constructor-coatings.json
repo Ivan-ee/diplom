@@ -18,12 +18,30 @@
     "isAvailable": true
   },
   {
+    "name": "Шоколадный крем",
+    "type": "cream",
+    "pricePerKg": 32000,
+    "visualKey": "choco",
+    "roughness": "0.45",
+    "sortOrder": 3,
+    "isAvailable": true
+  },
+  {
     "name": "Мастика",
     "type": "fondant",
     "pricePerKg": 40000,
     "visualKey": "pink",
     "roughness": "0.80",
-    "sortOrder": 3,
+    "sortOrder": 4,
+    "isAvailable": true
+  },
+  {
+    "name": "Кремовая глазурь",
+    "type": "cream",
+    "pricePerKg": 35000,
+    "visualKey": "cream-glaze",
+    "roughness": "0.50",
+    "sortOrder": 5,
     "isAvailable": true
   }
 ]

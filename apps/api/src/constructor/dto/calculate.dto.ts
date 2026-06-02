@@ -52,12 +52,12 @@ export class CalculatePriceDto {
   shape!: string;
 
   @ApiProperty({
-    description: 'Array of tier configurations (1–3 tiers)',
+    description: 'Array of tier configurations (1–4 tiers)',
     type: [TierConfigDto],
   })
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayMaxSize(3)
+  @ArrayMaxSize(4)
   @ValidateNested({ each: true })
   @Type(() => TierConfigDto)
   tiers!: TierConfigDto[];

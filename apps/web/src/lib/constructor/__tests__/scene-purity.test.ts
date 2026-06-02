@@ -78,4 +78,20 @@ describe('constructor scene GLB-only purity', () => {
     expect(tierSource).not.toMatch(/\bfillPath\b/);
     expect(tierSource).not.toMatch(/\bfillGltf\b|\bclonedFill\b/);
   });
+
+  it('keeps the previous tier model visible while a new biscuit GLB loads', () => {
+    const sceneSources = readSceneSources();
+    const tierSource = sceneSources.find(
+      ({ relativePath }) => relativePath === 'src/components/constructor/scene/GlbTier.tsx',
+    )?.source;
+    const canvasSource = sceneSources.find(
+      ({ relativePath }) => relativePath === 'src/components/constructor/scene/CakeCanvasInner.tsx',
+    )?.source;
+
+    expect(tierSource).toBeDefined();
+    expect(tierSource).toContain('visibleLayerPath');
+    expect(tierSource).toContain('GlbTierModelPreloader');
+    expect(tierSource).toContain('<Suspense fallback={null}>');
+    expect(canvasSource).toContain('preloadFullTierModels(shape)');
+  });
 });

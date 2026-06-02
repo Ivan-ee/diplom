@@ -12,7 +12,7 @@ import {
 } from '@/lib/constructor/model-registry';
 
 export type CakeShape = 'circle' | 'square' | 'heart';
-export type TierCount = 1 | 2 | 3;
+export type TierCount = 1 | 2 | 3 | 4;
 export type CoatingType = 'cream' | 'fondant';
 export type ConstructorStep = 1 | 2 | 3 | 4 | 5;
 export type ColorMode = 'solid' | 'gradient' | 'splashes';
@@ -239,6 +239,23 @@ function asArray<T>(value: T[] | null | undefined): T[] {
   return Array.isArray(value) ? value : [];
 }
 
+function isTopDecorationVisualKey(visualKey: string): boolean {
+  return visualKey.startsWith('top-');
+}
+
+function enforceTopDecorationSingleton(instances: DecorationInstance[]): DecorationInstance[] {
+  const normalizedInstances = asArray(instances);
+  const lastTopIndex = normalizedInstances.findLastIndex((instance) =>
+    isTopDecorationVisualKey(instance.visualKey),
+  );
+
+  if (lastTopIndex === -1) return normalizedInstances;
+
+  return normalizedInstances.filter(
+    (instance, index) => !isTopDecorationVisualKey(instance.visualKey) || index === lastTopIndex,
+  );
+}
+
 function isColorMode(value: unknown): value is ColorMode {
   return value === 'solid' || value === 'gradient' || value === 'splashes';
 }
@@ -278,7 +295,7 @@ function normalizeConstructorStateFields(
   const activeDecorations = asArray(state.activeDecorations);
   const normalizedActiveDecorations =
     activeDecorations.length > 0 ? activeDecorations : legacyDecorVariant ? [legacyDecorVariant] : [];
-  const decorationInstances = asArray(state.decorationInstances);
+    const decorationInstances = enforceTopDecorationSingleton(asArray(state.decorationInstances));
   const syncedDecorations = decorationInstances.length > 0
     ? syncDecorationState(decorationInstances)
     : {
@@ -541,14 +558,14 @@ function repairDecorationsForShape(
   const normalizedDecorations = asArray(decorations);
 
   if (normalizedDecorationInstances.length > 0) {
-    const compatibleInstances = normalizedDecorationInstances.filter((instance) => {
+    const compatibleInstances = enforceTopDecorationSingleton(normalizedDecorationInstances.filter((instance) => {
       const decoration = normalizedDecorations.find((item) => item.id === instance.decorationId);
       return Boolean(
         decoration?.available &&
           decoration.visualKey === instance.visualKey &&
           isDecoVisualKeyAvailable(registryShape, decoration.visualKey),
       );
-    });
+    }));
     const synced = syncDecorationState(compatibleInstances);
 
     return {
@@ -1015,19 +1032,22 @@ export const useConstructorStore = create<ConstructorState>()(
       addDecorationInstance: (visualKey, decorationId, position) => {
         const { ingredients, shape } = get();
         const decorationInstances = asArray(get().decorationInstances);
+        const retainedInstances = isTopDecorationVisualKey(visualKey)
+          ? decorationInstances.filter((instance) => !isTopDecorationVisualKey(instance.visualKey))
+          : decorationInstances;
         const max = ingredients?.config?.maxDecorations ?? 3;
-        if (decorationInstances.length >= max) return;
+        if (retainedInstances.length >= max) return;
         if (!isDecoVisualKeyAvailable(shape as RegistryCakeShape, visualKey)) return;
 
         const selectedDecoration = createDecorationSelection(visualKey, ingredients?.decorations ?? [], decorationId);
         if (!selectedDecoration) return;
         const nextInstances: DecorationInstance[] = [
-          ...decorationInstances,
+          ...retainedInstances,
           {
             instanceId: createDecorationInstanceId(),
             decorationId: selectedDecoration.decorationId,
             visualKey,
-            position: normalizeDecorationPosition(position, decorationInstances.length),
+            position: normalizeDecorationPosition(position, retainedInstances.length),
           },
         ];
         set({

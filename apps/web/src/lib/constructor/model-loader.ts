@@ -4,6 +4,7 @@ import type { CakeShape } from './model-registry';
 import {
   getAllDecoPaths,
   getAllFillPaths,
+  getAllFullTierPaths,
   getAllGlazePaths,
   getAllLayerPaths,
   getCandleModelPath,
@@ -30,6 +31,12 @@ export function preloadEssentialModels(shape: CakeShape): void {
  */
 export function preloadLayerModels(shape: CakeShape): void {
   for (const path of getAllLayerPaths(shape)) {
+    useGLTF.preload(path);
+  }
+}
+
+export function preloadFullTierModels(shape: CakeShape): void {
+  for (const path of getAllFullTierPaths(shape)) {
     useGLTF.preload(path);
   }
 }
@@ -73,7 +80,7 @@ export function preloadDecoModels(shape: CakeShape): void {
  * so subsequent shape-step transitions are instant.
  */
 export function preloadAllShapeModels(shape: CakeShape): void {
-  preloadLayerModels(shape);
+  preloadFullTierModels(shape);
   preloadFillModels(shape);
   preloadGlazeModels(shape);
   preloadDecoModels(shape);

@@ -7,7 +7,11 @@ import { useConstructorStore } from '@/stores/constructor-store';
 import { TierTabs } from './TierTabs';
 import { formatPrice } from '@/lib/utils';
 import { cn } from '@/lib/utils';
-import { isFullTierVisualKeyAvailable, type CakeShape } from '@/lib/constructor/model-registry';
+import {
+  getFullTierVariantMeta,
+  isFullTierVisualKeyAvailable,
+  type CakeShape,
+} from '@/lib/constructor/model-registry';
 
 const containerVariants = {
   hidden: {},
@@ -30,7 +34,9 @@ export function StepBase() {
 
   const [activeTier, setActiveTier] = useState(0);
 
-  const bases = ingredients?.bases.filter((b) => b.available) ?? [];
+  const bases = ingredients?.bases.filter((b) =>
+    b.available && isFullTierVisualKeyAvailable(shape as CakeShape, b.visualKey),
+  ) ?? [];
   const layer = layers[activeTier];
   const minWeight = config?.minWeightPerTier ?? 500;
   const maxWeight = config?.maxWeightPerTier ?? 5000;
@@ -64,26 +70,23 @@ export function StepBase() {
         >
           {bases.map((base) => {
             const isSelected = layer?.baseId === base.id;
-            const isCompatible = isFullTierVisualKeyAvailable(shape as CakeShape, base.visualKey);
+            const variantMeta = getFullTierVariantMeta(shape as CakeShape, base.visualKey);
             return (
               <motion.button
                 key={base.id}
                 variants={itemVariants}
                 onClick={() => setLayerBase(activeTier, base.id)}
-                disabled={!isCompatible}
                 className={cn(
                   'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                   isSelected
                     ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5'
-                    : isCompatible
-                      ? 'border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
-                      : 'border-[var(--border-default)] bg-[var(--surface-elevated)] opacity-45 cursor-not-allowed'
+                    : 'border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
                 )}
-                whileTap={isCompatible ? { scale: 0.985 } : undefined}
+                whileTap={{ scale: 0.985 }}
               >
                 <div
                   className="w-10 h-10 rounded-lg flex-shrink-0 border border-black/10 shadow-sm"
-                  style={{ backgroundColor: base.color ?? '#FFF8E7' }}
+                  style={{ backgroundColor: variantMeta?.color ?? base.color ?? '#FFF8E7' }}
                 />
 
                 <div className="flex-1 min-w-0">
@@ -95,7 +98,7 @@ export function StepBase() {
                   </p>
                   {base.description && (
                     <p className="text-xs text-[var(--color-graphite-light)] mt-0.5 leading-snug line-clamp-1">
-                      {isCompatible ? base.description : 'Недоступно для выбранной формы'}
+                      {base.description}
                     </p>
                   )}
                 </div>

@@ -605,6 +605,32 @@ describe('ConstructorService.calculatePrice', () => {
     });
 
     /**
+     * 4-tier surcharge = 900_000 kopecks.
+     */
+    it('applies 4-tier surcharge of 900_000 kopecks', async () => {
+      const db = buildDbMock(
+        [makeBase()],
+        [makeFilling()],
+        [makeCoating()],
+        [],
+      );
+      const service = buildService(db);
+
+      const result = await service.calculatePrice({
+        shape: 'circle',
+        tiers: [
+          { baseId: BASE_ID, fillingId: FILLING_ID, weight: 10 },
+          { baseId: BASE_ID, fillingId: FILLING_ID, weight: 10 },
+          { baseId: BASE_ID, fillingId: FILLING_ID, weight: 10 },
+          { baseId: BASE_ID, fillingId: FILLING_ID, weight: 10 },
+        ],
+        coatingId: COATING_ID,
+      });
+
+      expect(result.breakdown.tierSurcharge).toBe(900_000);
+    });
+
+    /**
      * Decoration cost included in subtotal.
      * pricePerUnit = 30_00, quantity = 3 → decorationCost = 9000
      * subtotal = 35000 + 9000 = 44000, no surcharges

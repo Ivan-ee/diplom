@@ -1,13 +1,15 @@
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { getMockIngredients } from '@/lib/constructor/mock-ingredients';
 import { buildCakeStackLayout } from '@/lib/constructor/geometry';
 import {
   getDeclaredModelPaths,
-  getBakedCoatedTierModelPath,
   getDecoModelPath,
   getFillModelPath,
+  getAllFullTierPaths,
   getFullTierModelPath,
+  getFullTierVariantMeta,
   getLayerModelPath,
   getModelVisualHeight,
   getModelYBounds,
@@ -18,9 +20,42 @@ import {
   isLayerVisualKeyAvailable,
 } from '@/lib/constructor/model-registry';
 
+const IGNORED_RUNTIME_MODELS = new Set(['/models/candle/DecoCandle2.glb']);
+
+function runtimeModelPaths(): string[] {
+  const modelsDir = path.resolve(process.cwd(), 'public/models');
+  const files: string[] = [];
+
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const filePath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(filePath);
+      } else if (entry.isFile() && entry.name.endsWith('.glb')) {
+        files.push(`/models/${path.relative(modelsDir, filePath).replaceAll(path.sep, '/')}`);
+      }
+    }
+  };
+
+  walk(modelsDir);
+  return files.sort();
+}
+
+function seedBases(): Array<{ name: string; visualKey: string; color: string; isAvailable: boolean }> {
+  const seedPath = path.resolve(process.cwd(), '../../packages/db/seed-data/constructor-bases.json');
+  return JSON.parse(readFileSync(seedPath, 'utf8')) as Array<{
+    name: string;
+    visualKey: string;
+    color: string;
+    isAvailable: boolean;
+  }>;
+}
+
 describe('constructor model registry', () => {
   it('returns null instead of silently falling back when a visual key is unavailable', () => {
     expect(getLayerModelPath('circle', 'red', true)).toBeNull();
+    expect(getFullTierModelPath('circle', 'default')).toBeNull();
+    expect(getFullTierModelPath('square', 'choco')).toBeNull();
     expect(getFillModelPath('heart', 'glaze')).toBeNull();
     expect(getDecoModelPath('circle', 'meringue')).toBeNull();
   });
@@ -28,41 +63,91 @@ describe('constructor model registry', () => {
   it('exposes compatibility helpers for disabling impossible UI choices', () => {
     expect(isLayerVisualKeyAvailable('circle', 'default')).toBe(true);
     expect(isLayerVisualKeyAvailable('circle', 'cherry')).toBe(true);
+    expect(isFullTierVisualKeyAvailable('circle', 'choco')).toBe(true);
+    expect(isFullTierVisualKeyAvailable('heart', 'pink')).toBe(true);
     expect(isFillVisualKeyAvailable('heart', 'cream')).toBe(true);
     expect(isDecoVisualKeyAvailable('square', 'candle')).toBe(true);
+    expect(isDecoVisualKeyAvailable('circle', 'top-cream')).toBe(true);
   });
 
-  it('exposes restored valid models from the canonical Cakes archive', () => {
+  it('exposes all ready full-tier and top-decor models from the canonical Cakes archive', () => {
     expect(getLayerModelPath('circle', 'cherry', false)).toBe('/models/circle/CakeLayerCherry.glb');
-    expect(getBakedCoatedTierModelPath('circle', 'cherry')).toBe('/models/circle/CakeBigLayerCherry.glb');
-    expect(getBakedCoatedTierModelPath('circle', 'cream')).toBe('/models/circle/CakeBigLayerCream.glb');
-    expect(getBakedCoatedTierModelPath('circle', 'glaze')).toBe('/models/circle/CakeBigLayerGlaze.glb');
+    expect(getFullTierModelPath('circle', 'cherry')).toBe('/models/circle/CakeBigLayerCherry.glb');
+    expect(getFullTierModelPath('circle', 'cream')).toBe('/models/circle/CakeBigLayerCream.glb');
+    expect(getFullTierModelPath('circle', 'glaze')).toBe('/models/circle/CakeBigLayerGlaze.glb');
+    expect(getFullTierModelPath('heart', 'pink')).toBe('/models/heart/CakeBigLayerPink.glb');
     expect(getFillModelPath('heart', 'meringue')).toBe('/models/heart/CakeFillMeringue.glb');
+    expect(getDecoModelPath('square', 'top-glaze-cream2')).toBe('/models/cube/CakeFillGlazeCream2.glb');
+    expect(getDecoModelPath('heart', 'top-meringue-pink')).toBe('/models/heart/CakeFillMeringuePink.glb');
   });
 
-  it('requires an explicit clean full-tier body model for every rendered Ярус', () => {
+  it('requires an explicit full-tier model for every rendered Ярус', () => {
     expect(getFullTierModelPath('circle', 'default')).toBeNull();
+    expect(getFullTierModelPath('circle', 'red')).toBeNull();
     expect(isFullTierVisualKeyAvailable('circle', 'default')).toBe(false);
-    expect(getFullTierModelPath('circle', 'choco')).toBeNull();
-    expect(isFullTierVisualKeyAvailable('circle', 'choco')).toBe(false);
+    expect(isFullTierVisualKeyAvailable('heart', 'red')).toBe(false);
+    expect(getFullTierModelPath('circle', 'choco')).toBe('/models/circle/CakeBigLayerChoco.glb');
+    expect(isFullTierVisualKeyAvailable('circle', 'choco')).toBe(true);
 
     expect(getFullTierModelPath('square', 'default')).toBe('/models/cube/CakeBigLayer.glb');
     expect(isFullTierVisualKeyAvailable('square', 'default')).toBe(true);
+    expect(getTierModelRole('circle', 'choco')).toBe('tierBody');
+    expect(getTierModelRole('heart', 'pink')).toBe('tierBody');
   });
 
-  it('does not expose baked-coated BigLayer GLB files as clean tier bodies', () => {
-    expect(getTierModelRole('circle', 'choco')).toBe('bakedCoatedTier');
-    expect(getTierModelRole('heart', 'pink')).toBe('bakedCoatedTier');
-    expect(getFullTierModelPath('circle', 'choco')).toBeNull();
-    expect(getLayerModelPath('circle', 'choco', true)).toBeNull();
+  it('exposes GLB-derived full-tier labels and colors by shape', () => {
+    expect(getFullTierVariantMeta('circle', 'cherry')).toEqual({
+      label: 'Вишнёвый',
+      color: '#E7A8B4',
+    });
+    expect(getFullTierVariantMeta('square', 'cherry')).toEqual({
+      label: 'Вишнёвый',
+      color: '#FFABAE',
+    });
+    expect(getFullTierVariantMeta('heart', 'pink')).toEqual({
+      label: 'Розовый',
+      color: '#FFABAE',
+    });
+    expect(getFullTierVariantMeta('circle', 'red')).toBeNull();
   });
 
-  it('uses the same exact BigLayer GLB for 1, 2, and 3 tier layouts', () => {
-    for (const tierCount of [1, 2, 3]) {
+  it('keeps mock and seed bases unique and backed by a full-tier GLB', () => {
+    const runtimeVisualKeys = new Set(['default', 'cherry', 'choco', 'cream', 'glaze', 'pink']);
+
+    for (const [sourceName, bases] of [
+      ['mock', getMockIngredients().bases.map((base) => ({
+        name: base.name,
+        visualKey: base.visualKey,
+        color: base.color ?? '',
+        isAvailable: base.available,
+      }))],
+      ['seed', seedBases()],
+    ] as const) {
+      const availableBases = bases.filter((base) => base.isAvailable);
+      const duplicateVisualKeys = availableBases
+        .map((base) => base.visualKey)
+        .filter((visualKey, index, visualKeys) => visualKeys.indexOf(visualKey) !== index);
+      const unsupportedVisualKeys = availableBases
+        .map((base) => base.visualKey)
+        .filter((visualKey) => !runtimeVisualKeys.has(visualKey));
+
+      expect(duplicateVisualKeys, `${sourceName} has duplicate base visualKeys`).toEqual([]);
+      expect(unsupportedVisualKeys, `${sourceName} has unavailable base visualKeys`).toEqual([]);
+      expect(availableBases.some((base) => base.visualKey === 'red'), `${sourceName} still exposes red`).toBe(false);
+    }
+  });
+
+  it('uses the same exact BigLayer GLB for 1, 2, 3, and 4 tier layouts', () => {
+    for (const [shape, baseVariant, expectedPath] of [
+      ['circle', 'choco', '/models/circle/CakeBigLayerChoco.glb'],
+      ['square', 'default', '/models/cube/CakeBigLayer.glb'],
+      ['heart', 'pink', '/models/heart/CakeBigLayerPink.glb'],
+    ] as const) {
+      for (const tierCount of [1, 2, 3, 4]) {
       const layout = buildCakeStackLayout({
-        shape: 'square',
+        shape,
         tiers: Array.from({ length: tierCount }, () => ({
-          baseVariant: 'default',
+          baseVariant,
         })),
         glazeVariant: 'cream',
         withDrips: false,
@@ -71,11 +156,25 @@ describe('constructor model registry', () => {
 
       expect(layout.tiers).toHaveLength(tierCount);
       expect(layout.tiers.map((tier) => tier.layerPath)).toEqual(
-        Array.from({ length: tierCount }, () => '/models/cube/CakeBigLayer.glb'),
+        Array.from({ length: tierCount }, () => expectedPath),
       );
       expect(layout.tiers.every((tier) => tier.isFullTier)).toBe(true);
       expect(new Set(layout.tiers.map((tier) => tier.height)).size).toBe(1);
+      }
     }
+  });
+
+  it('exposes only full-tier CakeBigLayer paths for base preloading', () => {
+    const circleFullTierPaths = getAllFullTierPaths('circle');
+
+    expect(circleFullTierPaths).toEqual([
+      '/models/circle/CakeBigLayerCherry.glb',
+      '/models/circle/CakeBigLayerChoco.glb',
+      '/models/circle/CakeBigLayerCream.glb',
+      '/models/circle/CakeBigLayerGlaze.glb',
+    ]);
+    expect(circleFullTierPaths.every((modelPath) => modelPath.includes('CakeBigLayer'))).toBe(true);
+    expect(circleFullTierPaths.some((modelPath) => modelPath.includes('CakeLayer'))).toBe(false);
   });
 
   it('does not include filling GLB geometry in assembled tier layouts', () => {
@@ -135,6 +234,15 @@ describe('constructor model registry', () => {
     }
 
     expect(failures).toEqual([]);
+  });
+
+  it('declares every runtime GLB or explicitly ignores it', () => {
+    const declared = new Set(getDeclaredModelPaths());
+    const missing = runtimeModelPaths().filter(
+      (modelPath) => !declared.has(modelPath) && !IGNORED_RUNTIME_MODELS.has(modelPath),
+    );
+
+    expect(missing).toEqual([]);
   });
 
   it('builds a physical stack with monotonic non-overlapping Y ranges', () => {

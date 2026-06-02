@@ -110,7 +110,7 @@ export interface CartItem {
 export type CakeShape = 'circle' | 'square' | 'heart';
 
 /** Number of cake tiers. */
-export type TierCount = 1 | 2 | 3;
+export type TierCount = 1 | 2 | 3 | 4;
 
 /** Coating material type. */
 export type CoatingType = 'cream' | 'fondant';
