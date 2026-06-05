@@ -1,6 +1,6 @@
 [
   {
-    "name": "Свежая клубника",
+    "name": "Ягодный декор",
     "category": "berries",
     "pricePerUnit": 6000,
     "visualKey": "blueberry",
@@ -10,113 +10,53 @@
     "isAvailable": true
   },
   {
-    "name": "Свежая голубика",
-    "category": "berries",
-    "pricePerUnit": 5500,
-    "visualKey": "blueberry",
+    "name": "Тёмный шоколад",
+    "category": "chocolate",
+    "pricePerUnit": 12000,
+    "visualKey": "chocolate-choco",
     "modelUrl": null,
     "thumbnailUrl": null,
     "sortOrder": 2,
     "isAvailable": true
   },
   {
-    "name": "Свежая малина",
-    "category": "berries",
-    "pricePerUnit": 5800,
-    "visualKey": "blueberry",
+    "name": "Розовый шоколад",
+    "category": "chocolate",
+    "pricePerUnit": 15000,
+    "visualKey": "chocolate-pink",
     "modelUrl": null,
     "thumbnailUrl": null,
     "sortOrder": 3,
     "isAvailable": true
   },
   {
-    "name": "Шоколадный шар",
+    "name": "Шоколадный декор",
     "category": "chocolate",
-    "pricePerUnit": 7500,
-    "visualKey": "chocolate-choco",
+    "pricePerUnit": 12000,
+    "visualKey": "chocolate",
     "modelUrl": null,
     "thumbnailUrl": null,
     "sortOrder": 4,
     "isAvailable": true
   },
   {
-    "name": "Шоколадный трюфель",
-    "category": "chocolate",
-    "pricePerUnit": 8000,
-    "visualKey": "chocolate",
+    "name": "Кремовый декор",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "cream",
     "modelUrl": null,
     "thumbnailUrl": null,
     "sortOrder": 5,
     "isAvailable": true
   },
   {
-    "name": "Топпер «С Днём рождения»",
+    "name": "Кремовая глазурь",
     "category": "toppers",
-    "pricePerUnit": 25000,
-    "visualKey": "meringue",
-    "modelUrl": null,
-    "thumbnailUrl": null,
-    "sortOrder": 6,
-    "isAvailable": true
-  },
-  {
-    "name": "Топпер «Love»",
-    "category": "toppers",
-    "pricePerUnit": 22000,
-    "visualKey": "meringue",
-    "modelUrl": null,
-    "thumbnailUrl": null,
-    "sortOrder": 7,
-    "isAvailable": true
-  },
-  {
-    "name": "Сахарная роза",
-    "category": "flowers",
     "pricePerUnit": 12000,
-    "visualKey": "cream",
-    "modelUrl": null,
-    "thumbnailUrl": null,
-    "sortOrder": 8,
-    "isAvailable": true
-  },
-  {
-    "name": "Фигурка «Сердце»",
-    "category": "figures",
-    "pricePerUnit": 11000,
-    "visualKey": "chocolate-pink",
-    "modelUrl": null,
-    "thumbnailUrl": null,
-    "sortOrder": 9,
-    "isAvailable": true
-  },
-  {
-    "name": "Фигурка «Звезда»",
-    "category": "figures",
-    "pricePerUnit": 13000,
     "visualKey": "glaze-cream",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 10,
-    "isAvailable": true
-  },
-  {
-    "name": "Шоколадная глазурь",
-    "category": "toppers",
-    "pricePerUnit": 12000,
-    "visualKey": "glaze-choco",
-    "modelUrl": null,
-    "thumbnailUrl": null,
-    "sortOrder": 11,
-    "isAvailable": true
-  },
-  {
-    "name": "Розовая глазурь",
-    "category": "toppers",
-    "pricePerUnit": 12000,
-    "visualKey": "glaze-pink",
-    "modelUrl": null,
-    "thumbnailUrl": null,
-    "sortOrder": 12,
+    "sortOrder": 6,
     "isAvailable": true
   },
   {
@@ -126,7 +66,37 @@
     "visualKey": "glaze-cream2",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 13,
+    "sortOrder": 7,
+    "isAvailable": true
+  },
+  {
+    "name": "Шоколадная глазурь",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "glaze-choco",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 8,
+    "isAvailable": true
+  },
+  {
+    "name": "Розовая глазурь",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "glaze-pink",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 9,
+    "isAvailable": true
+  },
+  {
+    "name": "Меренга",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "meringue",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 10,
     "isAvailable": true
   },
   {
@@ -136,7 +106,7 @@
     "visualKey": "top-cream",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 14,
+    "sortOrder": 11,
     "isAvailable": true
   },
   {
@@ -146,7 +116,7 @@
     "visualKey": "top-choco",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 15,
+    "sortOrder": 12,
     "isAvailable": true
   },
   {
@@ -156,7 +126,7 @@
     "visualKey": "top-pink",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 16,
+    "sortOrder": 13,
     "isAvailable": true
   },
   {
@@ -166,7 +136,7 @@
     "visualKey": "top-meringue",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 17,
+    "sortOrder": 14,
     "isAvailable": true
   },
   {
@@ -176,7 +146,7 @@
     "visualKey": "top-glaze",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 18,
+    "sortOrder": 15,
     "isAvailable": true
   },
   {
@@ -186,7 +156,7 @@
     "visualKey": "top-glaze-choco",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 19,
+    "sortOrder": 16,
     "isAvailable": true
   },
   {
@@ -196,7 +166,7 @@
     "visualKey": "top-glaze-cream",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 20,
+    "sortOrder": 17,
     "isAvailable": true
   },
   {
@@ -206,7 +176,7 @@
     "visualKey": "top-glaze-cream2",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 21,
+    "sortOrder": 18,
     "isAvailable": true
   },
   {
@@ -216,7 +186,7 @@
     "visualKey": "top-meringue-pink",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 22,
+    "sortOrder": 19,
     "isAvailable": true
   },
   {
@@ -226,7 +196,7 @@
     "visualKey": "candle",
     "modelUrl": null,
     "thumbnailUrl": null,
-    "sortOrder": 23,
+    "sortOrder": 20,
     "isAvailable": true
   }
 ]

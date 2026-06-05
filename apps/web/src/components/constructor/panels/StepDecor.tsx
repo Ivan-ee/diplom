@@ -3,8 +3,15 @@
 import { useEffect, useId, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Grip, Plus, Trash2, X } from 'lucide-react';
-import { useConstructorStore } from '@/stores/constructor-store';
-import { isDecoVisualKeyAvailable, type CakeShape } from '@/lib/constructor/model-registry';
+import { useConstructorStore, type IngredientDecoration } from '@/stores/constructor-store';
+import {
+  getDecorationPlacementRule,
+  getDecorationUiCategory,
+  getDecorationUiCategoryLabel,
+  isDecoVisualKeyAvailable,
+  type CakeShape,
+  type DecorationUiCategory,
+} from '@/lib/constructor/model-registry';
 import {
   DECORATION_POINTER_DROP_EVENT,
   type DecorationPointerDropDetail,
@@ -19,6 +26,15 @@ interface PendingDecorationDrag {
   moved: boolean;
   cleanup: () => void;
 }
+
+const DECORATION_CATEGORY_ORDER: DecorationUiCategory[] = [
+  'berries',
+  'chocolate',
+  'creamGlaze',
+  'meringue',
+  'topDecor',
+  'candle',
+];
 
 export function StepDecor() {
   const inscriptionInputId = useId();
@@ -38,17 +54,22 @@ export function StepDecor() {
   const safeDecorationInstances = Array.isArray(decorationInstances) ? decorationInstances : [];
   const safeInscription = inscription ?? '';
 
-  const decoOptions = Array.from(
-    new Map(
-      (ingredients?.decorations ?? [])
-        .filter(
-          (decoration) =>
-            decoration.available &&
-            isDecoVisualKeyAvailable(shape as CakeShape, decoration.visualKey),
-        )
-        .map((decoration) => [decoration.visualKey, decoration]),
-    ).values(),
-  );
+  const decoOptionsByVisualKey = new Map<string, IngredientDecoration>();
+  for (const decoration of ingredients?.decorations ?? []) {
+    if (
+      decoration.available &&
+      isDecoVisualKeyAvailable(shape as CakeShape, decoration.visualKey) &&
+      !decoOptionsByVisualKey.has(decoration.visualKey)
+    ) {
+      decoOptionsByVisualKey.set(decoration.visualKey, decoration);
+    }
+  }
+  const decoOptions = Array.from(decoOptionsByVisualKey.values());
+  const groupedDecoOptions = DECORATION_CATEGORY_ORDER.map((category) => ({
+    category,
+    label: getDecorationUiCategoryLabel(category),
+    options: decoOptions.filter((option) => getDecorationUiCategory(option.visualKey) === category),
+  })).filter((group) => group.options.length > 0);
   const maxLength = getConfig()?.maxInscriptionLength ?? 50;
   const maxDecorations = getConfig()?.maxDecorations ?? 3;
   const isMaxReached = safeDecorationInstances.length >= maxDecorations;
@@ -74,126 +95,140 @@ export function StepDecor() {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          {decoOptions.map((option) => {
-            const isActive = safeActiveDecorations.includes(option.visualKey);
-            const count = safeDecorationInstances.filter(
-              (instance) => instance.visualKey === option.visualKey,
-            ).length;
-            const handleClick = () => {
-              if (suppressClickRef.current) {
-                suppressClickRef.current = false;
-                return;
-              }
-              addDecorationInstance(option.visualKey, option.id);
-            };
-            const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
-              if (isMaxReached || event.button !== 0) return;
+        <div className="flex flex-col gap-3">
+          {groupedDecoOptions.map((group) => (
+            <section key={group.category} className="flex flex-col gap-2">
+              <h4 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-graphite-light)]">
+                {group.label}
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                {group.options.map((option) => {
+                  const placementRule = getDecorationPlacementRule(option.visualKey);
+                  const hasSameSlot = safeDecorationInstances.some(
+                    (instance) => getDecorationPlacementRule(instance.visualKey).slot === placementRule.slot,
+                  );
+                  const isBlockedByMax = isMaxReached && !hasSameSlot;
+                  const isActive = safeActiveDecorations.includes(option.visualKey);
+                  const count = safeDecorationInstances.filter(
+                    (instance) => instance.visualKey === option.visualKey,
+                  ).length;
+                  const handleClick = () => {
+                    if (suppressClickRef.current) {
+                      suppressClickRef.current = false;
+                      return;
+                    }
+                    addDecorationInstance(option.visualKey, option.id);
+                  };
+                  const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+                    if (isBlockedByMax || event.button !== 0) return;
 
-              pendingDragRef.current?.cleanup();
-              const dragState: PendingDecorationDrag = {
-                visualKey: option.visualKey,
-                decorationId: option.id,
-                startX: event.clientX,
-                startY: event.clientY,
-                moved: false,
-                cleanup: () => undefined,
-              };
+                    pendingDragRef.current?.cleanup();
+                    const dragState: PendingDecorationDrag = {
+                      visualKey: option.visualKey,
+                      decorationId: option.id,
+                      startX: event.clientX,
+                      startY: event.clientY,
+                      moved: false,
+                      cleanup: () => undefined,
+                    };
 
-              const cleanup = () => {
-                document.removeEventListener('pointermove', handlePointerMove);
-                document.removeEventListener('pointerup', handlePointerUp);
-                document.removeEventListener('pointercancel', handlePointerCancel);
-              };
-              const handlePointerMove = (moveEvent: PointerEvent) => {
-                const distance = Math.hypot(
-                  moveEvent.clientX - dragState.startX,
-                  moveEvent.clientY - dragState.startY,
-                );
-                if (distance > 8) dragState.moved = true;
-              };
-              const handlePointerUp = (upEvent: PointerEvent) => {
-                cleanup();
-                pendingDragRef.current = null;
+                    const cleanup = () => {
+                      document.removeEventListener('pointermove', handlePointerMove);
+                      document.removeEventListener('pointerup', handlePointerUp);
+                      document.removeEventListener('pointercancel', handlePointerCancel);
+                    };
+                    const handlePointerMove = (moveEvent: PointerEvent) => {
+                      const distance = Math.hypot(
+                        moveEvent.clientX - dragState.startX,
+                        moveEvent.clientY - dragState.startY,
+                      );
+                      if (distance > 8) dragState.moved = true;
+                    };
+                    const handlePointerUp = (upEvent: PointerEvent) => {
+                      cleanup();
+                      pendingDragRef.current = null;
 
-                if (!dragState.moved) return;
+                      if (!dragState.moved) return;
 
-                suppressClickRef.current = true;
-                window.dispatchEvent(new CustomEvent<DecorationPointerDropDetail>(
-                  DECORATION_POINTER_DROP_EVENT,
-                  {
-                    detail: {
-                      visualKey: dragState.visualKey,
-                      decorationId: dragState.decorationId,
-                      clientX: upEvent.clientX,
-                      clientY: upEvent.clientY,
-                    },
-                  },
-                ));
-              };
-              const handlePointerCancel = () => {
-                cleanup();
-                pendingDragRef.current = null;
-              };
+                      suppressClickRef.current = true;
+                      window.dispatchEvent(new CustomEvent<DecorationPointerDropDetail>(
+                        DECORATION_POINTER_DROP_EVENT,
+                        {
+                          detail: {
+                            visualKey: dragState.visualKey,
+                            decorationId: dragState.decorationId,
+                            clientX: upEvent.clientX,
+                            clientY: upEvent.clientY,
+                          },
+                        },
+                      ));
+                    };
+                    const handlePointerCancel = () => {
+                      cleanup();
+                      pendingDragRef.current = null;
+                    };
 
-              dragState.cleanup = cleanup;
-              pendingDragRef.current = dragState;
-              document.addEventListener('pointermove', handlePointerMove);
-              document.addEventListener('pointerup', handlePointerUp);
-              document.addEventListener('pointercancel', handlePointerCancel);
-            };
+                    dragState.cleanup = cleanup;
+                    pendingDragRef.current = dragState;
+                    document.addEventListener('pointermove', handlePointerMove);
+                    document.addEventListener('pointerup', handlePointerUp);
+                    document.addEventListener('pointercancel', handlePointerCancel);
+                  };
 
-            return (
-              <motion.button
-                key={option.visualKey}
-                onClick={handleClick}
-                onPointerDown={handlePointerDown}
-                disabled={isMaxReached}
-                className={cn(
-                  'relative flex flex-col items-start gap-1 p-3 rounded-xl border-2 text-left transition-all duration-150 ease-out cursor-pointer',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
-                  isActive
-                    ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5 shadow-sm'
-                    : isMaxReached
-                      ? 'border-[var(--color-champagne)] opacity-40 cursor-not-allowed'
-                      : 'border-[var(--color-champagne)] hover:border-[var(--color-caramel)]/40'
-                )}
-                whileTap={!isMaxReached ? { scale: 0.985 } : undefined}
-              >
-                <div className="flex items-start justify-between w-full gap-1">
-                  <span className="text-xs font-semibold text-[var(--color-graphite)] leading-tight">
-                    {option.name}
-                  </span>
-                  <div
-                    className={cn(
-                      'w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border transition-colors',
-                      isActive
-                        ? 'bg-[var(--color-caramel)] border-[var(--color-caramel)]'
-                        : 'border-[var(--color-champagne)] bg-transparent'
-                    )}
-                  >
-                    {isActive ? (
-                      <span className="text-[9px] font-bold text-white">{count}</span>
-                    ) : (
-                      <Plus size={9} className="text-[var(--color-graphite-light)]" strokeWidth={3} />
-                    )}
-                  </div>
-                </div>
-                <span className="text-[10px] text-[var(--color-graphite-light)] leading-tight">
-                  {option.category} · {new Intl.NumberFormat('ru-RU').format(option.pricePerUnit / 100)} ₽
-                </span>
-                <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-[var(--color-graphite-light)]">
-                  <Grip size={10} />
-                  Нажмите или перетащите на торт
-                </span>
-              </motion.button>
-            );
-          })}
+                  return (
+                    <motion.button
+                      key={option.visualKey}
+                      onClick={handleClick}
+                      onPointerDown={handlePointerDown}
+                      disabled={isBlockedByMax}
+                      className={cn(
+                        'relative flex flex-col items-start gap-1 p-3 rounded-xl border-2 text-left transition-all duration-150 ease-out cursor-pointer',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
+                        isActive
+                          ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5 shadow-sm'
+                          : isBlockedByMax
+                            ? 'border-[var(--color-champagne)] opacity-40 cursor-not-allowed'
+                            : 'border-[var(--color-champagne)] hover:border-[var(--color-caramel)]/40'
+                      )}
+                      whileTap={!isBlockedByMax ? { scale: 0.985 } : undefined}
+                    >
+                      <div className="flex items-start justify-between w-full gap-1">
+                        <span className="text-xs font-semibold text-[var(--color-graphite)] leading-tight">
+                          {option.name}
+                        </span>
+                        <div
+                          className={cn(
+                            'w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border transition-colors',
+                            isActive
+                              ? 'bg-[var(--color-caramel)] border-[var(--color-caramel)]'
+                              : 'border-[var(--color-champagne)] bg-transparent'
+                          )}
+                        >
+                          {isActive ? (
+                            <span className="text-[9px] font-bold text-white">{count}</span>
+                          ) : (
+                            <Plus size={9} className="text-[var(--color-graphite-light)]" strokeWidth={3} />
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-[var(--color-graphite-light)] leading-tight">
+                        {new Intl.NumberFormat('ru-RU').format(option.pricePerUnit / 100)} ₽
+                      </span>
+                      <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-[var(--color-graphite-light)]">
+                        <Grip size={10} />
+                        Нажмите или перетащите на торт
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
 
-            <button
-              type="button"
-              onClick={clearDecorations}
-              disabled={safeDecorationInstances.length === 0}
+          <button
+            type="button"
+            onClick={clearDecorations}
+            disabled={safeDecorationInstances.length === 0}
             className={cn(
               'col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-150 ease-out cursor-pointer',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',

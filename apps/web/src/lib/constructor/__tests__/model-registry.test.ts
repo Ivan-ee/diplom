@@ -5,8 +5,12 @@ import { getMockIngredients } from '@/lib/constructor/mock-ingredients';
 import { buildCakeStackLayout, DECORATION_LIFT } from '@/lib/constructor/geometry';
 import {
   getDeclaredModelPaths,
+  getDecorationPlacementRule,
+  getDecorationUiCategory,
+  getDecorationUiCategoryLabel,
   getDecoModelPath,
   getFillModelPath,
+  getAllDecoPaths,
   getAllGlazePaths,
   getAllFullTierPaths,
   getAvailableGlazes,
@@ -85,8 +89,37 @@ function canonicalCoatingPathsFromCakes(): string[] {
   return paths.sort();
 }
 
+function canonicalDecorationPathsFromCakes(): string[] {
+  const cakesDir = path.resolve(process.cwd(), '../../Cakes');
+  const sourceFolders: Record<string, string> = {
+    CakeCircle: 'circle',
+    CakeCube: 'cube',
+    CakeHeart: 'heart',
+    Candle: 'candle',
+  };
+  const paths: string[] = [];
+
+  for (const [sourceFolder, runtimeFolder] of Object.entries(sourceFolders)) {
+    const shapeDir = path.join(cakesDir, sourceFolder);
+    for (const fileName of readdirSync(shapeDir)) {
+      const isDecorationModel =
+        /^(Deco|cakeDecor|CakeFill|cakeFill).+\.glb$/.test(fileName);
+      if (!isDecorationModel) continue;
+      paths.push(`/models/${runtimeFolder}/${fileName}`);
+    }
+  }
+
+  return paths.sort();
+}
+
 function runtimeGlazeNamedPaths(): string[] {
   return runtimeModelPaths().filter((modelPath) => /glaze/i.test(path.basename(modelPath)));
+}
+
+function runtimeDecorationPaths(): string[] {
+  return runtimeModelPaths().filter((modelPath) =>
+    /^(Deco|cakeDecor|CakeFill|cakeFill).+\.glb$/.test(path.basename(modelPath)),
+  );
 }
 
 function seedBases(): Array<{ name: string; visualKey: string; color: string; isAvailable: boolean }> {
@@ -105,6 +138,16 @@ function seedCoatings(): Array<{ name: string; visualKey: string; pricePerKg: nu
     name: string;
     visualKey: string;
     pricePerKg: number;
+    isAvailable: boolean;
+  }>;
+}
+
+function seedDecorations(): Array<{ name: string; visualKey: string; pricePerUnit: number; isAvailable: boolean }> {
+  const seedPath = path.resolve(process.cwd(), '../../packages/db/seed-data/constructor-decorations.json');
+  return JSON.parse(readFileSync(seedPath, 'utf8')) as Array<{
+    name: string;
+    visualKey: string;
+    pricePerUnit: number;
     isAvailable: boolean;
   }>;
 }
@@ -137,6 +180,42 @@ describe('constructor model registry', () => {
     expect(getFillModelPath('heart', 'meringue')).toBe('/models/heart/CakeFillMeringue.glb');
     expect(getDecoModelPath('square', 'top-glaze-cream2')).toBe('/models/cube/CakeFillGlazeCream2.glb');
     expect(getDecoModelPath('heart', 'top-meringue-pink')).toBe('/models/heart/CakeFillMeringuePink.glb');
+  });
+
+  it('declares every Step 5 decoration GLB from Cakes and runtime models', () => {
+    const registryDecorationPaths = Array.from(new Set(
+      (['circle', 'square', 'heart'] as const).flatMap((shape) => getAllDecoPaths(shape)),
+    )).sort();
+    const cakesDecorationPaths = canonicalDecorationPathsFromCakes()
+      .filter((modelPath) => !IGNORED_RUNTIME_MODELS.has(modelPath))
+      .sort();
+    const runtimeDecorations = runtimeDecorationPaths()
+      .filter((modelPath) => !IGNORED_RUNTIME_MODELS.has(modelPath))
+      .sort();
+
+    expect(registryDecorationPaths).toEqual(cakesDecorationPaths);
+    expect(registryDecorationPaths).toEqual(runtimeDecorations);
+    expect(runtimeModelPaths()).toContain('/models/candle/DecoCandle2.glb');
+    expect(registryDecorationPaths).not.toContain('/models/candle/DecoCandle2.glb');
+  });
+
+  it('classifies decoration placement slots and UI categories from the registry', () => {
+    expect(getDecorationPlacementRule('blueberry')).toEqual({
+      slot: 'surfaceDecor',
+      maxPerCake: 1,
+    });
+    expect(getDecorationPlacementRule('top-glaze-cream2')).toEqual({
+      slot: 'surfaceDecor',
+      maxPerCake: 1,
+    });
+    expect(getDecorationPlacementRule('candle')).toEqual({
+      slot: 'candle',
+      maxPerCake: 1,
+    });
+    expect(getDecorationUiCategory('blueberry')).toBe('berries');
+    expect(getDecorationUiCategory('glaze-choco')).toBe('creamGlaze');
+    expect(getDecorationUiCategory('top-cream')).toBe('topDecor');
+    expect(getDecorationUiCategoryLabel('creamGlaze')).toBe('Крем / глазурь');
   });
 
   it('exposes every ready coating GLB as a standalone visual key', () => {
@@ -313,6 +392,53 @@ describe('constructor model registry', () => {
         availableCoatings.find((coating) => coating.visualKey === 'pink-2')?.pricePerKg,
         `${sourceName} pink-2 price`,
       ).toBe(availableCoatings.find((coating) => coating.visualKey === 'pink')?.pricePerKg);
+    }
+  });
+
+  it('keeps mock and seed decorations unique and backed by at least one decor GLB', () => {
+    for (const [sourceName, decorations] of [
+      ['mock', getMockIngredients().decorations.map((decoration) => ({
+        name: decoration.name,
+        visualKey: decoration.visualKey,
+        pricePerUnit: decoration.pricePerUnit,
+        isAvailable: decoration.available,
+      }))],
+      ['seed', seedDecorations()],
+    ] as const) {
+      const availableDecorations = decorations.filter((decoration) => decoration.isAvailable);
+      const duplicateVisualKeys = availableDecorations
+        .map((decoration) => decoration.visualKey)
+        .filter((visualKey, index, visualKeys) => visualKeys.indexOf(visualKey) !== index);
+      const unsupportedVisualKeys = availableDecorations
+        .map((decoration) => decoration.visualKey)
+        .filter((visualKey) => !(['circle', 'square', 'heart'] as const).some((shape) =>
+          isDecoVisualKeyAvailable(shape, visualKey),
+        ));
+
+      expect(duplicateVisualKeys, `${sourceName} has duplicate decoration visualKeys`).toEqual([]);
+      expect(unsupportedVisualKeys, `${sourceName} has unavailable decoration visualKeys`).toEqual([]);
+      expect(availableDecorations.map((decoration) => decoration.visualKey)).toEqual([
+        'blueberry',
+        'chocolate-choco',
+        'chocolate-pink',
+        'chocolate',
+        'cream',
+        'glaze-cream',
+        'glaze-cream2',
+        'glaze-choco',
+        'glaze-pink',
+        'meringue',
+        'top-cream',
+        'top-choco',
+        'top-pink',
+        'top-meringue',
+        'top-glaze',
+        'top-glaze-choco',
+        'top-glaze-cream',
+        'top-glaze-cream2',
+        'top-meringue-pink',
+        'candle',
+      ]);
     }
   });
 

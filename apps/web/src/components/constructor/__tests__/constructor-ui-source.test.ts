@@ -50,6 +50,15 @@ describe('constructor UI source regressions', () => {
     expect(canvas).toContain('window.addEventListener(DECORATION_POINTER_DROP_EVENT');
   });
 
+  it('groups Step 5 decorations from visual metadata instead of raw DB categories', () => {
+    const decorStep = source('src/components/constructor/panels/StepDecor.tsx');
+
+    expect(decorStep).toContain('DECORATION_CATEGORY_ORDER');
+    expect(decorStep).toContain('getDecorationUiCategoryLabel');
+    expect(decorStep).toContain('getDecorationPlacementRule');
+    expect(decorStep).not.toContain('option.category');
+  });
+
   it('keeps the constructor UI free of decorative marketing copy and internal model terms', () => {
     const uiSource = constructorUiSource();
 

@@ -47,6 +47,20 @@ type DecoVariant =
   | 'top-glaze-cream2'
   | 'top-meringue-pink';
 
+export type DecorationPlacementSlot = 'surfaceDecor' | 'candle';
+export type DecorationUiCategory =
+  | 'berries'
+  | 'chocolate'
+  | 'creamGlaze'
+  | 'meringue'
+  | 'topDecor'
+  | 'candle';
+
+export interface DecorationPlacementRule {
+  slot: DecorationPlacementSlot;
+  maxPerCake: 1;
+}
+
 // --- Layers -----------------------------------------------------------------
 
 const LAYER_FILES: Record<CakeShape, Partial<Record<LayerVariant, string>>> = {
@@ -506,37 +520,191 @@ export interface DecoOption {
   id: string;
   label: string;
   description: string;
+  uiCategory: DecorationUiCategory;
+  uiCategoryLabel: string;
+  placementSlot: DecorationPlacementSlot;
 }
 
-const DECO_META: Record<DecoVariant, { label: string; description: string }> = {
-  blueberry: { label: 'Черника', description: 'Свежие ягоды черники' },
-  chocolate: { label: 'Шоколад', description: 'Шоколадные фигурки' },
-  'chocolate-choco': { label: 'Шоко-шоколад', description: 'Тёмные шоколадные фигурки' },
-  'chocolate-pink': { label: 'Розовый шоколад', description: 'Фигурки из розового шоколада' },
-  meringue: { label: 'Безе', description: 'Хрустящие меренги' },
-  'glaze-cream': { label: 'Кремовая глазурь', description: 'Декор из кремовой глазури' },
-  'glaze-cream2': { label: 'Кремовая глазурь 2', description: 'Второй вариант кремовой глазури' },
-  'glaze-choco': { label: 'Шоколадная глазурь', description: 'Декор из шоколадной глазури' },
-  'glaze-pink': { label: 'Розовая глазурь', description: 'Декор из розовой глазури' },
-  cream: { label: 'Кремовый декор', description: 'Розочки и узоры из крема' },
-  candle: { label: 'Свеча', description: 'Праздничная свеча' },
-  'top-cream': { label: 'Крем сверху', description: 'Верхний кремовый декор' },
-  'top-choco': { label: 'Шоколад сверху', description: 'Верхний шоколадный декор' },
-  'top-pink': { label: 'Розовый крем сверху', description: 'Верхний розовый декор' },
-  'top-meringue': { label: 'Меренга сверху', description: 'Верхний декор из меренги' },
-  'top-glaze': { label: 'Глазурь сверху', description: 'Верхний глазурный декор' },
-  'top-glaze-choco': { label: 'Шоколадная глазурь сверху', description: 'Верхний шоколадный глазурный декор' },
-  'top-glaze-cream': { label: 'Кремовая глазурь сверху', description: 'Верхний кремовый глазурный декор' },
-  'top-glaze-cream2': { label: 'Кремовая глазурь сверху 2', description: 'Второй верхний кремовый глазурный декор' },
-  'top-meringue-pink': { label: 'Розовая меренга сверху', description: 'Верхний розовый декор из меренги' },
+const DECORATION_UI_CATEGORY_LABELS: Record<DecorationUiCategory, string> = {
+  berries: 'Ягоды',
+  chocolate: 'Шоколад',
+  creamGlaze: 'Крем / глазурь',
+  meringue: 'Меренга',
+  topDecor: 'Верхний декор',
+  candle: 'Свеча',
 };
+
+const DECO_META: Record<DecoVariant, {
+  label: string;
+  description: string;
+  uiCategory: DecorationUiCategory;
+  placementSlot: DecorationPlacementSlot;
+}> = {
+  blueberry: {
+    label: 'Ягодный декор',
+    description: 'Готовый ягодный набор',
+    uiCategory: 'berries',
+    placementSlot: 'surfaceDecor',
+  },
+  chocolate: {
+    label: 'Шоколадный декор',
+    description: 'Готовый шоколадный набор',
+    uiCategory: 'chocolate',
+    placementSlot: 'surfaceDecor',
+  },
+  'chocolate-choco': {
+    label: 'Тёмный шоколад',
+    description: 'Готовый набор из тёмного шоколада',
+    uiCategory: 'chocolate',
+    placementSlot: 'surfaceDecor',
+  },
+  'chocolate-pink': {
+    label: 'Розовый шоколад',
+    description: 'Готовый набор из розового шоколада',
+    uiCategory: 'chocolate',
+    placementSlot: 'surfaceDecor',
+  },
+  meringue: {
+    label: 'Меренга',
+    description: 'Готовый набор из меренги',
+    uiCategory: 'meringue',
+    placementSlot: 'surfaceDecor',
+  },
+  'glaze-cream': {
+    label: 'Кремовая глазурь',
+    description: 'Готовый декор из кремовой глазури',
+    uiCategory: 'creamGlaze',
+    placementSlot: 'surfaceDecor',
+  },
+  'glaze-cream2': {
+    label: 'Кремовая глазурь 2',
+    description: 'Второй готовый декор из кремовой глазури',
+    uiCategory: 'creamGlaze',
+    placementSlot: 'surfaceDecor',
+  },
+  'glaze-choco': {
+    label: 'Шоколадная глазурь',
+    description: 'Готовый декор из шоколадной глазури',
+    uiCategory: 'creamGlaze',
+    placementSlot: 'surfaceDecor',
+  },
+  'glaze-pink': {
+    label: 'Розовая глазурь',
+    description: 'Готовый декор из розовой глазури',
+    uiCategory: 'creamGlaze',
+    placementSlot: 'surfaceDecor',
+  },
+  cream: {
+    label: 'Кремовый декор',
+    description: 'Готовый кремовый набор',
+    uiCategory: 'creamGlaze',
+    placementSlot: 'surfaceDecor',
+  },
+  candle: {
+    label: 'Свеча',
+    description: 'Праздничная свеча',
+    uiCategory: 'candle',
+    placementSlot: 'candle',
+  },
+  'top-cream': {
+    label: 'Крем сверху',
+    description: 'Верхний кремовый декор',
+    uiCategory: 'topDecor',
+    placementSlot: 'surfaceDecor',
+  },
+  'top-choco': {
+    label: 'Шоколад сверху',
+    description: 'Верхний шоколадный декор',
+    uiCategory: 'topDecor',
+    placementSlot: 'surfaceDecor',
+  },
+  'top-pink': {
+    label: 'Розовый крем сверху',
+    description: 'Верхний розовый декор',
+    uiCategory: 'topDecor',
+    placementSlot: 'surfaceDecor',
+  },
+  'top-meringue': {
+    label: 'Меренга сверху',
+    description: 'Верхний декор из меренги',
+    uiCategory: 'topDecor',
+    placementSlot: 'surfaceDecor',
+  },
+  'top-glaze': {
+    label: 'Глазурь сверху',
+    description: 'Верхний глазурный декор',
+    uiCategory: 'topDecor',
+    placementSlot: 'surfaceDecor',
+  },
+  'top-glaze-choco': {
+    label: 'Шоколадная глазурь сверху',
+    description: 'Верхний шоколадный глазурный декор',
+    uiCategory: 'topDecor',
+    placementSlot: 'surfaceDecor',
+  },
+  'top-glaze-cream': {
+    label: 'Кремовая глазурь сверху',
+    description: 'Верхний кремовый глазурный декор',
+    uiCategory: 'topDecor',
+    placementSlot: 'surfaceDecor',
+  },
+  'top-glaze-cream2': {
+    label: 'Кремовая глазурь сверху 2',
+    description: 'Второй верхний кремовый глазурный декор',
+    uiCategory: 'topDecor',
+    placementSlot: 'surfaceDecor',
+  },
+  'top-meringue-pink': {
+    label: 'Розовая меренга сверху',
+    description: 'Верхний розовый декор из меренги',
+    uiCategory: 'topDecor',
+    placementSlot: 'surfaceDecor',
+  },
+};
+
+export function getDecorationPlacementRule(visualKey: string): DecorationPlacementRule {
+  const meta = DECO_META[visualKey as DecoVariant];
+  return {
+    slot: meta?.placementSlot ?? 'surfaceDecor',
+    maxPerCake: 1,
+  };
+}
+
+export function getDecorationUiCategory(visualKey: string): DecorationUiCategory {
+  return DECO_META[visualKey as DecoVariant]?.uiCategory ?? 'topDecor';
+}
+
+export function getDecorationUiCategoryLabel(category: DecorationUiCategory): string {
+  return DECORATION_UI_CATEGORY_LABELS[category];
+}
+
+export function getDecorationMeta(visualKey: string): DecoOption | null {
+  const meta = DECO_META[visualKey as DecoVariant];
+  if (!meta) return null;
+
+  return {
+    id: visualKey,
+    label: meta.label,
+    description: meta.description,
+    uiCategory: meta.uiCategory,
+    uiCategoryLabel: getDecorationUiCategoryLabel(meta.uiCategory),
+    placementSlot: meta.placementSlot,
+  };
+}
 
 export function getAvailableDecos(shape: CakeShape): DecoOption[] {
   const decoMap = DECO_FILES[shape];
 
   return (Object.keys(decoMap) as DecoVariant[]).map((variant) => {
-    const meta = DECO_META[variant] ?? { label: variant, description: '' };
-    return { id: variant, label: meta.label, description: meta.description };
+    const meta = getDecorationMeta(variant) ?? {
+      id: variant,
+      label: variant,
+      description: '',
+      uiCategory: 'topDecor' as DecorationUiCategory,
+      uiCategoryLabel: getDecorationUiCategoryLabel('topDecor'),
+      placementSlot: 'surfaceDecor' as DecorationPlacementSlot,
+    };
+    return meta;
   });
 }
 

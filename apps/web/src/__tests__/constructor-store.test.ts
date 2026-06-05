@@ -387,10 +387,10 @@ describe('constructor-store', () => {
     const ingredients = getMockIngredients();
 
     // Base price = 145000 (from first test)
-    // 2× decor-strawberry at pricePerUnit 5000 = 10000
-    // 1× decor-rose at pricePerUnit 10000 = 10000
+    // 1× decor-berries at pricePerUnit 6000
+    // 1× decor-candle-gold at pricePerUnit 15000
     // shape circle surcharge = 0
-    // total = 145000 + 10000 + 10000 = 165000
+    // total = 145000 + 6000 + 15000 = 166000
 
     useConstructorStore.setState({
       ingredients,
@@ -413,30 +413,24 @@ describe('constructor-store', () => {
       decorationInstances: [
         {
           instanceId: 'decor-1',
-          decorationId: 'decor-strawberry',
+          decorationId: 'decor-berries',
           visualKey: 'blueberry',
           position: { x: 0, y: 0, z: 0 },
         },
         {
           instanceId: 'decor-2',
-          decorationId: 'decor-strawberry',
-          visualKey: 'blueberry',
+          decorationId: 'decor-candle-gold',
+          visualKey: 'candle',
           position: { x: 0.15, y: 0, z: 0 },
-        },
-        {
-          instanceId: 'decor-3',
-          decorationId: 'decor-rose',
-          visualKey: 'cream',
-          position: { x: -0.15, y: 0, z: 0 },
         },
       ],
     });
 
     useConstructorStore.getState().recalculatePrice();
-    expect(useConstructorStore.getState().totalPrice).toBe(165000);
+    expect(useConstructorStore.getState().totalPrice).toBe(166000);
   });
 
-  it('adds multiple decoration instances of the same visual key and groups them for pricing', async () => {
+  it('replaces surface decoration instances and posts singleton pricing quantity', async () => {
     const ingredients = getMockIngredients();
     const fetchMock = vi.fn(async () => ({
       ok: true,
@@ -479,22 +473,27 @@ describe('constructor-store', () => {
       decorationInstances: [],
     });
 
-    useConstructorStore.getState().addDecorationInstance('blueberry', 'decor-strawberry', {
+    useConstructorStore.getState().addDecorationInstance('blueberry', 'decor-berries', {
       x: -0.18,
       y: 0,
       z: 0.1,
     });
-    useConstructorStore.getState().addDecorationInstance('blueberry', 'decor-strawberry', {
+    useConstructorStore.getState().addDecorationInstance('top-cream', 'decor-top-cream', {
       x: 0.18,
       y: 0,
       z: 0.1,
     });
 
     const state = useConstructorStore.getState();
-    expect(state.activeDecorations).toEqual(['blueberry']);
-    expect(state.decorationInstances).toHaveLength(2);
+    expect(state.activeDecorations).toEqual(['top-cream']);
+    expect(state.decorationInstances).toHaveLength(1);
+    expect(state.decorationInstances[0]).toMatchObject({
+      decorationId: 'decor-top-cream',
+      visualKey: 'top-cream',
+      position: { x: 0.18, y: 0, z: 0.1 },
+    });
     expect(state.selectedDecorations).toEqual([
-      { variantId: 'blueberry', decorationId: 'decor-strawberry', quantity: 2 },
+      { variantId: 'top-cream', decorationId: 'decor-top-cream', quantity: 1 },
     ]);
 
     await useConstructorStore.getState().syncServerPrice();
@@ -502,11 +501,11 @@ describe('constructor-store', () => {
     const [, requestInit] = fetchMock.mock.calls.at(-1) as unknown as [string, RequestInit];
     const requestBody = JSON.parse(String(requestInit.body));
     expect(requestBody.decorations).toEqual([
-      { decorationId: 'decor-strawberry', quantity: 2 },
+      { decorationId: 'decor-top-cream', quantity: 1 },
     ]);
   });
 
-  it('keeps only one top decoration instance while preserving regular decorations', () => {
+  it('allows one surface decoration and one candle while replacing each slot', () => {
     const ingredients = getMockIngredients();
     useConstructorStore.setState({
       ingredients,
@@ -529,20 +528,92 @@ describe('constructor-store', () => {
       decorationInstances: [],
     });
 
-    useConstructorStore.getState().addDecorationInstance('blueberry', 'decor-strawberry');
+    useConstructorStore.getState().addDecorationInstance('blueberry', 'decor-berries');
+    useConstructorStore.getState().addDecorationInstance('candle', 'decor-candle-gold');
     useConstructorStore.getState().addDecorationInstance('top-cream', 'decor-top-cream');
     useConstructorStore.getState().addDecorationInstance('top-choco', 'decor-top-choco');
+    useConstructorStore.getState().addDecorationInstance('candle', 'decor-candle-gold');
 
     const state = useConstructorStore.getState();
     expect(state.decorationInstances).toHaveLength(2);
     expect(state.decorationInstances.map((instance) => instance.visualKey)).toEqual([
-      'blueberry',
       'top-choco',
+      'candle',
+    ]);
+    expect(state.decorationInstances.map((instance) => instance.position)).toEqual([
+      { x: 0, y: 0, z: 0 },
+      { x: 0, y: 0, z: 0.28 },
+    ]);
+    expect(state.activeDecorations).toEqual([
+      'top-choco',
+      'candle',
     ]);
     expect(state.selectedDecorations).toEqual([
-      { variantId: 'blueberry', decorationId: 'decor-strawberry', quantity: 1 },
       { variantId: 'top-choco', decorationId: 'decor-top-choco', quantity: 1 },
+      { variantId: 'candle', decorationId: 'decor-candle-gold', quantity: 1 },
     ]);
+  });
+
+  it('repairs legacy decoration instances to one surface decoration and one candle', () => {
+    const ingredients = getMockIngredients();
+    useConstructorStore.setState({
+      ingredients,
+      shape: 'circle',
+      tierCount: 1,
+      layers: [{ baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 }],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
+      },
+      activeDecorations: ['blueberry', 'top-cream', 'candle'],
+      selectedDecorations: [],
+      decorationInstances: [
+        {
+          instanceId: 'legacy-berries',
+          decorationId: 'decor-berries',
+          visualKey: 'blueberry',
+          position: { x: 0, y: 0, z: 0 },
+        },
+        {
+          instanceId: 'legacy-top',
+          decorationId: 'decor-top-cream',
+          visualKey: 'top-cream',
+          position: { x: 0.1, y: 0, z: 0 },
+        },
+        {
+          instanceId: 'legacy-candle-1',
+          decorationId: 'decor-candle-gold',
+          visualKey: 'candle',
+          position: { x: 0, y: 0, z: 0 },
+        },
+        {
+          instanceId: 'legacy-candle-2',
+          decorationId: 'decor-candle-gold',
+          visualKey: 'candle',
+          position: { x: 0.2, y: 0, z: 0 },
+        },
+      ],
+    });
+
+    useConstructorStore.getState().setShape('circle');
+
+    const state = useConstructorStore.getState();
+    expect(state.decorationInstances.map((instance) => instance.instanceId)).toEqual([
+      'legacy-top',
+      'legacy-candle-2',
+    ]);
+    expect(state.selectedDecorations).toEqual([
+      { variantId: 'top-cream', decorationId: 'decor-top-cream', quantity: 1 },
+      { variantId: 'candle', decorationId: 'decor-candle-gold', quantity: 1 },
+    ]);
+    expect(state.hasCandle).toBe(true);
   });
 
   it('normalizes legacy persisted constructor state before loading ingredients', async () => {

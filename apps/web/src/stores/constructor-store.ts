@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, subscribeWithSelector } from 'zustand/middleware';
 import { getMockIngredients } from '@/lib/constructor/mock-ingredients';
 import {
+  getDecorationPlacementRule,
   getGlazeColor,
   isDecoVisualKeyAvailable,
   isFillVisualKeyAvailable,
@@ -228,27 +229,39 @@ const DEFAULT_COATING: CakeCoating = {
   },
 };
 
-const DEFAULT_DECORATION_POSITION: DecorationPosition = { x: 0, y: 0, z: 0 };
+const DEFAULT_DECORATION_POSITION: Record<string, DecorationPosition> = {
+  surfaceDecor: { x: 0, y: 0, z: 0 },
+  candle: { x: 0, y: 0, z: 0.28 },
+};
 const SHAPE_ORDER: CakeShape[] = ['circle', 'square', 'heart'];
 
 function asArray<T>(value: T[] | null | undefined): T[] {
   return Array.isArray(value) ? value : [];
 }
 
-function isTopDecorationVisualKey(visualKey: string): boolean {
-  return visualKey.startsWith('top-');
-}
-
-function enforceTopDecorationSingleton(instances: DecorationInstance[]): DecorationInstance[] {
+function enforceDecorationPlacementRules(instances: DecorationInstance[]): DecorationInstance[] {
   const normalizedInstances = asArray(instances);
-  const lastTopIndex = normalizedInstances.findLastIndex((instance) =>
-    isTopDecorationVisualKey(instance.visualKey),
-  );
+  const lastIndexBySlot = new Map<string, number>();
 
-  if (lastTopIndex === -1) return normalizedInstances;
+  normalizedInstances.forEach((instance, index) => {
+    lastIndexBySlot.set(getDecorationPlacementRule(instance.visualKey).slot, index);
+  });
 
   return normalizedInstances.filter(
-    (instance, index) => !isTopDecorationVisualKey(instance.visualKey) || index === lastTopIndex,
+    (instance, index) => lastIndexBySlot.get(getDecorationPlacementRule(instance.visualKey).slot) === index,
+  );
+}
+
+function enforceDecorationVariantPlacementRules(variantIds: string[]): string[] {
+  const normalizedVariantIds = asArray(variantIds);
+  const lastIndexBySlot = new Map<string, number>();
+
+  normalizedVariantIds.forEach((variantId, index) => {
+    lastIndexBySlot.set(getDecorationPlacementRule(variantId).slot, index);
+  });
+
+  return normalizedVariantIds.filter(
+    (variantId, index) => lastIndexBySlot.get(getDecorationPlacementRule(variantId).slot) === index,
   );
 }
 
@@ -277,8 +290,12 @@ function normalizeConstructorStateFields(
   const legacyDecorVariant = typeof state.decorVariant === 'string' ? state.decorVariant : null;
   const activeDecorations = asArray(state.activeDecorations);
   const normalizedActiveDecorations =
-    activeDecorations.length > 0 ? activeDecorations : legacyDecorVariant ? [legacyDecorVariant] : [];
-    const decorationInstances = enforceTopDecorationSingleton(asArray(state.decorationInstances));
+    activeDecorations.length > 0
+      ? enforceDecorationVariantPlacementRules(activeDecorations)
+      : legacyDecorVariant
+        ? enforceDecorationVariantPlacementRules([legacyDecorVariant])
+        : [];
+  const decorationInstances = enforceDecorationPlacementRules(asArray(state.decorationInstances));
   const syncedDecorations = decorationInstances.length > 0
     ? syncDecorationState(decorationInstances)
     : {
@@ -354,15 +371,16 @@ function createDecorationInstanceId(): string {
 }
 
 function normalizeDecorationPosition(
+  visualKey: string,
   position?: Partial<DecorationPosition>,
-  fallbackIndex = 0,
 ): DecorationPosition {
-  const angle = fallbackIndex * 2.399963229728653;
-  const radius = fallbackIndex === 0 ? 0 : 0.28;
+  const slot = getDecorationPlacementRule(visualKey).slot;
+  const fallback = DEFAULT_DECORATION_POSITION[slot] ?? DEFAULT_DECORATION_POSITION.surfaceDecor;
+
   return {
-    x: position?.x ?? (fallbackIndex === 0 ? DEFAULT_DECORATION_POSITION.x : Math.cos(angle) * radius),
-    y: position?.y ?? DEFAULT_DECORATION_POSITION.y,
-    z: position?.z ?? (fallbackIndex === 0 ? DEFAULT_DECORATION_POSITION.z : Math.sin(angle) * radius),
+    x: position?.x ?? fallback.x,
+    y: position?.y ?? fallback.y,
+    z: position?.z ?? fallback.z,
   };
 }
 
@@ -496,7 +514,7 @@ function repairDecorationsForShape(
   const normalizedDecorations = asArray(decorations);
 
   if (normalizedDecorationInstances.length > 0) {
-    const compatibleInstances = enforceTopDecorationSingleton(normalizedDecorationInstances.filter((instance) => {
+    const compatibleInstances = enforceDecorationPlacementRules(normalizedDecorationInstances.filter((instance) => {
       const decoration = normalizedDecorations.find((item) => item.id === instance.decorationId);
       return Boolean(
         decoration?.available &&
@@ -512,8 +530,10 @@ function repairDecorationsForShape(
     };
   }
 
-  const compatibleActiveDecorations = normalizedActiveDecorations.filter((variantId) =>
-    isDecoVisualKeyAvailable(registryShape, variantId),
+  const compatibleActiveDecorations = enforceDecorationVariantPlacementRules(
+    normalizedActiveDecorations.filter((variantId) =>
+      isDecoVisualKeyAvailable(registryShape, variantId),
+    ),
   );
   const compatibleSelections = normalizedSelectedDecorations.filter((selection) => {
     if (!compatibleActiveDecorations.includes(selection.variantId)) return false;
@@ -562,16 +582,24 @@ function repairSelectionsForCompatibility(
   const normalizedDecorationInstances = asArray(state.decorationInstances);
 
   if (!ingredients) {
+    const decorationInstances = enforceDecorationPlacementRules(normalizedDecorationInstances);
+    const activeDecorations = decorationInstances.length > 0
+      ? activeDecorationKeysFromInstances(decorationInstances)
+      : enforceDecorationVariantPlacementRules(normalizedActiveDecorations);
+    const selectedDecorations = decorationInstances.length > 0
+      ? groupDecorationInstances(decorationInstances)
+      : normalizedSelectedDecorations.filter((selection) =>
+          activeDecorations.includes(selection.variantId),
+        );
+
     return {
       shape: state.shape,
       layers: normalizedLayers,
       coating: normalizedCoating,
-      activeDecorations: normalizedActiveDecorations,
-      selectedDecorations: normalizedSelectedDecorations,
-      decorationInstances: normalizedDecorationInstances,
-      hasCandle: normalizedDecorationInstances.length > 0
-        ? normalizedDecorationInstances.some((instance) => instance.visualKey === 'candle')
-        : normalizedActiveDecorations.includes('candle'),
+      activeDecorations,
+      selectedDecorations,
+      decorationInstances,
+      hasCandle: activeDecorations.includes('candle'),
     };
   }
 
@@ -926,9 +954,10 @@ export const useConstructorStore = create<ConstructorState>()(
       addDecorationInstance: (visualKey, decorationId, position) => {
         const { ingredients, shape } = get();
         const decorationInstances = asArray(get().decorationInstances);
-        const retainedInstances = isTopDecorationVisualKey(visualKey)
-          ? decorationInstances.filter((instance) => !isTopDecorationVisualKey(instance.visualKey))
-          : decorationInstances;
+        const placementRule = getDecorationPlacementRule(visualKey);
+        const retainedInstances = decorationInstances.filter(
+          (instance) => getDecorationPlacementRule(instance.visualKey).slot !== placementRule.slot,
+        );
         const max = ingredients?.config?.maxDecorations ?? 3;
         if (retainedInstances.length >= max) return;
         if (!isDecoVisualKeyAvailable(shape as RegistryCakeShape, visualKey)) return;
@@ -941,7 +970,7 @@ export const useConstructorStore = create<ConstructorState>()(
             instanceId: createDecorationInstanceId(),
             decorationId: selectedDecoration.decorationId,
             visualKey,
-            position: normalizeDecorationPosition(position, retainedInstances.length),
+            position: normalizeDecorationPosition(visualKey, position),
           },
         ];
         set({
