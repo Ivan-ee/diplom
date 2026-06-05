@@ -113,7 +113,7 @@ export class ConstructorService {
 
     const totalWeightKg = totalWeightTenths / 10;
 
-    const coatingCost = Math.round(coating.pricePerKg * totalWeightKg);
+    const coatingCost = coating ? Math.round(coating.pricePerKg * totalWeightKg) : 0;
 
     let decorationCost = 0;
     for (const decorItem of decorations) {
@@ -151,12 +151,16 @@ export class ConstructorService {
           fillingCost: Math.round(filling.pricePerKg * weightKg),
         };
       }),
-      coating: {
-        id: coating.id,
-        name: coating.name,
-        pricePerKg: coating.pricePerKg,
-        cost: coatingCost,
-      },
+      ...(coating
+        ? {
+            coating: {
+              id: coating.id,
+              name: coating.name,
+              pricePerKg: coating.pricePerKg,
+              cost: coatingCost,
+            },
+          }
+        : {}),
       decorations: decorations.map((decorItem) => {
         const decor = decorationsMap.get(decorItem.decorationId)!;
         return {
@@ -218,12 +222,13 @@ export class ConstructorService {
 
   private async fetchIngredients(
     tiers: CalculatePriceDto['tiers'],
-    coatingId: string,
+    coatingId: CalculatePriceDto['coatingId'],
     decorations: CalculatePriceDto['decorations'],
   ) {
     const baseIds = [...new Set(tiers.map((t) => t.baseId))];
     const fillingIds = [...new Set(tiers.map((t) => t.fillingId))];
     const decorationIds = [...new Set((decorations ?? []).map((d) => d.decorationId))];
+    const selectedCoatingId = coatingId || null;
 
     const [basesRows, fillingsRows, coatingsRows, decorationsRows] =
       await Promise.all([
@@ -237,10 +242,12 @@ export class ConstructorService {
           .from(schema.constructorFillings)
           .where(inArray(schema.constructorFillings.id, fillingIds)),
 
-        this.db
-          .select()
-          .from(schema.constructorCoatings)
-          .where(eq(schema.constructorCoatings.id, coatingId)),
+        selectedCoatingId
+          ? this.db
+              .select()
+              .from(schema.constructorCoatings)
+              .where(eq(schema.constructorCoatings.id, selectedCoatingId))
+          : Promise.resolve([]),
 
         decorationIds.length > 0
           ? this.db
@@ -254,12 +261,14 @@ export class ConstructorService {
     const fillingsMap = new Map(fillingsRows.map((f) => [f.id, f]));
     const decorationsMap = new Map(decorationsRows.map((d) => [d.id, d]));
 
-    if (coatingsRows.length === 0) {
-      throw new NotFoundException(`Coating "${coatingId}" not found`);
-    }
-    const coating = coatingsRows[0];
-    if (!coating.isAvailable) {
-      throw new BadRequestException(`Coating "${coating.name}" is not available`);
+    const coating = coatingsRows[0] ?? null;
+    if (selectedCoatingId) {
+      if (!coating) {
+        throw new NotFoundException(`Coating "${selectedCoatingId}" not found`);
+      }
+      if (!coating.isAvailable) {
+        throw new BadRequestException(`Coating "${coating.name}" is not available`);
+      }
     }
 
     for (const tier of tiers) {

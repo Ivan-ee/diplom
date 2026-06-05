@@ -52,12 +52,14 @@ function CakeModelGroup({
     [config.tierCount, ingredients, layers],
   );
 
+  const showSelectedCoating = showCoating && Boolean(coating.coatingId && coating.glazeVariant);
+
   const layout = useMemo(
     () =>
       buildCakeStackLayout({
         shape: config.shape,
         tiers: visualTiers,
-        glazeVariant: showCoating ? coating.glazeVariant : '',
+        glazeVariant: showSelectedCoating ? coating.glazeVariant : '',
         withDrips: false,
         decorations: decorationInstances.map((instance) => ({
           instanceId: instance.instanceId,
@@ -65,7 +67,7 @@ function CakeModelGroup({
           position: instance.position,
         })),
       }),
-    [decorationInstances, coating.glazeVariant, config.shape, showCoating, visualTiers],
+    [decorationInstances, coating.glazeVariant, config.shape, showSelectedCoating, visualTiers],
   );
 
   return (
@@ -82,7 +84,7 @@ function CakeModelGroup({
         );
       })}
 
-      {showCoating && layout.glaze && (
+      {showSelectedCoating && layout.glaze && (
         <GlbGlaze
           shape={config.shape}
           glazeVariant={coating.glazeVariant}
@@ -128,7 +130,7 @@ export function GlbCakeModel() {
       coating={normalizedCoating}
       decorationInstances={normalizedDecorationInstances}
       ingredients={ingredients}
-      showCoating={currentStep >= 4}
+      showCoating={currentStep >= 4 && Boolean(normalizedCoating.coatingId)}
     />
   );
 }

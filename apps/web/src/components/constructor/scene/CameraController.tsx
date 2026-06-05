@@ -52,6 +52,7 @@ export function CameraController() {
   const safeLayers = Array.isArray(layers) ? layers : [];
   const safeDecorationInstances = Array.isArray(decorationInstances) ? decorationInstances : [];
   const safeCoating = normalizeCoating(coating);
+  const glazeVariant = safeCoating.coatingId ? safeCoating.glazeVariant : '';
 
   const totalHeight = useMemo(() => {
     const layout = buildCakeStackLayout({
@@ -59,7 +60,7 @@ export function CameraController() {
       tiers: safeLayers.slice(0, tierCount).map((layer) => ({
         baseVariant: ingredients?.bases.find((base) => base.id === layer.baseId)?.visualKey ?? 'default',
       })),
-      glazeVariant: safeCoating.glazeVariant,
+      glazeVariant,
       withDrips: false,
       decorations: safeDecorationInstances.map((instance) => ({
         instanceId: instance.instanceId,
@@ -70,8 +71,8 @@ export function CameraController() {
 
     return Math.max(layout.totalHeight, 0.6);
   }, [
+    glazeVariant,
     ingredients,
-    safeCoating.glazeVariant,
     safeDecorationInstances,
     safeLayers,
     shape,

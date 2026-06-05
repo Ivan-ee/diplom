@@ -14,7 +14,7 @@ interface ConstructorDecorationDto {
 export interface ConstructorOrderDto {
   shape: string;
   tiers: ConstructorTierDto[];
-  coatingId: string;
+  coatingId?: string;
   decorations?: ConstructorDecorationDto[];
   inscription?: string;
 }
@@ -63,7 +63,7 @@ export function cakeConfigToOrderDto(
       fillingId: layer.fillingId,
       weight: Math.round(layer.weight / 100),
     })),
-    coatingId: cakeConfig.coating.coatingId,
+    ...(cakeConfig.coating.coatingId ? { coatingId: cakeConfig.coating.coatingId } : {}),
     ...(decorations.length > 0 && { decorations }),
     ...(cakeConfig.inscription && { inscription: cakeConfig.inscription }),
   };

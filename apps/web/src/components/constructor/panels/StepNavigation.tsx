@@ -36,7 +36,6 @@ function useStepValid(): boolean {
   const currentStep = useConstructorStore((s) => s.currentStep);
   const shape = useConstructorStore((s) => s.shape);
   const layers = useConstructorStore((s) => s.layers);
-  const coating = useConstructorStore((s) => s.coating);
 
   switch (currentStep) {
     case 1:
@@ -46,7 +45,7 @@ function useStepValid(): boolean {
     case 3:
       return layers.every((l) => !!l.fillingId);
     case 4:
-      return !!coating.coatingId && !!coating.glazeVariant;
+      return true;
     case 5:
       return true;
     default:

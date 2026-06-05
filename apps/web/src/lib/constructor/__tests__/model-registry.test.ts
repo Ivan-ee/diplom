@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getMockIngredients } from '@/lib/constructor/mock-ingredients';
-import { buildCakeStackLayout } from '@/lib/constructor/geometry';
+import { buildCakeStackLayout, DECORATION_LIFT } from '@/lib/constructor/geometry';
 import {
   getDeclaredModelPaths,
   getDecoModelPath,
@@ -370,6 +370,8 @@ describe('constructor model registry', () => {
     });
 
     expect(layout.tiers).toHaveLength(3);
+    expect(layout.glaze).toBeNull();
+    expect(layout.decorationBaseY).toBeCloseTo(layout.topTierTopY + DECORATION_LIFT, 5);
 
     const tierHeight = getModelVisualHeight('/models/cube/CakeBigLayer.glb') ?? 0;
     layout.tiers.forEach((tier, index) => {

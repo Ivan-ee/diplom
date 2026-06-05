@@ -219,7 +219,7 @@ const DEFAULT_LAYER: CakeLayer = {
 const DEFAULT_COATING: CakeCoating = {
   type: 'cream',
   coatingId: '',
-  glazeVariant: 'cream',
+  glazeVariant: '',
   withDrips: false,
   colorMode: 'solid' as ColorMode,
   visual: {
@@ -253,7 +253,7 @@ function enforceTopDecorationSingleton(instances: DecorationInstance[]): Decorat
 }
 
 export function normalizeCoating(coating?: Partial<CakeCoating> | null): CakeCoating {
-  const glazeVariant = coating?.glazeVariant ?? DEFAULT_COATING.glazeVariant;
+  const glazeVariant = coating?.coatingId ? (coating?.glazeVariant ?? DEFAULT_COATING.glazeVariant) : '';
 
   return {
     type: coating?.type ?? DEFAULT_COATING.type,
@@ -585,13 +585,15 @@ function repairSelectionsForCompatibility(
     ),
     fillingId: findCompatibleFillingId(ingredients.fillings, compatibleShape, layer.fillingId),
   }));
-  const compatibleCoating = findCompatibleCoating(
-    ingredients.coatings,
-    compatibleShape,
-    normalizedCoating.coatingId,
-    normalizedCoating.glazeVariant,
-  );
-  const coating = compatibleCoating
+  const compatibleCoating = normalizedCoating.coatingId
+    ? findCompatibleCoating(
+        ingredients.coatings,
+        compatibleShape,
+        normalizedCoating.coatingId,
+        normalizedCoating.glazeVariant,
+      )
+    : null;
+  const coating = normalizedCoating.coatingId && compatibleCoating
     ? normalizeCoating({
         ...normalizedCoating,
         type: compatibleCoating.type,
@@ -628,27 +630,10 @@ function applyDefaultSelections(
   ingredients: ConstructorCatalog,
 ): Partial<ConstructorState> {
   const updates: Partial<ConstructorState> = {};
-  const normalizedCoating = normalizeCoating(state.coating);
   const compatibleShape = findCompatibleShape(ingredients.bases, state.shape, ingredients);
 
   if (compatibleShape !== state.shape) {
     updates.shape = compatibleShape;
-  }
-
-  if (!normalizedCoating.coatingId && ingredients.coatings.length > 0) {
-    const defaultCoating = findCompatibleCoating(ingredients.coatings, compatibleShape) ??
-      ingredients.coatings.find((c) => c.type === 'cream') ??
-      ingredients.coatings[0];
-    updates.coating = {
-      ...normalizedCoating,
-      coatingId: defaultCoating.id,
-      glazeVariant: defaultCoating.visualKey,
-      withDrips: false,
-      visual: {
-        ...normalizedCoating.visual,
-        primaryColor: getGlazeColor(defaultCoating.visualKey),
-      },
-    };
   }
 
   const layersForDefaults = asArray(state.layers);
@@ -722,6 +707,8 @@ function buildPricingPayload(state: ConstructorState) {
         }))
       : undefined;
 
+  const coatingId = normalizeCoating(state.coating).coatingId;
+
   return {
     shape: state.shape,
     tiers: asArray(state.layers).map((layer) => ({
@@ -729,7 +716,7 @@ function buildPricingPayload(state: ConstructorState) {
       fillingId: layer.fillingId,
       weight: Math.round(layer.weight / 100),
     })),
-    coatingId: normalizeCoating(state.coating).coatingId,
+    ...(coatingId ? { coatingId } : {}),
     ...(decorations && decorations.length > 0 ? { decorations } : {}),
     ...(state.inscription?.trim() ? { inscription: state.inscription.trim() } : {}),
   };
@@ -739,8 +726,7 @@ function hasCompletePricingPayload(state: ConstructorState): boolean {
   const layers = asArray(state.layers);
   return (
     layers.length > 0 &&
-    layers.every((layer) => layer.baseId && layer.fillingId && layer.weight > 0) &&
-    Boolean(normalizeCoating(state.coating).coatingId)
+    layers.every((layer) => layer.baseId && layer.fillingId && layer.weight > 0)
   );
 }
 
@@ -878,6 +864,13 @@ export const useConstructorStore = create<ConstructorState>()(
       },
 
       setCoatingId: (id) => {
+        if (!id) {
+          set({ coating: { ...DEFAULT_COATING } });
+          get().recalculatePrice();
+          markPriceStale(set);
+          return;
+        }
+
         const { ingredients, shape } = get();
         const coating = ingredients?.coatings.find((item) => item.id === id);
         if (
@@ -902,6 +895,11 @@ export const useConstructorStore = create<ConstructorState>()(
       },
 
       setGlazeVariant: (variant) => {
+        if (!variant) {
+          get().setCoatingId('');
+          return;
+        }
+
         const { shape, ingredients } = get();
         if (!isGlazeVisualKeyAvailable(shape as RegistryCakeShape, variant)) return;
         const matchingCoating = ingredients?.coatings.find(
@@ -1122,7 +1120,7 @@ export const useConstructorStore = create<ConstructorState>()(
           set({
             pricingStatus: 'stale',
             priceBreakdown: null,
-            priceError: 'Заполните основу, начинку и покрытие',
+            priceError: 'Заполните основу и начинку',
             priceVerifiedAt: null,
           });
           return;

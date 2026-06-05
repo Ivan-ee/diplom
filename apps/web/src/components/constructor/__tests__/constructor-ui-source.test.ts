@@ -91,6 +91,8 @@ describe('constructor UI source regressions', () => {
     const stepCoating = source('src/components/constructor/panels/StepCoating.tsx');
 
     expect(stepCoating).toContain('visibleCoatings');
+    expect(stepCoating).toContain('Без покрытия');
+    expect(stepCoating).toContain("setCoatingId('')");
     expect(stepCoating).toContain('isGlazeVisualKeyAvailable(shape as CakeShape, coating.visualKey)');
     expect(stepCoating).not.toContain('const coatingTypes');
     expect(stepCoating).not.toContain('handleTypeSelect');

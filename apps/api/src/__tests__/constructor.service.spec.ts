@@ -480,6 +480,25 @@ describe('ConstructorService.calculatePrice', () => {
       expect(result.totalPrice).toBe(35_000);
     });
 
+    it('allows a constructor cake without coating and omits coating from breakdown', async () => {
+      const db = buildDbMock(
+        [makeBase()],
+        [makeFilling()],
+        [],
+        [],
+      );
+      const service = buildService(db);
+
+      const result = await service.calculatePrice({
+        shape: 'circle',
+        tiers: [{ baseId: BASE_ID, fillingId: FILLING_ID, weight: 10 }],
+      });
+
+      expect(result.totalPrice).toBe(30_000);
+      expect(result.breakdown.subtotal).toBe(30_000);
+      expect(result.breakdown.coating).toBeUndefined();
+    });
+
     it('returns correct breakdown structure for 1-tier circle cake', async () => {
       const db = buildDbMock(
         [makeBase()],
@@ -712,7 +731,7 @@ describe('ConstructorService.calculatePrice', () => {
         coatingId: COATING_ID,
       });
 
-      expect(result.breakdown.coating.cost).toBe(10_000);
+      expect(result.breakdown.coating?.cost).toBe(10_000);
       expect(result.breakdown.totalWeightKg).toBe(2.0);
     });
   });

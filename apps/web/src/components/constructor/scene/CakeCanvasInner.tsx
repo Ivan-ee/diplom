@@ -37,6 +37,7 @@ function DecorationDropTarget() {
   const addDecorationInstance = useConstructorStore((s) => s.addDecorationInstance);
   const safeLayers = Array.isArray(layers) ? layers : [];
   const safeCoating = normalizeCoating(coating);
+  const glazeVariant = safeCoating.coatingId ? safeCoating.glazeVariant : '';
 
   const decorationBaseY = useMemo(() => {
     const layout = buildCakeStackLayout({
@@ -44,13 +45,13 @@ function DecorationDropTarget() {
       tiers: safeLayers.slice(0, tierCount).map((layer) => ({
         baseVariant: ingredients?.bases.find((base) => base.id === layer.baseId)?.visualKey ?? 'default',
       })),
-      glazeVariant: safeCoating.glazeVariant,
+      glazeVariant,
       withDrips: false,
       decorations: [],
     });
 
     return layout.decorationBaseY;
-  }, [ingredients, safeCoating.glazeVariant, safeLayers, shape, tierCount]);
+  }, [glazeVariant, ingredients, safeLayers, shape, tierCount]);
 
   useEffect(() => {
     const canvas = gl.domElement;

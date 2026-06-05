@@ -63,9 +63,9 @@ export interface CakeConfigData {
   layers: Array<{ baseId: string; fillingId: string; weight: number; baseName?: string; fillingName?: string }>;
   coating: {
     type: string;
-    coatingId: string;
+    coatingId?: string;
     coatingName?: string;
-    glazeVariant: string;
+    glazeVariant?: string;
     withDrips: boolean;
     colorMode?: string;
     secondaryGlazeVariant?: string;
@@ -125,8 +125,8 @@ export interface CakeLayer {
 /** Full coating configuration for one cake. */
 export interface CakeCoating {
   type: CoatingType;
-  coatingId: string;
-  glazeVariant: string;
+  coatingId?: string;
+  glazeVariant?: string;
   withDrips: boolean;
   visual?: { mode: 'solid' | 'gradient' | 'splashes'; primaryColor: string; secondaryColor?: string; splashes?: boolean };
 }

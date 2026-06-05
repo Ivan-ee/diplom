@@ -12,6 +12,7 @@ import {
   MaxLength,
   Min,
   ValidateNested,
+  ValidateIf,
 } from 'class-validator';
 
 export class TierConfigDto {
@@ -62,9 +63,10 @@ export class CalculatePriceDto {
   @Type(() => TierConfigDto)
   tiers!: TierConfigDto[];
 
-  @ApiProperty({ description: 'Constructor coating id' })
+  @ApiPropertyOptional({ description: 'Constructor coating id; omit for no coating' })
+  @ValidateIf((_, value) => value !== undefined && value !== null && value !== '')
   @IsUUID()
-  coatingId!: string;
+  coatingId?: string | null;
 
   @ApiPropertyOptional({
     description: 'Selected decorations with quantities',

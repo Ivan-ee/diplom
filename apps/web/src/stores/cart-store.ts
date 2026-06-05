@@ -33,9 +33,9 @@ export interface CakeConfigData {
   }>;
   coating: {
     type: string;
-    coatingId: string;
+    coatingId?: string;
     coatingName?: string;
-    glazeVariant: string;
+    glazeVariant?: string;
     withDrips: boolean;
     colorMode?: string;
     secondaryGlazeVariant?: string;

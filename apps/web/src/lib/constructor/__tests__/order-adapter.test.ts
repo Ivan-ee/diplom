@@ -50,6 +50,26 @@ describe('cakeConfigToOrderDto', () => {
     expect(dto).not.toHaveProperty('hasCandle');
   });
 
+  it('omits coatingId when the constructor config has no selected coating', () => {
+    const dto = cakeConfigToOrderDto(
+      makeConfig({
+        coating: {
+          type: 'cream',
+          coatingId: '',
+          glazeVariant: '',
+          withDrips: false,
+          colorMode: 'solid',
+          visual: {
+            mode: 'solid',
+            primaryColor: '#FFF5E0',
+          },
+        },
+      }),
+    );
+
+    expect(dto).not.toHaveProperty('coatingId');
+  });
+
   it('omits visual-only legacy decoration variants instead of sending invalid UUIDs', () => {
     const dto = cakeConfigToOrderDto(
       makeConfig({

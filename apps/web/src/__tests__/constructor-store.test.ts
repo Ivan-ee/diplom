@@ -16,7 +16,7 @@ const resetStore = () => useConstructorStore.setState({
   coating: {
     type: 'cream',
     coatingId: '',
-    glazeVariant: 'cream',
+    glazeVariant: '',
     withDrips: false,
     colorMode: 'solid',
     visual: {
@@ -62,6 +62,8 @@ describe('constructor-store', () => {
     expect(state.ingredients).toBeNull();
     expect(state.totalPrice).toBe(0);
     expect(state.isLoading).toBe(false);
+    expect(state.coating.coatingId).toBe('');
+    expect(state.coating.glazeVariant).toBe('');
   });
 
   // ── setShape ───────────────────────────────────────────────────────────────
@@ -278,6 +280,38 @@ describe('constructor-store', () => {
 
     useConstructorStore.getState().recalculatePrice();
     expect(useConstructorStore.getState().totalPrice).toBe(145000);
+  });
+
+  it('clearing coating removes coating cost from the local price', () => {
+    const ingredients = getMockIngredients();
+
+    useConstructorStore.setState({
+      ingredients,
+      shape: 'circle',
+      tierCount: 1,
+      layers: [{ baseId: 'base-vanilla', fillingId: 'filling-strawberry', weight: 1000 }],
+      coating: {
+        type: 'cream',
+        coatingId: 'coating-cream',
+        glazeVariant: 'cream',
+        withDrips: false,
+        colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
+      },
+      activeDecorations: [],
+      selectedDecorations: [],
+      decorationInstances: [],
+    });
+
+    useConstructorStore.getState().setCoatingId('');
+
+    const state = useConstructorStore.getState();
+    expect(state.coating.coatingId).toBe('');
+    expect(state.coating.glazeVariant).toBe('');
+    expect(state.totalPrice).toBe(125000);
   });
 
   it('recalculatePrice applies shape surcharge correctly', () => {
@@ -535,6 +569,8 @@ describe('constructor-store', () => {
       mode: 'solid',
       primaryColor: '#FFF5E0',
     });
+    expect(state.coating.coatingId).toBe('');
+    expect(state.coating.glazeVariant).toBe('');
     expect(state.hasCandle).toBe(false);
   });
 
@@ -652,6 +688,57 @@ describe('constructor-store', () => {
     });
   });
 
+  it('syncServerPrice omits coatingId when no coating is selected', async () => {
+    const ingredients = getMockIngredients();
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          totalPrice: 125000,
+          breakdown: {
+            tiers: [],
+            decorations: [],
+            subtotal: 125000,
+            shapeSurcharge: 0,
+            tierSurcharge: 0,
+            totalPrice: 125000,
+            totalWeightKg: 1,
+          },
+        },
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    useConstructorStore.setState({
+      ingredients,
+      shape: 'circle',
+      tierCount: 1,
+      layers: [{ baseId: 'base-chocolate', fillingId: 'filling-strawberry', weight: 1000 }],
+      coating: {
+        type: 'cream',
+        coatingId: '',
+        glazeVariant: '',
+        withDrips: false,
+        colorMode: 'solid',
+        visual: {
+          mode: 'solid',
+          primaryColor: '#FFF5E0',
+        },
+      },
+      activeDecorations: [],
+      selectedDecorations: [],
+      decorationInstances: [],
+    });
+
+    await useConstructorStore.getState().syncServerPrice();
+
+    const [, requestInit] = fetchMock.mock.calls.at(-1) as unknown as [string, RequestInit];
+    const requestBody = JSON.parse(String(requestInit.body));
+    expect(requestBody.coatingId).toBeUndefined();
+    expect(useConstructorStore.getState().pricingStatus).toBe('verified');
+  });
+
   it('recalculatePrice returns 0 when ingredients are null', () => {
     useConstructorStore.setState({ ingredients: null });
     useConstructorStore.getState().recalculatePrice();
@@ -691,6 +778,7 @@ describe('constructor-store', () => {
       baseId: 'base-chocolate',
       fillingId: 'filling-strawberry',
     });
-    expect(state.coating.coatingId).toBe('coating-cream');
+    expect(state.coating.coatingId).toBe('');
+    expect(state.coating.glazeVariant).toBe('');
   });
 });

@@ -38,6 +38,42 @@ export function StepCoating() {
           Вид покрытия
         </h3>
         <div className="flex flex-col gap-2">
+          <motion.button
+            onClick={() => setCoatingId('')}
+            className={cn(
+              'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
+              !coating.coatingId
+                ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5'
+                : 'border-[var(--border-default)] bg-[var(--surface-elevated)] hover:border-[var(--color-caramel)]/40 hover:shadow-sm'
+            )}
+            whileTap={{ scale: 0.985 }}
+          >
+            <div className="w-10 h-10 rounded-lg flex-shrink-0 border border-dashed border-[var(--border-default)] bg-[var(--surface-elevated)]" />
+
+            <div className="flex-1 min-w-0">
+              <p className={cn(
+                'text-sm font-semibold leading-tight',
+                !coating.coatingId ? 'text-[var(--color-caramel)]' : 'text-[var(--color-graphite)]'
+              )}>
+                Без покрытия
+              </p>
+              <p className="text-xs text-[var(--color-graphite-light)] mt-0.5 leading-snug">
+                Только выбранный вид бисквита
+              </p>
+            </div>
+
+            <div className="flex-shrink-0 text-right pr-7">
+              <p className="text-sm font-semibold text-[var(--color-graphite)]">0 ₽</p>
+              <p className="text-[10px] text-[var(--color-graphite-light)]">без доплаты</p>
+            </div>
+
+            {!coating.coatingId && (
+              <div className="absolute right-3 top-3 w-5 h-5 rounded-full bg-[var(--color-caramel)] flex items-center justify-center shadow-sm">
+                <Check size={11} className="text-white" strokeWidth={3} />
+              </div>
+            )}
+          </motion.button>
+
           {visibleCoatings.map((coatingOption) => {
             const meta = glazeMetaById.get(coatingOption.visualKey);
             const isActive = coating.coatingId === coatingOption.id;
