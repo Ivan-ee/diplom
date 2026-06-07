@@ -98,4 +98,28 @@ describe('constructor scene GLB-only purity', () => {
     expect(glazeSource).not.toContain('visual.mode');
     expect(canvasSource).toContain('preloadGlazeModels(shape)');
   });
+
+  it('uses silhouette outline only as selected decoration UI', () => {
+    const sceneSources = readSceneSources();
+    const decorationSource = sceneSources.find(
+      ({ relativePath }) => relativePath === 'src/components/constructor/scene/GlbDecoration.tsx',
+    )?.source;
+    const canvasSource = sceneSources.find(
+      ({ relativePath }) => relativePath === 'src/components/constructor/scene/CakeCanvasInner.tsx',
+    )?.source;
+
+    expect(decorationSource).toBeDefined();
+    expect(decorationSource).toContain('Outlines');
+    expect(decorationSource).toContain('Clone');
+    expect(decorationSource).toContain('inject={outlineInjector}');
+    expect(canvasSource).toContain('onPointerMissed={handlePointerMissed}');
+    expect(canvasSource).toContain('selectDecorationInstance(null)');
+
+    const outlineLeaks = sceneSources.flatMap(({ relativePath, source }) =>
+      relativePath === 'src/components/constructor/scene/GlbDecoration.tsx' || !source.includes('Outlines')
+        ? []
+        : [relativePath],
+    );
+    expect(outlineLeaks).toEqual([]);
+  });
 });

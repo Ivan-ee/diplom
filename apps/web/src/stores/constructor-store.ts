@@ -2,7 +2,9 @@ import { create } from 'zustand';
 import { persist, subscribeWithSelector } from 'zustand/middleware';
 import { getMockIngredients } from '@/lib/constructor/mock-ingredients';
 import {
+  getDecorationAllowedSurfaces,
   getDecorationPlacementRule,
+  getDecorationReplacementGroup,
   getGlazeColor,
   isDecoVisualKeyAvailable,
   isFillVisualKeyAvailable,
@@ -10,6 +12,7 @@ import {
   isGlazeVisualKeyAvailable,
   type CakeShape as RegistryCakeShape,
 } from '@/lib/constructor/model-registry';
+import { buildCakeStackLayout, clampDecorationXZ } from '@/lib/constructor/geometry';
 
 export type CakeShape = 'circle' | 'square' | 'heart';
 export type TierCount = 1 | 2 | 3 | 4;
@@ -102,11 +105,27 @@ export interface DecorationPosition {
   z: number;
 }
 
+export interface DecorationRotation {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export type DecorationSurface = 'top' | 'side';
+
+export interface DecorationPlacement {
+  surface: DecorationSurface;
+  tierIndex: number;
+  normal: DecorationPosition;
+}
+
 export interface DecorationInstance {
   instanceId: string;
   decorationId: string;
   visualKey: string;
   position: DecorationPosition;
+  rotation?: DecorationRotation;
+  placement?: DecorationPlacement;
 }
 
 export interface ShapeInfo {
@@ -148,6 +167,7 @@ export interface ConstructorState {
   activeDecorations: string[];
   selectedDecorations: DecorationSelection[];
   decorationInstances: DecorationInstance[];
+  selectedDecorationInstanceId: string | null;
   hasCandle: boolean;
   inscription: string;
   ingredients: ConstructorCatalog | null;
@@ -174,8 +194,16 @@ export interface ConstructorState {
     visualKey: string,
     decorationId?: string,
     position?: Partial<DecorationPosition>,
+    placement?: Partial<DecorationPlacement>,
   ) => void;
-  moveDecorationInstance: (instanceId: string, position: Partial<DecorationPosition>) => void;
+  selectDecorationInstance: (instanceId: string | null) => void;
+  duplicateDecorationInstance: (instanceId: string) => void;
+  moveDecorationInstance: (
+    instanceId: string,
+    position: Partial<DecorationPosition>,
+    placement?: Partial<DecorationPlacement>,
+  ) => void;
+  rotateDecorationInstance: (instanceId: string, rotation: Partial<DecorationRotation>) => void;
   removeDecorationInstance: (instanceId: string) => void;
   removeDecoration: (variantId: string) => void;
   clearDecorations: () => void;
@@ -233,36 +261,17 @@ const DEFAULT_DECORATION_POSITION: Record<string, DecorationPosition> = {
   surfaceDecor: { x: 0, y: 0, z: 0 },
   candle: { x: 0, y: 0, z: 0.28 },
 };
+const DEFAULT_DECORATION_ROTATION: DecorationRotation = { x: 0, y: 0, z: 0 };
+const DEFAULT_TOP_DECORATION_NORMAL: DecorationPosition = { x: 0, y: 1, z: 0 };
+const DEFAULT_SIDE_DECORATION_NORMAL: DecorationPosition = { x: 1, y: 0, z: 0 };
 const SHAPE_ORDER: CakeShape[] = ['circle', 'square', 'heart'];
 
 function asArray<T>(value: T[] | null | undefined): T[] {
   return Array.isArray(value) ? value : [];
 }
 
-function enforceDecorationPlacementRules(instances: DecorationInstance[]): DecorationInstance[] {
-  const normalizedInstances = asArray(instances);
-  const lastIndexBySlot = new Map<string, number>();
-
-  normalizedInstances.forEach((instance, index) => {
-    lastIndexBySlot.set(getDecorationPlacementRule(instance.visualKey).slot, index);
-  });
-
-  return normalizedInstances.filter(
-    (instance, index) => lastIndexBySlot.get(getDecorationPlacementRule(instance.visualKey).slot) === index,
-  );
-}
-
-function enforceDecorationVariantPlacementRules(variantIds: string[]): string[] {
-  const normalizedVariantIds = asArray(variantIds);
-  const lastIndexBySlot = new Map<string, number>();
-
-  normalizedVariantIds.forEach((variantId, index) => {
-    lastIndexBySlot.set(getDecorationPlacementRule(variantId).slot, index);
-  });
-
-  return normalizedVariantIds.filter(
-    (variantId, index) => lastIndexBySlot.get(getDecorationPlacementRule(variantId).slot) === index,
-  );
+function uniqueDecorationKeys(variantIds: string[]): string[] {
+  return Array.from(new Set(asArray(variantIds).filter(Boolean)));
 }
 
 export function normalizeCoating(coating?: Partial<CakeCoating> | null): CakeCoating {
@@ -291,11 +300,11 @@ function normalizeConstructorStateFields(
   const activeDecorations = asArray(state.activeDecorations);
   const normalizedActiveDecorations =
     activeDecorations.length > 0
-      ? enforceDecorationVariantPlacementRules(activeDecorations)
+      ? uniqueDecorationKeys(activeDecorations)
       : legacyDecorVariant
-        ? enforceDecorationVariantPlacementRules([legacyDecorVariant])
+        ? uniqueDecorationKeys([legacyDecorVariant])
         : [];
-  const decorationInstances = enforceDecorationPlacementRules(asArray(state.decorationInstances));
+  const decorationInstances = normalizeDecorationInstances(asArray(state.decorationInstances), tierCount);
   const syncedDecorations = decorationInstances.length > 0
     ? syncDecorationState(decorationInstances)
     : {
@@ -310,6 +319,7 @@ function normalizeConstructorStateFields(
     activeDecorations: syncedDecorations.activeDecorations,
     selectedDecorations: syncedDecorations.selectedDecorations,
     decorationInstances,
+    selectedDecorationInstanceId: null,
     hasCandle: syncedDecorations.hasCandle,
     pricingStatus: 'stale',
     priceBreakdown: null,
@@ -370,6 +380,56 @@ function createDecorationInstanceId(): string {
   return `decor-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function getTopTierIndex(tierCount: number | null | undefined): number {
+  const normalizedTierCount = Number.isFinite(tierCount) ? Math.max(1, Math.trunc(Number(tierCount))) : 1;
+  return normalizedTierCount - 1;
+}
+
+function normalizeDecorationSurface(surface: unknown): DecorationSurface {
+  return surface === 'side' ? 'side' : 'top';
+}
+
+function normalizeDecorationNormal(
+  normal: Partial<DecorationPosition> | null | undefined,
+  surface: DecorationSurface,
+): DecorationPosition {
+  const fallback = surface === 'side' ? DEFAULT_SIDE_DECORATION_NORMAL : DEFAULT_TOP_DECORATION_NORMAL;
+  const raw = {
+    x: Number.isFinite(normal?.x) ? Number(normal?.x) : fallback.x,
+    y: Number.isFinite(normal?.y) ? Number(normal?.y) : fallback.y,
+    z: Number.isFinite(normal?.z) ? Number(normal?.z) : fallback.z,
+  };
+  const length = Math.hypot(raw.x, raw.y, raw.z);
+  if (length <= 0.0001) return fallback;
+
+  return {
+    x: raw.x / length,
+    y: raw.y / length,
+    z: raw.z / length,
+  };
+}
+
+function normalizeDecorationPlacement(
+  placement: Partial<DecorationPlacement> | null | undefined,
+  tierCount: number | null | undefined,
+): DecorationPlacement {
+  const surface = normalizeDecorationSurface(placement?.surface);
+  const hasKnownTierCount = Number.isFinite(tierCount);
+  const topTierIndex = getTopTierIndex(tierCount);
+  const rawTierIndex = Number.isFinite(placement?.tierIndex)
+    ? Math.max(0, Math.trunc(Number(placement?.tierIndex)))
+    : topTierIndex;
+  const tierIndex = hasKnownTierCount
+    ? Math.max(0, Math.min(topTierIndex, rawTierIndex))
+    : rawTierIndex;
+
+  return {
+    surface,
+    tierIndex,
+    normal: normalizeDecorationNormal(placement?.normal, surface),
+  };
+}
+
 function normalizeDecorationPosition(
   visualKey: string,
   position?: Partial<DecorationPosition>,
@@ -382,6 +442,73 @@ function normalizeDecorationPosition(
     y: position?.y ?? fallback.y,
     z: position?.z ?? fallback.z,
   };
+}
+
+function normalizeDecorationRotation(rotation?: Partial<DecorationRotation> | null): DecorationRotation {
+  return {
+    x: Number.isFinite(rotation?.x) ? Number(rotation?.x) : DEFAULT_DECORATION_ROTATION.x,
+    y: Number.isFinite(rotation?.y) ? Number(rotation?.y) : DEFAULT_DECORATION_ROTATION.y,
+    z: Number.isFinite(rotation?.z) ? Number(rotation?.z) : DEFAULT_DECORATION_ROTATION.z,
+  };
+}
+
+function normalizeDecorationInstance(instance: DecorationInstance, tierCount?: number): DecorationInstance {
+  return {
+    ...instance,
+    position: normalizeDecorationPosition(instance.visualKey, instance.position),
+    rotation: normalizeDecorationRotation(instance.rotation),
+    placement: normalizeDecorationPlacement(instance.placement, tierCount),
+  };
+}
+
+function compactDecorationSingletonGroups(instances: DecorationInstance[]): DecorationInstance[] {
+  const result: DecorationInstance[] = [];
+
+  for (const instance of asArray(instances)) {
+    const replacementGroup = getDecorationReplacementGroup(instance.visualKey);
+    if (replacementGroup) {
+      const existingIndex = result.findIndex(
+        (candidate) => getDecorationReplacementGroup(candidate.visualKey) === replacementGroup,
+      );
+      if (existingIndex >= 0) {
+        result.splice(existingIndex, 1);
+      }
+    }
+    result.push(instance);
+  }
+
+  return result;
+}
+
+function normalizeDecorationInstances(instances: DecorationInstance[], tierCount?: number): DecorationInstance[] {
+  return compactDecorationSingletonGroups(
+    asArray(instances).map((instance) => {
+      const normalized = normalizeDecorationInstance(instance, tierCount);
+      if (isDecorationPlacementAllowed(normalized.visualKey, normalized.placement)) {
+        return normalized;
+      }
+
+      return {
+        ...normalized,
+        placement: normalizeDecorationPlacement(
+          {
+            surface: 'top',
+            tierIndex: normalized.placement?.tierIndex,
+            normal: DEFAULT_TOP_DECORATION_NORMAL,
+          },
+          tierCount,
+        ),
+      };
+    }),
+  );
+}
+
+function isDecorationPlacementAllowed(
+  visualKey: string,
+  placement: Partial<DecorationPlacement> | null | undefined,
+): boolean {
+  const surface = normalizeDecorationSurface(placement?.surface);
+  return getDecorationAllowedSurfaces(visualKey).includes(surface);
 }
 
 function activeDecorationKeysFromInstances(instances: DecorationInstance[]): string[] {
@@ -418,6 +545,66 @@ function syncDecorationState(instances: DecorationInstance[]): Pick<
     activeDecorations,
     selectedDecorations: groupDecorationInstances(normalizedInstances),
     hasCandle: activeDecorations.includes('candle'),
+  };
+}
+
+function getLayerBaseVariant(layer: CakeLayer, ingredients: ConstructorCatalog | null): string {
+  return ingredients?.bases.find((base) => base.id === layer.baseId)?.visualKey ?? 'default';
+}
+
+function getDecorationBaseYForState(
+  state: Pick<ConstructorState, 'shape' | 'tierCount' | 'layers' | 'coating' | 'ingredients'>,
+): number {
+  const coating = normalizeCoating(state.coating);
+  const layout = buildCakeStackLayout({
+    shape: state.shape as RegistryCakeShape,
+    tiers: buildLayers(state.tierCount, asArray(state.layers)).map((layer) => ({
+      baseVariant: getLayerBaseVariant(layer, state.ingredients),
+    })),
+    glazeVariant: coating.coatingId ? coating.glazeVariant : '',
+    withDrips: false,
+    decorations: [],
+  });
+
+  return layout.decorationBaseY;
+}
+
+function withDecorationBaseY(
+  instances: DecorationInstance[],
+  decorationBaseY: number,
+  tierCount?: number,
+): DecorationInstance[] {
+  return normalizeDecorationInstances(instances, tierCount).map((instance) => ({
+    ...instance,
+    position: {
+      ...instance.position,
+      y: instance.placement?.surface === 'side' ? instance.position.y : decorationBaseY,
+    },
+  }));
+}
+
+function createDefaultDecorationPosition(
+  visualKey: string,
+  instances: DecorationInstance[],
+  shape: CakeShape,
+  decorationBaseY: number,
+): DecorationPosition {
+  const normalizedInstances = asArray(instances);
+  const slot = getDecorationPlacementRule(visualKey).slot;
+  const fallback = DEFAULT_DECORATION_POSITION[slot] ?? DEFAULT_DECORATION_POSITION.surfaceDecor;
+  const index = normalizedInstances.length;
+  const angle = index * 2.399963229728653;
+  const radius = Math.min(0.68, 0.16 + 0.075 * Math.sqrt(index));
+  const clamped = clampDecorationXZ(
+    shape as RegistryCakeShape,
+    fallback.x + Math.cos(angle) * radius,
+    fallback.z + Math.sin(angle) * radius,
+  );
+
+  return {
+    x: clamped.x,
+    y: decorationBaseY,
+    z: clamped.z,
   };
 }
 
@@ -502,6 +689,7 @@ function repairDecorationsForShape(
   decorationInstances: DecorationInstance[],
   decorations: IngredientDecoration[],
   shape: CakeShape,
+  tierCount: TierCount,
 ): {
   activeDecorations: string[];
   selectedDecorations: DecorationSelection[];
@@ -514,14 +702,17 @@ function repairDecorationsForShape(
   const normalizedDecorations = asArray(decorations);
 
   if (normalizedDecorationInstances.length > 0) {
-    const compatibleInstances = enforceDecorationPlacementRules(normalizedDecorationInstances.filter((instance) => {
-      const decoration = normalizedDecorations.find((item) => item.id === instance.decorationId);
-      return Boolean(
-        decoration?.available &&
-          decoration.visualKey === instance.visualKey &&
-          isDecoVisualKeyAvailable(registryShape, decoration.visualKey),
-      );
-    }));
+    const compatibleInstances = normalizeDecorationInstances(
+      normalizedDecorationInstances.filter((instance) => {
+        const decoration = normalizedDecorations.find((item) => item.id === instance.decorationId);
+        return Boolean(
+          decoration?.available &&
+            decoration.visualKey === instance.visualKey &&
+            isDecoVisualKeyAvailable(registryShape, decoration.visualKey),
+        );
+      }),
+      tierCount,
+    );
     const synced = syncDecorationState(compatibleInstances);
 
     return {
@@ -530,7 +721,7 @@ function repairDecorationsForShape(
     };
   }
 
-  const compatibleActiveDecorations = enforceDecorationVariantPlacementRules(
+  const compatibleActiveDecorations = uniqueDecorationKeys(
     normalizedActiveDecorations.filter((variantId) =>
       isDecoVisualKeyAvailable(registryShape, variantId),
     ),
@@ -582,10 +773,10 @@ function repairSelectionsForCompatibility(
   const normalizedDecorationInstances = asArray(state.decorationInstances);
 
   if (!ingredients) {
-    const decorationInstances = enforceDecorationPlacementRules(normalizedDecorationInstances);
+    const decorationInstances = normalizeDecorationInstances(normalizedDecorationInstances, state.tierCount);
     const activeDecorations = decorationInstances.length > 0
       ? activeDecorationKeysFromInstances(decorationInstances)
-      : enforceDecorationVariantPlacementRules(normalizedActiveDecorations);
+      : uniqueDecorationKeys(normalizedActiveDecorations);
     const selectedDecorations = decorationInstances.length > 0
       ? groupDecorationInstances(decorationInstances)
       : normalizedSelectedDecorations.filter((selection) =>
@@ -640,6 +831,7 @@ function repairSelectionsForCompatibility(
     normalizedDecorationInstances,
     ingredients.decorations,
     compatibleShape,
+    state.tierCount,
   );
 
   return {
@@ -683,7 +875,7 @@ function normalizeConfig(config: Partial<ConstructorConfig> & {
   maxInscription?: number;
 }): ConstructorConfig {
   return {
-    maxDecorations: config.maxDecorations ?? 20,
+    maxDecorations: config.maxDecorations ?? 40,
     maxInscriptionLength: config.maxInscriptionLength ?? config.maxInscription ?? 50,
     minWeightPerTier: config.minWeightPerTier ?? (config.minWeight ? config.minWeight * 1000 : 500),
     maxWeightPerTier: config.maxWeightPerTier ?? (config.maxWeight ? config.maxWeight * 1000 : 5000),
@@ -766,6 +958,17 @@ function markPriceStale(set: (partial: Partial<ConstructorState>) => void) {
   });
 }
 
+function refreshDecorationBaseY(
+  get: () => ConstructorState,
+  set: (partial: Partial<ConstructorState>) => void,
+) {
+  const instances = asArray(get().decorationInstances);
+  if (instances.length === 0) return;
+  set({
+    decorationInstances: withDecorationBaseY(instances, getDecorationBaseYForState(get()), get().tierCount),
+  });
+}
+
 function getCsrfToken(): string | null {
   if (typeof document === 'undefined') return null;
   const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
@@ -784,6 +987,7 @@ export const useConstructorStore = create<ConstructorState>()(
       activeDecorations: [],
       selectedDecorations: [],
       decorationInstances: [],
+      selectedDecorationInstanceId: null,
       hasCandle: false,
       inscription: '',
       ingredients: null,
@@ -801,8 +1005,29 @@ export const useConstructorStore = create<ConstructorState>()(
 
       setShape: (shape) => {
         const current = get();
+        const repaired = repairSelectionsForCompatibility({ ...current, shape }, current.ingredients);
+        const decorationBaseY = getDecorationBaseYForState({
+          ...current,
+          ...repaired,
+          shape: repaired.shape,
+          layers: repaired.layers,
+          coating: repaired.coating,
+        });
+        const decorationInstances = withDecorationBaseY(
+          repaired.decorationInstances,
+          decorationBaseY,
+          current.tierCount,
+        );
+        const selectedDecorationInstanceId =
+          current.selectedDecorationInstanceId &&
+          decorationInstances.some((instance) => instance.instanceId === current.selectedDecorationInstanceId)
+            ? current.selectedDecorationInstanceId
+            : null;
         set({
-          ...repairSelectionsForCompatibility({ ...current, shape }, current.ingredients),
+          ...repaired,
+          decorationInstances,
+          ...syncDecorationState(decorationInstances),
+          selectedDecorationInstanceId,
         });
         get().recalculatePrice();
         markPriceStale(set);
@@ -810,12 +1035,23 @@ export const useConstructorStore = create<ConstructorState>()(
 
       setTierCount: (count) => {
         const current = get();
+        const repaired = repairSelectionsForCompatibility(
+          { ...current, tierCount: count, layers: buildLayers(count, current.layers) },
+          current.ingredients,
+        );
+        const decorationBaseY = getDecorationBaseYForState({
+          ...current,
+          ...repaired,
+          tierCount: count,
+          layers: repaired.layers,
+          coating: repaired.coating,
+        });
+        const decorationInstances = withDecorationBaseY(repaired.decorationInstances, decorationBaseY, count);
         set({
           tierCount: count,
-          ...repairSelectionsForCompatibility(
-            { ...current, tierCount: count, layers: buildLayers(count, current.layers) },
-            current.ingredients,
-          ),
+          ...repaired,
+          decorationInstances,
+          ...syncDecorationState(decorationInstances),
         });
         get().recalculatePrice();
         markPriceStale(set);
@@ -834,6 +1070,7 @@ export const useConstructorStore = create<ConstructorState>()(
           }
           layers[tierIndex] = { ...layers[tierIndex], baseId };
           set({ layers });
+          refreshDecorationBaseY(get, set);
           get().recalculatePrice();
           markPriceStale(set);
         }
@@ -887,6 +1124,7 @@ export const useConstructorStore = create<ConstructorState>()(
             }),
           };
         });
+        refreshDecorationBaseY(get, set);
         get().recalculatePrice();
         markPriceStale(set);
       },
@@ -894,6 +1132,7 @@ export const useConstructorStore = create<ConstructorState>()(
       setCoatingId: (id) => {
         if (!id) {
           set({ coating: { ...DEFAULT_COATING } });
+          refreshDecorationBaseY(get, set);
           get().recalculatePrice();
           markPriceStale(set);
           return;
@@ -918,6 +1157,7 @@ export const useConstructorStore = create<ConstructorState>()(
             }),
           };
         });
+        refreshDecorationBaseY(get, set);
         get().recalculatePrice();
         markPriceStale(set);
       },
@@ -944,6 +1184,7 @@ export const useConstructorStore = create<ConstructorState>()(
             }),
           };
         });
+        refreshDecorationBaseY(get, set);
         markPriceStale(set);
       },
 
@@ -951,50 +1192,158 @@ export const useConstructorStore = create<ConstructorState>()(
         get().addDecorationInstance(variantId, decorationId);
       },
 
-      addDecorationInstance: (visualKey, decorationId, position) => {
-        const { ingredients, shape } = get();
-        const decorationInstances = asArray(get().decorationInstances);
-        const placementRule = getDecorationPlacementRule(visualKey);
-        const retainedInstances = decorationInstances.filter(
-          (instance) => getDecorationPlacementRule(instance.visualKey).slot !== placementRule.slot,
-        );
-        const max = ingredients?.config?.maxDecorations ?? 3;
-        if (retainedInstances.length >= max) return;
+      addDecorationInstance: (visualKey, decorationId, position, placement) => {
+        const { ingredients, shape, tierCount } = get();
+        const decorationInstances = normalizeDecorationInstances(asArray(get().decorationInstances), tierCount);
+        const normalizedPlacement = normalizeDecorationPlacement(placement, tierCount);
+        if (!isDecorationPlacementAllowed(visualKey, normalizedPlacement)) return;
+
+        const replacementGroup = getDecorationReplacementGroup(visualKey);
+        const baseInstances = replacementGroup
+          ? decorationInstances.filter(
+              (instance) => getDecorationReplacementGroup(instance.visualKey) !== replacementGroup,
+            )
+          : decorationInstances;
+        const max = ingredients?.config?.maxDecorations ?? 40;
+        if (baseInstances.length >= max) return;
         if (!isDecoVisualKeyAvailable(shape as RegistryCakeShape, visualKey)) return;
 
         const selectedDecoration = createDecorationSelection(visualKey, ingredients?.decorations ?? [], decorationId);
         if (!selectedDecoration) return;
+        const decorationBaseY = getDecorationBaseYForState(get());
+        const instanceId = createDecorationInstanceId();
+        const shouldClampPosition = normalizedPlacement.surface === 'top';
+        const nextPosition = position
+          ? {
+              ...normalizeDecorationPosition(visualKey, position),
+              ...(shouldClampPosition
+                ? clampDecorationXZ(shape as RegistryCakeShape, position.x ?? 0, position.z ?? 0)
+                : {
+                    x: position.x ?? 0,
+                    z: position.z ?? 0,
+                  }),
+              y: position.y ?? decorationBaseY,
+            }
+          : createDefaultDecorationPosition(visualKey, decorationInstances, shape, decorationBaseY);
         const nextInstances: DecorationInstance[] = [
-          ...retainedInstances,
+          ...baseInstances,
           {
-            instanceId: createDecorationInstanceId(),
+            instanceId,
             decorationId: selectedDecoration.decorationId,
             visualKey,
-            position: normalizeDecorationPosition(visualKey, position),
+            position: nextPosition,
+            rotation: { ...DEFAULT_DECORATION_ROTATION },
+            placement: normalizedPlacement,
           },
         ];
         set({
           decorationInstances: nextInstances,
+          selectedDecorationInstanceId: instanceId,
           ...syncDecorationState(nextInstances),
         });
         get().recalculatePrice();
         markPriceStale(set);
       },
 
-      moveDecorationInstance: (instanceId, position) => {
-        const nextInstances = asArray(get().decorationInstances).map((instance) =>
+      selectDecorationInstance: (instanceId) => {
+        const exists = instanceId
+          ? asArray(get().decorationInstances).some((instance) => instance.instanceId === instanceId)
+          : false;
+        set({ selectedDecorationInstanceId: exists ? instanceId : null });
+      },
+
+      duplicateDecorationInstance: (instanceId) => {
+        const { ingredients, shape, tierCount } = get();
+        const decorationInstances = normalizeDecorationInstances(asArray(get().decorationInstances), tierCount);
+        const max = ingredients?.config?.maxDecorations ?? 40;
+        if (decorationInstances.length >= max) return;
+
+        const source = decorationInstances.find((instance) => instance.instanceId === instanceId);
+        if (!source || !isDecoVisualKeyAvailable(shape as RegistryCakeShape, source.visualKey)) return;
+        if (getDecorationReplacementGroup(source.visualKey)) return;
+
+        const nextId = createDecorationInstanceId();
+        const shifted =
+          source.placement?.surface === 'side'
+            ? { x: source.position.x, z: source.position.z }
+            : clampDecorationXZ(
+                shape as RegistryCakeShape,
+                source.position.x + 0.12,
+                source.position.z + 0.12,
+              );
+        const nextInstances = [
+          ...decorationInstances,
+          {
+            ...source,
+            instanceId: nextId,
+            position: {
+              ...source.position,
+              x: shifted.x,
+              z: shifted.z,
+              y: source.placement?.surface === 'side' ? source.position.y : getDecorationBaseYForState(get()),
+            },
+            rotation: normalizeDecorationRotation(source.rotation),
+            placement: source.placement
+              ? normalizeDecorationPlacement(source.placement, tierCount)
+              : undefined,
+          },
+        ];
+
+        set({
+          decorationInstances: nextInstances,
+          selectedDecorationInstanceId: nextId,
+          ...syncDecorationState(nextInstances),
+        });
+        get().recalculatePrice();
+        markPriceStale(set);
+      },
+
+      moveDecorationInstance: (instanceId, position, placement) => {
+        const shape = get().shape as RegistryCakeShape;
+        const nextInstances = asArray(get().decorationInstances).map((instance) => {
+          const normalized = normalizeDecorationInstance(instance, get().tierCount);
+          if (normalized.instanceId !== instanceId) return normalized;
+          const nextPlacement = placement
+            ? normalizeDecorationPlacement(placement, get().tierCount)
+            : normalized.placement;
+          if (!isDecorationPlacementAllowed(normalized.visualKey, nextPlacement)) return normalized;
+
+          const x = position.x ?? normalized.position.x;
+          const z = position.z ?? normalized.position.z;
+          const clamped = nextPlacement?.surface === 'side'
+            ? { x, z }
+            : clampDecorationXZ(shape, x, z);
+
+          return {
+            ...normalized,
+            ...(nextPlacement ? { placement: nextPlacement } : {}),
+            position: {
+              ...normalized.position,
+              ...position,
+              x: clamped.x,
+              z: clamped.z,
+            },
+          };
+        });
+        set({ decorationInstances: nextInstances });
+      },
+
+      rotateDecorationInstance: (instanceId, rotation) => {
+        const nextInstances = normalizeDecorationInstances(
+          asArray(get().decorationInstances),
+          get().tierCount,
+        ).map((instance) =>
           instance.instanceId === instanceId
             ? {
                 ...instance,
-                position: {
-                  ...instance.position,
-                  ...position,
-                },
+                rotation: normalizeDecorationRotation({
+                  ...instance.rotation,
+                  ...rotation,
+                }),
               }
             : instance,
         );
         set({ decorationInstances: nextInstances });
-        markPriceStale(set);
       },
 
       removeDecorationInstance: (instanceId) => {
@@ -1003,6 +1352,8 @@ export const useConstructorStore = create<ConstructorState>()(
         );
         set({
           decorationInstances: nextInstances,
+          selectedDecorationInstanceId:
+            get().selectedDecorationInstanceId === instanceId ? null : get().selectedDecorationInstanceId,
           ...syncDecorationState(nextInstances),
         });
         get().recalculatePrice();
@@ -1014,8 +1365,14 @@ export const useConstructorStore = create<ConstructorState>()(
         const normalizedDecorationInstances = asArray(decorationInstances);
         const nextInstances = normalizedDecorationInstances.filter((instance) => instance.visualKey !== variantId);
         if (normalizedDecorationInstances.length > 0) {
+          const selectedDecorationInstanceId =
+            get().selectedDecorationInstanceId &&
+            nextInstances.some((instance) => instance.instanceId === get().selectedDecorationInstanceId)
+              ? get().selectedDecorationInstanceId
+              : null;
           set({
             decorationInstances: nextInstances,
+            selectedDecorationInstanceId,
             ...syncDecorationState(nextInstances),
           });
           get().recalculatePrice();
@@ -1027,13 +1384,20 @@ export const useConstructorStore = create<ConstructorState>()(
           activeDecorations: asArray(activeDecorations).filter((id) => id !== variantId),
           selectedDecorations: asArray(selectedDecorations).filter((selection) => selection.variantId !== variantId),
           decorationInstances: [],
+          selectedDecorationInstanceId: null,
         });
         get().recalculatePrice();
         markPriceStale(set);
       },
 
       clearDecorations: () => {
-        set({ activeDecorations: [], selectedDecorations: [], decorationInstances: [], hasCandle: false });
+        set({
+          activeDecorations: [],
+          selectedDecorations: [],
+          decorationInstances: [],
+          selectedDecorationInstanceId: null,
+          hasCandle: false,
+        });
         get().recalculatePrice();
         markPriceStale(set);
       },
@@ -1213,6 +1577,7 @@ export const useConstructorStore = create<ConstructorState>()(
           activeDecorations: [],
           selectedDecorations: [],
           decorationInstances: [],
+          selectedDecorationInstanceId: null,
           hasCandle: false,
           inscription: '',
           totalPrice: 0,
@@ -1296,7 +1661,7 @@ export const useConstructorStore = create<ConstructorState>()(
         coating: normalizeCoating(state.coating),
         activeDecorations: asArray(state.activeDecorations),
         selectedDecorations: asArray(state.selectedDecorations),
-        decorationInstances: asArray(state.decorationInstances),
+        decorationInstances: normalizeDecorationInstances(asArray(state.decorationInstances), state.tierCount),
         hasCandle: asArray(state.decorationInstances).some((instance) => instance.visualKey === 'candle') ||
           asArray(state.activeDecorations).includes('candle') ||
           state.hasCandle,

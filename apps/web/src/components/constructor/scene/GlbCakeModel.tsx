@@ -65,6 +65,7 @@ function CakeModelGroup({
           instanceId: instance.instanceId,
           variantId: instance.visualKey,
           position: instance.position,
+          placement: instance.placement,
         })),
       }),
     [decorationInstances, coating.glazeVariant, config.shape, showSelectedCoating, visualTiers],
@@ -77,6 +78,7 @@ function CakeModelGroup({
         return (
           <GlbTier
             key={tier.index}
+            tierIndex={tier.index}
             shape={config.shape}
             baseVariant={visualTier?.baseVariant ?? 'default'}
             yOffset={tier.bottomY}
@@ -98,8 +100,15 @@ function CakeModelGroup({
           instanceId={decoration.instanceId}
           shape={config.shape}
           decorVariant={decoration.variantId}
-          yOffset={decoration.bottomY}
-          position={{ x: decoration.x, y: decoration.bottomY, z: decoration.z }}
+          position={{ x: decoration.x, y: decoration.y, z: decoration.z }}
+          placement={decoration.placement}
+          orientation={
+            decorationInstances.find((instance) => instance.instanceId === decoration.instanceId)?.rotation ?? {
+              x: 0,
+              y: 0,
+              z: 0,
+            }
+          }
         />
       ))}
     </>

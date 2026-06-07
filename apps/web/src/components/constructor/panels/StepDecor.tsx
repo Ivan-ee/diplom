@@ -2,10 +2,11 @@
 
 import { useEffect, useId, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Grip, Plus, Trash2, X } from 'lucide-react';
+import { Copy, Grip, Plus, Trash2, X } from 'lucide-react';
 import { useConstructorStore, type IngredientDecoration } from '@/stores/constructor-store';
 import {
-  getDecorationPlacementRule,
+  getDecorationAllowedSurfacesLabel,
+  getDecorationReplacementGroup,
   getDecorationUiCategory,
   getDecorationUiCategoryLabel,
   isDecoVisualKeyAvailable,
@@ -43,9 +44,12 @@ export function StepDecor() {
   const shape = useConstructorStore((s) => s.shape);
   const activeDecorations = useConstructorStore((s) => s.activeDecorations);
   const decorationInstances = useConstructorStore((s) => s.decorationInstances);
+  const selectedDecorationInstanceId = useConstructorStore((s) => s.selectedDecorationInstanceId);
   const inscription = useConstructorStore((s) => s.inscription);
   const ingredients = useConstructorStore((s) => s.ingredients);
   const addDecorationInstance = useConstructorStore((s) => s.addDecorationInstance);
+  const selectDecorationInstance = useConstructorStore((s) => s.selectDecorationInstance);
+  const duplicateDecorationInstance = useConstructorStore((s) => s.duplicateDecorationInstance);
   const removeDecorationInstance = useConstructorStore((s) => s.removeDecorationInstance);
   const clearDecorations = useConstructorStore((s) => s.clearDecorations);
   const setInscription = useConstructorStore((s) => s.setInscription);
@@ -71,7 +75,7 @@ export function StepDecor() {
     options: decoOptions.filter((option) => getDecorationUiCategory(option.visualKey) === category),
   })).filter((group) => group.options.length > 0);
   const maxLength = getConfig()?.maxInscriptionLength ?? 50;
-  const maxDecorations = getConfig()?.maxDecorations ?? 3;
+  const maxDecorations = getConfig()?.maxDecorations ?? 40;
   const isMaxReached = safeDecorationInstances.length >= maxDecorations;
 
   useEffect(() => () => pendingDragRef.current?.cleanup(), []);
@@ -103,24 +107,29 @@ export function StepDecor() {
               </h4>
               <div className="grid grid-cols-2 gap-2">
                 {group.options.map((option) => {
-                  const placementRule = getDecorationPlacementRule(option.visualKey);
-                  const hasSameSlot = safeDecorationInstances.some(
-                    (instance) => getDecorationPlacementRule(instance.visualKey).slot === placementRule.slot,
-                  );
-                  const isBlockedByMax = isMaxReached && !hasSameSlot;
                   const isActive = safeActiveDecorations.includes(option.visualKey);
+                  const placementLabel = getDecorationAllowedSurfacesLabel(option.visualKey);
                   const count = safeDecorationInstances.filter(
                     (instance) => instance.visualKey === option.visualKey,
                   ).length;
+                  const replacementGroup = getDecorationReplacementGroup(option.visualKey);
+                  const isReplacingSingleton = Boolean(
+                    replacementGroup &&
+                      safeDecorationInstances.some(
+                        (instance) => getDecorationReplacementGroup(instance.visualKey) === replacementGroup,
+                      ),
+                  );
+                  const isOptionDisabled = isMaxReached && !isReplacingSingleton;
                   const handleClick = () => {
                     if (suppressClickRef.current) {
                       suppressClickRef.current = false;
                       return;
                     }
+                    if (isOptionDisabled) return;
                     addDecorationInstance(option.visualKey, option.id);
                   };
                   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
-                    if (isBlockedByMax || event.button !== 0) return;
+                    if (isOptionDisabled || event.button !== 0) return;
 
                     pendingDragRef.current?.cleanup();
                     const dragState: PendingDecorationDrag = {
@@ -180,17 +189,17 @@ export function StepDecor() {
                       key={option.visualKey}
                       onClick={handleClick}
                       onPointerDown={handlePointerDown}
-                      disabled={isBlockedByMax}
+                      disabled={isOptionDisabled}
                       className={cn(
                         'relative flex flex-col items-start gap-1 p-3 rounded-xl border-2 text-left transition-all duration-150 ease-out cursor-pointer',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2',
                         isActive
                           ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/5 shadow-sm'
-                          : isBlockedByMax
+                          : isOptionDisabled
                             ? 'border-[var(--color-champagne)] opacity-40 cursor-not-allowed'
                             : 'border-[var(--color-champagne)] hover:border-[var(--color-caramel)]/40'
                       )}
-                      whileTap={!isBlockedByMax ? { scale: 0.985 } : undefined}
+                      whileTap={!isOptionDisabled ? { scale: 0.985 } : undefined}
                     >
                       <div className="flex items-start justify-between w-full gap-1">
                         <span className="text-xs font-semibold text-[var(--color-graphite)] leading-tight">
@@ -211,9 +220,14 @@ export function StepDecor() {
                           )}
                         </div>
                       </div>
-                      <span className="text-[10px] text-[var(--color-graphite-light)] leading-tight">
-                        {new Intl.NumberFormat('ru-RU').format(option.pricePerUnit / 100)} ₽
-                      </span>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] text-[var(--color-graphite-light)] leading-tight">
+                          {new Intl.NumberFormat('ru-RU').format(option.pricePerUnit / 100)} ₽
+                        </span>
+                        <span className="inline-flex items-center rounded-full border border-[var(--color-champagne)] bg-[var(--color-milk-white)] px-1.5 py-0.5 text-[9px] font-medium leading-none text-[var(--color-graphite-light)]">
+                          {placementLabel}
+                        </span>
+                      </div>
                       <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-[var(--color-graphite-light)]">
                         <Grip size={10} />
                         Нажмите или перетащите на торт
@@ -253,27 +267,52 @@ export function StepDecor() {
           <div className="flex flex-col gap-2">
             {safeDecorationInstances.map((instance, index) => {
               const decoration = ingredients?.decorations.find((item) => item.id === instance.decorationId);
+              const isSelected = selectedDecorationInstanceId === instance.instanceId;
+              const canDuplicate = !getDecorationReplacementGroup(instance.visualKey) && !isMaxReached;
               return (
                 <div
                   key={instance.instanceId}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-3 py-2"
+                  className={cn(
+                    'flex items-center justify-between gap-3 rounded-xl border px-3 py-2 transition-colors',
+                    isSelected
+                      ? 'border-[var(--color-caramel)] bg-[var(--color-caramel)]/10'
+                      : 'border-[var(--border-subtle)] bg-[var(--surface-secondary)]',
+                  )}
                 >
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold text-[var(--color-graphite)]">
-                      {decoration?.name ?? `Декор ${index + 1}`}
-                    </p>
-                    <p className="text-[10px] text-[var(--color-graphite-light)]">
-                      X {instance.position.x.toFixed(2)} · Z {instance.position.z.toFixed(2)}
-                    </p>
-                  </div>
                   <button
                     type="button"
-                    onClick={() => removeDecorationInstance(instance.instanceId)}
-                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[var(--border-subtle)] text-[var(--color-graphite-light)] transition hover:border-red-300 hover:text-red-500"
-                    aria-label="Удалить декор"
+                    onClick={() => selectDecorationInstance(instance.instanceId)}
+                    className="min-w-0 flex-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-caramel)] focus-visible:ring-offset-2"
                   >
-                    <Trash2 size={13} />
+                    <p className="truncate text-xs font-semibold text-[var(--color-graphite)]">
+                      {decoration?.name ?? `Декор ${index + 1}`} #{index + 1}
+                    </p>
+                    <p className="text-[10px] text-[var(--color-graphite-light)]">
+                      X {instance.position.x.toFixed(2)} · Z {instance.position.z.toFixed(2)} · R{' '}
+                      {Math.round(instance.rotation?.x ?? 0)}/{Math.round(instance.rotation?.y ?? 0)}/
+                      {Math.round(instance.rotation?.z ?? 0)}
+                    </p>
                   </button>
+                  <div className="flex flex-shrink-0 items-center gap-1">
+                    {canDuplicate && (
+                      <button
+                        type="button"
+                        onClick={() => duplicateDecorationInstance(instance.instanceId)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border-subtle)] text-[var(--color-graphite-light)] transition hover:border-[var(--color-caramel)]/40 hover:text-[var(--color-caramel)] disabled:opacity-40"
+                        aria-label="Дублировать декор"
+                      >
+                        <Copy size={13} />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeDecorationInstance(instance.instanceId)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border-subtle)] text-[var(--color-graphite-light)] transition hover:border-red-300 hover:text-red-500"
+                      aria-label="Удалить декор"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               );
             })}

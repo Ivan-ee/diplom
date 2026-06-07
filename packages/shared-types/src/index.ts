@@ -53,6 +53,30 @@ export type OrderItemType = 'product' | 'constructor';
 // Cart
 // ---------------------------------------------------------------------------
 
+export type CakeDecorationSurface = 'top' | 'side';
+
+export interface CakeDecorationVector3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface CakeDecorationPlacement {
+  surface: CakeDecorationSurface;
+  tierIndex: number;
+  normal: CakeDecorationVector3;
+}
+
+export interface CakeConfigDecorationInstance {
+  instanceId: string;
+  decorationId: string;
+  visualKey: string;
+  position: CakeDecorationVector3;
+  rotation?: CakeDecorationVector3;
+  placement?: CakeDecorationPlacement;
+  name?: string;
+}
+
 /**
  * Cake configuration payload stored inside a constructor cart item.
  * Mirrors: apps/web/src/stores/cart-store.ts (CakeConfigData)
@@ -73,13 +97,7 @@ export interface CakeConfigData {
   };
   activeDecorations: string[];
   selectedDecorations?: Array<{ variantId: string; decorationId: string; quantity: number; name?: string }>;
-  decorationInstances?: Array<{
-    instanceId: string;
-    decorationId: string;
-    visualKey: string;
-    position: { x: number; y: number; z: number };
-    name?: string;
-  }>;
+  decorationInstances?: CakeConfigDecorationInstance[];
   /** @deprecated Candles are paid decorations; kept optional for legacy persisted carts. */
   hasCandle?: boolean;
   inscription?: string;

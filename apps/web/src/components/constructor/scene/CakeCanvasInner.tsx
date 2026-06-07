@@ -1,18 +1,20 @@
 'use client';
 
-import { Suspense, useEffect, useMemo } from 'react';
+import { Suspense, useCallback, useEffect } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SceneSetup } from './SceneSetup';
 import { GlbCakeModel } from './GlbCakeModel';
+import { DecorationSceneProvider, useDecorationScene } from './DecorationSceneContext';
+import { findDecorationSurfacePlacement } from './decoration-placement';
 import { glRef } from '@/lib/screenshot-ref';
-import { normalizeCoating, useConstructorStore } from '@/stores/constructor-store';
-import { buildCakeStackLayout } from '@/lib/constructor/geometry';
+import { useConstructorStore } from '@/stores/constructor-store';
 import {
   DECORATION_POINTER_DROP_EVENT,
   type DecorationPointerDropDetail,
 } from '@/lib/constructor/decoration-drag';
-import { preloadFullTierModels, preloadGlazeModels } from '@/lib/constructor/model-loader';
+import { getDecorationAllowedSurfaces } from '@/lib/constructor/model-registry';
+import { preloadDecoModels, preloadFullTierModels, preloadGlazeModels } from '@/lib/constructor/model-loader';
 
 /** Registers the WebGL renderer into the module-level glRef so that
  *  components outside the R3F tree (e.g. StepNavigation) can take screenshots. */
@@ -29,35 +31,12 @@ function GlRegistrar() {
 
 function DecorationDropTarget() {
   const { gl, camera, raycaster } = useThree();
-  const shape = useConstructorStore((s) => s.shape);
-  const tierCount = useConstructorStore((s) => s.tierCount);
-  const layers = useConstructorStore((s) => s.layers);
-  const coating = useConstructorStore((s) => s.coating);
-  const ingredients = useConstructorStore((s) => s.ingredients);
+  const { getTierSurfaces } = useDecorationScene();
   const addDecorationInstance = useConstructorStore((s) => s.addDecorationInstance);
-  const safeLayers = Array.isArray(layers) ? layers : [];
-  const safeCoating = normalizeCoating(coating);
-  const glazeVariant = safeCoating.coatingId ? safeCoating.glazeVariant : '';
-
-  const decorationBaseY = useMemo(() => {
-    const layout = buildCakeStackLayout({
-      shape,
-      tiers: safeLayers.slice(0, tierCount).map((layer) => ({
-        baseVariant: ingredients?.bases.find((base) => base.id === layer.baseId)?.visualKey ?? 'default',
-      })),
-      glazeVariant,
-      withDrips: false,
-      decorations: [],
-    });
-
-    return layout.decorationBaseY;
-  }, [glazeVariant, ingredients, safeLayers, shape, tierCount]);
 
   useEffect(() => {
     const canvas = gl.domElement;
-    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -decorationBaseY);
     const pointer = new THREE.Vector2();
-    const point = new THREE.Vector3();
 
     const placeDecoration = (payload: DecorationPointerDropDetail) => {
       if (!payload.visualKey) return;
@@ -76,13 +55,15 @@ function DecorationDropTarget() {
       pointer.y = -(((payload.clientY - rect.top) / rect.height) * 2 - 1);
       raycaster.setFromCamera(pointer, camera);
 
-      if (!raycaster.ray.intersectPlane(plane, point)) return;
+      const hit = findDecorationSurfacePlacement(
+        raycaster.ray,
+        getTierSurfaces(),
+        getDecorationAllowedSurfaces(payload.visualKey),
+        raycaster,
+      );
 
-      addDecorationInstance(payload.visualKey, payload.decorationId, {
-        x: THREE.MathUtils.clamp(point.x, -0.9, 0.9),
-        y: decorationBaseY,
-        z: THREE.MathUtils.clamp(point.z, -0.9, 0.9),
-      });
+      if (!hit) return;
+      addDecorationInstance(payload.visualKey, payload.decorationId, hit.position, hit.placement);
     };
 
     const handlePointerDrop = (event: Event) => {
@@ -96,7 +77,7 @@ function DecorationDropTarget() {
     return () => {
       window.removeEventListener(DECORATION_POINTER_DROP_EVENT, handlePointerDrop);
     };
-  }, [addDecorationInstance, camera, decorationBaseY, gl.domElement, raycaster]);
+  }, [addDecorationInstance, camera, getTierSurfaces, gl.domElement, raycaster]);
 
   return null;
 }
@@ -107,12 +88,18 @@ function FullTierModelPreloader() {
   useEffect(() => {
     preloadFullTierModels(shape);
     preloadGlazeModels(shape);
+    preloadDecoModels(shape);
   }, [shape]);
 
   return null;
 }
 
 export default function CakeCanvasInner() {
+  const selectDecorationInstance = useConstructorStore((s) => s.selectDecorationInstance);
+  const handlePointerMissed = useCallback(() => {
+    selectDecorationInstance(null);
+  }, [selectDecorationInstance]);
+
   return (
     <Canvas
       dpr={[1, 2]}
@@ -125,14 +112,17 @@ export default function CakeCanvasInner() {
       camera={{ position: [0, 3, 6], fov: 45 }}
       shadows
       style={{ width: '100%', height: '100%' }}
+      onPointerMissed={handlePointerMissed}
     >
-      <GlRegistrar />
-      <FullTierModelPreloader />
-      <DecorationDropTarget />
-      <SceneSetup />
-      <Suspense fallback={null}>
-        <GlbCakeModel />
-      </Suspense>
+      <DecorationSceneProvider>
+        <GlRegistrar />
+        <FullTierModelPreloader />
+        <DecorationDropTarget />
+        <SceneSetup />
+        <Suspense fallback={null}>
+          <GlbCakeModel />
+        </Suspense>
+      </DecorationSceneProvider>
     </Canvas>
   );
 }

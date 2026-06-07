@@ -5,7 +5,10 @@ import { getMockIngredients } from '@/lib/constructor/mock-ingredients';
 import { buildCakeStackLayout, DECORATION_LIFT } from '@/lib/constructor/geometry';
 import {
   getDeclaredModelPaths,
+  getDecorationAllowedSurfaces,
+  getDecorationAllowedSurfacesLabel,
   getDecorationPlacementRule,
+  getDecorationReplacementGroup,
   getDecorationUiCategory,
   getDecorationUiCategoryLabel,
   getDecoModelPath,
@@ -200,20 +203,34 @@ describe('constructor model registry', () => {
   });
 
   it('classifies decoration placement slots and UI categories from the registry', () => {
-    expect(getDecorationPlacementRule('blueberry')).toEqual({
+    expect(getDecorationPlacementRule('blueberry')).toMatchObject({
       slot: 'surfaceDecor',
-      maxPerCake: 1,
+      maxPerCake: 40,
     });
-    expect(getDecorationPlacementRule('top-glaze-cream2')).toEqual({
+    expect(getDecorationPlacementRule('glaze-choco')).toMatchObject({
       slot: 'surfaceDecor',
-      maxPerCake: 1,
+      maxPerCake: 40,
+      replacementGroup: 'creamGlaze',
     });
-    expect(getDecorationPlacementRule('candle')).toEqual({
+    expect(getDecorationPlacementRule('top-glaze-cream2')).toMatchObject({
+      slot: 'surfaceDecor',
+      maxPerCake: 40,
+      replacementGroup: 'topDecor',
+    });
+    expect(getDecorationPlacementRule('candle')).toMatchObject({
       slot: 'candle',
-      maxPerCake: 1,
+      maxPerCake: 40,
     });
+    expect(getDecorationReplacementGroup('meringue')).toBe('topDecor');
+    expect(getDecorationReplacementGroup('candle')).toBeNull();
+    expect(getDecorationAllowedSurfaces('glaze-choco')).toEqual(['top']);
+    expect(getDecorationAllowedSurfaces('top-cream')).toEqual(['top']);
+    expect(getDecorationAllowedSurfaces('candle')).toEqual(['top', 'side']);
+    expect(getDecorationAllowedSurfacesLabel('glaze-choco')).toBe('1 на торт · сверху');
+    expect(getDecorationAllowedSurfacesLabel('blueberry')).toBe('Сверху и сбоку');
     expect(getDecorationUiCategory('blueberry')).toBe('berries');
     expect(getDecorationUiCategory('glaze-choco')).toBe('creamGlaze');
+    expect(getDecorationUiCategory('meringue')).toBe('topDecor');
     expect(getDecorationUiCategory('top-cream')).toBe('topDecor');
     expect(getDecorationUiCategoryLabel('creamGlaze')).toBe('Крем / глазурь');
   });

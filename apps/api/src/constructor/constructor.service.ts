@@ -31,7 +31,7 @@ const CONSTRUCTOR_CONFIG = {
   minWeightPerTier: 500,
   maxWeightPerTier: 5000,
   weightStep: 500,
-  maxDecorations: 20,
+  maxDecorations: 40,
   maxInscriptionLength: 50,
 };
 const MAX_TOTAL_WEIGHT_TENTHS = 100;

@@ -11,6 +11,7 @@ import {
   computeConstructorCameraFrame,
   type ConstructorCameraFrame,
 } from '@/lib/constructor/camera-framing';
+import { useDecorationScene } from './DecorationSceneContext';
 
 // Smooth lerp speed — fraction of remaining distance closed per second.
 // At 60 fps this gives ~500 ms to close 98 % of the gap (1 - 0.92^30 ≈ 0.92).
@@ -40,6 +41,7 @@ function getCameraPose(frame: ConstructorCameraFrame, viewMode: 'orbit' | 'top' 
 export function CameraController() {
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const { camera, size } = useThree();
+  const { isDecorationDragging } = useDecorationScene();
 
   // Store subscriptions
   const shape = useConstructorStore((s) => s.shape);
@@ -66,6 +68,7 @@ export function CameraController() {
         instanceId: instance.instanceId,
         variantId: instance.visualKey,
         position: instance.position,
+        placement: instance.placement,
       })),
     });
 
@@ -122,6 +125,7 @@ export function CameraController() {
   // Per-frame lerp: smoothly move camera position and orbit target.
   // Runs inside the R3F render loop — no competing rAF with OrbitControls damping.
   useFrame((_state, delta) => {
+    if (isDecorationDragging) return;
     if (!isAnimatingRef.current) return;
 
     const controls = controlsRef.current;
@@ -145,6 +149,7 @@ export function CameraController() {
   return (
     <OrbitControls
       ref={controlsRef}
+      enabled={!isDecorationDragging}
       enablePan={false}
       enableDamping
       dampingFactor={0.05}

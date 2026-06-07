@@ -7,7 +7,8 @@ import {
 } from './model-registry';
 
 export const GLAZE_TOP_LIFT = 0.006;
-export const DECORATION_LIFT = 0.014;
+// Tiny technical lift keeps GLB decor in contact with the cake surface without visible floating.
+export const DECORATION_LIFT = 0.001;
 
 export interface StackTierInput {
   baseVariant: string;
@@ -42,7 +43,9 @@ export interface StackDecorationLayout extends StackRange {
   variantId: string;
   path: string;
   x: number;
+  y: number;
   z: number;
+  placement?: StackDecorationPlacement;
 }
 
 export interface StackDecorationInput {
@@ -52,6 +55,43 @@ export interface StackDecorationInput {
     x?: number;
     y?: number;
     z?: number;
+  };
+  placement?: StackDecorationPlacement;
+}
+
+export interface StackDecorationPlacement {
+  surface: 'top' | 'side';
+  tierIndex: number;
+  normal: {
+    x: number;
+    y: number;
+    z: number;
+  };
+}
+
+const DECORATION_SURFACE_LIMITS: Record<CakeShape, { x: number; z: number; radius?: number }> = {
+  circle: { x: 0.82, z: 0.82, radius: 0.82 },
+  square: { x: 0.78, z: 0.78 },
+  heart: { x: 0.72, z: 0.68, radius: 0.72 },
+};
+
+export function clampDecorationXZ(shape: CakeShape, x: number, z: number): { x: number; z: number } {
+  const limits = DECORATION_SURFACE_LIMITS[shape] ?? DECORATION_SURFACE_LIMITS.circle;
+  const clampedX = Math.max(-limits.x, Math.min(limits.x, x));
+  const clampedZ = Math.max(-limits.z, Math.min(limits.z, z));
+
+  if (!limits.radius) {
+    return { x: clampedX, z: clampedZ };
+  }
+
+  const normalizedDistance = Math.hypot(clampedX / limits.x, clampedZ / limits.z);
+  if (normalizedDistance <= 1) {
+    return { x: clampedX, z: clampedZ };
+  }
+
+  return {
+    x: clampedX / normalizedDistance,
+    z: clampedZ / normalizedDistance,
   };
 }
 
@@ -115,7 +155,9 @@ export function buildCakeStackLayout(input: StackLayoutInput): CakeStackLayout {
     const path = getDecoModelPath(input.shape, variantId);
     if (!path) return [];
 
-    const bottomY = decorationBaseY;
+    const bottomY = normalizedDecoration.placement?.surface === 'side'
+      ? normalizedDecoration.position?.y ?? decorationBaseY
+      : decorationBaseY;
     const height = modelHeight(path);
     return [{
       instanceId: normalizedDecoration.instanceId ?? `${variantId}-${index}`,
@@ -125,7 +167,9 @@ export function buildCakeStackLayout(input: StackLayoutInput): CakeStackLayout {
       topY: bottomY + height,
       height,
       x: normalizedDecoration.position?.x ?? 0,
+      y: bottomY,
       z: normalizedDecoration.position?.z ?? 0,
+      placement: normalizedDecoration.placement,
     }];
   });
 

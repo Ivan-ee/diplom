@@ -54,8 +54,8 @@ describe('constructor UI source regressions', () => {
     const decorStep = source('src/components/constructor/panels/StepDecor.tsx');
 
     expect(decorStep).toContain('DECORATION_CATEGORY_ORDER');
+    expect(decorStep).toContain('getDecorationUiCategory');
     expect(decorStep).toContain('getDecorationUiCategoryLabel');
-    expect(decorStep).toContain('getDecorationPlacementRule');
     expect(decorStep).not.toContain('option.category');
   });
 

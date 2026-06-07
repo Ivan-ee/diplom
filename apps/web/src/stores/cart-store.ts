@@ -18,6 +18,20 @@ export interface CakeConfigDecorationInstance {
     y: number;
     z: number;
   };
+  rotation?: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  placement?: {
+    surface: 'top' | 'side';
+    tierIndex: number;
+    normal: {
+      x: number;
+      y: number;
+      z: number;
+    };
+  };
   name?: string;
 }
 

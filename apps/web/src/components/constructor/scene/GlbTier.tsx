@@ -5,14 +5,17 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import type { CakeShape } from '@/lib/constructor/model-registry';
 import { getFullTierModelPath } from '@/lib/constructor/model-registry';
+import { useDecorationScene } from './DecorationSceneContext';
 
 interface GlbTierProps {
+  tierIndex: number;
   shape: CakeShape;
   baseVariant: string;
   yOffset: number;
 }
 
 export function GlbTier({
+  tierIndex,
   shape,
   baseVariant,
   yOffset,
@@ -44,6 +47,7 @@ export function GlbTier({
       {visibleLayerPath && (
         <Suspense fallback={null}>
           <GlbTierInner
+            tierIndex={tierIndex}
             layerPath={visibleLayerPath}
             yOffset={yOffset}
           />
@@ -78,13 +82,17 @@ function GlbTierModelPreloader({
 }
 
 function GlbTierInner({
+  tierIndex,
   layerPath,
   yOffset,
 }: {
+  tierIndex: number;
   layerPath: string;
   yOffset: number;
 }) {
   const layerGltf = useGLTF(layerPath);
+  const { registerTierSurface } = useDecorationScene();
+  const groupRef = useRef<THREE.Group>(null);
 
   const clonedLayer = useMemo(() => layerGltf.scene.clone(true), [layerGltf.scene]);
   const layerBottomOffset = useMemo(() => {
@@ -92,8 +100,19 @@ function GlbTierInner({
     return Number.isFinite(box.min.y) ? -box.min.y : 0;
   }, [clonedLayer]);
 
+  useEffect(() => {
+    const group = groupRef.current;
+    if (!group) return undefined;
+
+    return registerTierSurface({
+      id: `${tierIndex}:${layerPath}`,
+      tierIndex,
+      object: group,
+    });
+  }, [layerPath, registerTierSurface, tierIndex]);
+
   return (
-    <group position={[0, yOffset, 0]}>
+    <group ref={groupRef} position={[0, yOffset, 0]}>
       <primitive object={clonedLayer} position={[0, layerBottomOffset, 0]} />
     </group>
   );

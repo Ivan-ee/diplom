@@ -110,6 +110,7 @@ function ConstructorCommandBar() {
         y: 0,
         z: index % 2 === 0 ? 0.08 : -0.08,
       },
+      rotation: { x: 0, y: 0, z: 0 },
     }));
     const groupedDecorations = Array.from(
       decorationInstances.reduce((map, instance) => {
@@ -150,6 +151,7 @@ function ConstructorCommandBar() {
       activeDecorations: Array.from(new Set(decorationInstances.map((item) => item.visualKey))),
       selectedDecorations: groupedDecorations,
       decorationInstances,
+      selectedDecorationInstanceId: decorationInstances[0]?.instanceId ?? null,
       pricingStatus: 'stale',
       priceError: null,
       priceVerifiedAt: null,
