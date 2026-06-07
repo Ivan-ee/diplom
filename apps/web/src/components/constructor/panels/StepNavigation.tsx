@@ -8,11 +8,9 @@ import { useConstructorStore, type ConstructorStep } from '@/stores/constructor-
 import { useCartStore } from '@/stores/cart-store';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { uploadFileToMinio } from '@/lib/upload';
+import { uploadScreenshotToMinio } from '@/lib/upload';
 import { glRef } from '@/lib/screenshot-ref';
 import { ConstructorSuccessModal } from '@/components/constructor/ConstructorSuccessModal';
-
-const SCREENSHOT_FALLBACK = '/images/custom-cake.jpg';
 
 /**
  * Takes a screenshot of the current R3F canvas, uploads it to MinIO via the
@@ -28,7 +26,7 @@ async function captureAndUpload(): Promise<string> {
   const blob = await res.blob();
   const file = new File([blob], `cake-screenshot-${Date.now()}.png`, { type: 'image/png' });
 
-  const { fileUrl } = await uploadFileToMinio({ file, bucket: 'screenshots' });
+  const { fileUrl } = await uploadScreenshotToMinio(file);
   return fileUrl;
 }
 
@@ -125,12 +123,12 @@ export function StepNavigation() {
   const handleAddToCart = async () => {
     setIsCapturing(true);
 
-    let imageUrl = SCREENSHOT_FALLBACK;
+    let imageUrl = '';
     try {
       imageUrl = await captureAndUpload();
     } catch (err) {
-      console.warn('[StepNavigation] Screenshot upload failed, using fallback image:', err);
-      toast.error('Не удалось загрузить скриншот торта. Используем стандартное изображение.');
+      console.warn('[StepNavigation] Screenshot upload failed, continuing without preview:', err);
+      toast.error('Не удалось загрузить скриншот торта. Превью будет недоступно.');
     }
 
     const totalWeight = layers.reduce((sum, l) => sum + l.weight, 0);
@@ -173,9 +171,8 @@ export function StepNavigation() {
 
     setIsCapturing(false);
 
-    const screenshotUrl = imageUrl !== SCREENSHOT_FALLBACK ? imageUrl : undefined;
     setSuccessData({
-      screenshot: screenshotUrl,
+      screenshot: imageUrl || undefined,
       summary: buildConfigSummary(),
       price: totalPrice,
     });

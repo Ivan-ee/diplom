@@ -113,4 +113,17 @@ describe('constructor UI source regressions', () => {
     expect(stepCoating).not.toContain('setSecondaryGlazeVariant');
     expect(stepCoating).not.toContain('GlazePalette');
   });
+
+  it('uploads constructor screenshots through the public screenshot endpoint without broken fallback images', () => {
+    const stepNavigation = source('src/components/constructor/panels/StepNavigation.tsx');
+    const glbDecoration = source('src/components/constructor/scene/GlbDecoration.tsx');
+
+    expect(stepNavigation).toContain('uploadScreenshotToMinio');
+    expect(stepNavigation).not.toContain('/images/custom-cake.jpg');
+    expect(stepNavigation).toContain("let imageUrl = ''");
+    expect(glbDecoration).toContain('setPointerCaptureSafely');
+    expect(glbDecoration).toContain('releasePointerCaptureSafely');
+    expect(glbDecoration).not.toContain('event.currentTarget.setPointerCapture');
+    expect(glbDecoration).not.toContain('event.currentTarget.releasePointerCapture');
+  });
 });

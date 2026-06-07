@@ -5,7 +5,7 @@ vi.mock('@/lib/api', () => ({
   fetchClient: vi.fn(),
 }));
 
-import { uploadFileToMinio } from '../upload';
+import { uploadFileToMinio, uploadScreenshotToMinio } from '../upload';
 import { fetchClient } from '@/lib/api';
 
 const mockFetchClient = vi.mocked(fetchClient);
@@ -88,5 +88,49 @@ describe('uploadFileToMinio', () => {
     await expect(uploadFileToMinio({ file, bucket: 'screenshots' })).rejects.toThrow(
       'Upload failed: 403',
     );
+  });
+});
+
+describe('uploadScreenshotToMinio', () => {
+  const mockFetch = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubGlobal('fetch', mockFetch);
+  });
+
+  it('calls public screenshot presign endpoint without a bucket then PUTs file to MinIO', async () => {
+    const uploadUrl = 'https://minio.example.com/screenshots/cake.png?sig=abc';
+    const fileUrl = 'https://cdn.example.com/screenshots/cake.png';
+    const objectName = 'cake-123.png';
+
+    mockFetchClient.mockResolvedValueOnce({
+      success: true,
+      data: {
+        uploadUrl,
+        fileUrl,
+        objectName,
+        bucket: 'screenshots',
+        expiresIn: 900,
+      },
+    });
+
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 200 });
+
+    const file = new File(['pixel'], 'cake-screenshot-123.png', { type: 'image/png' });
+    const result = await uploadScreenshotToMinio(file);
+
+    expect(mockFetchClient).toHaveBeenCalledOnce();
+    expect(mockFetchClient).toHaveBeenCalledWith('/upload/screenshots/presign', {
+      method: 'POST',
+      body: JSON.stringify({ filename: 'cake-screenshot-123.png' }),
+    });
+    expect(mockFetch).toHaveBeenCalledOnce();
+    expect(mockFetch).toHaveBeenCalledWith(uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': 'image/png' },
+    });
+    expect(result).toEqual({ fileUrl, objectName });
   });
 });
