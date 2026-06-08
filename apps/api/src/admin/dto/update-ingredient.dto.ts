@@ -12,6 +12,15 @@ export enum IngredientType {
 /** Note: pricePerKg applies to bases/fillings/coatings; pricePerUnit applies to decorations only. */
 export class UpdateIngredientDto {
   @ApiPropertyOptional({
+    description: 'Display name used in constructor UI and order previews',
+    example: 'Розовый шоколад по одному',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  name?: string;
+
+  @ApiPropertyOptional({
     description: 'Price per kg in kopecks (for bases, fillings, coatings)',
     example: 50000,
   })

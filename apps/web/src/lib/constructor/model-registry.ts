@@ -27,16 +27,20 @@ type GlazeVariant =
   | 'cream-glaze';
 type DecoVariant =
   | 'blueberry'
+  | 'blueberry-one'
   | 'chocolate'
   | 'chocolate-choco'
   | 'chocolate-pink'
+  | 'chocolate-pink-one'
   | 'meringue'
   | 'glaze-cream'
   | 'glaze-cream2'
   | 'glaze-choco'
   | 'glaze-pink'
+  | 'glaze-one'
   | 'cream'
   | 'candle'
+  | 'candle-one'
   | 'top-cream'
   | 'top-choco'
   | 'top-pink'
@@ -164,8 +168,11 @@ const GLAZE_FILES: Record<CakeShape, Partial<Record<GlazeVariant, string>>> = {
 
 const DECO_FILES: Record<CakeShape, Partial<Record<DecoVariant, string>>> = {
   circle: {
+    'blueberry-one': 'cakeDecorBlueberryONE.glb',
     blueberry: 'cakeDecorBlueberry.glb',
+    'chocolate-pink-one': 'cakeDecorPinkChocolateONE.glb',
     'chocolate-pink': 'cakeDecorPinkChocolate.glb',
+    'glaze-one': 'cakeDecorGlazeONE.glb',
     cream: 'cakeDecorCream.glb',
     'glaze-cream': 'cakeDecorGlaze.glb',
     'top-cream': 'cakeFillCream.glb',
@@ -174,9 +181,12 @@ const DECO_FILES: Record<CakeShape, Partial<Record<DecoVariant, string>>> = {
     'top-meringue': 'cakeFillMeringua.glb',
   },
   square: {
+    'blueberry-one': 'cakeDecorBlueberryONE.glb',
     blueberry: 'DecoBlueberry.glb',
+    'chocolate-pink-one': 'cakeDecorPinkChocolateONE.glb',
     chocolate: 'DecoChocolate.glb',
     'chocolate-choco': 'DecoChocolateChoco.glb',
+    'glaze-one': 'cakeDecorGlazeONE.glb',
     'glaze-choco': 'DecoGlazeChoco.glb',
     'glaze-cream': 'DecoGlazeCream.glb',
     'glaze-pink': 'DecoGlazePink.glb',
@@ -188,9 +198,12 @@ const DECO_FILES: Record<CakeShape, Partial<Record<DecoVariant, string>>> = {
     'top-meringue': 'CakeFillMeringue.glb',
   },
   heart: {
+    'blueberry-one': 'cakeDecorBlueberryONE.glb',
     blueberry: 'DecoBlueberry.glb',
+    'chocolate-pink-one': 'cakeDecorPinkChocolateONE.glb',
     'chocolate-choco': 'DecoChocolateChoco.glb',
     'chocolate-pink': 'DecoChocolatePink.glb',
+    'glaze-one': 'cakeDecorGlazeONE.glb',
     'glaze-cream': 'DecoGlazeCream.glb',
     'glaze-cream2': 'DecoGlazeCream2.glb',
     'glaze-choco': 'DecoGlazeChoco.glb',
@@ -208,6 +221,12 @@ const CANDLE_FILES: Record<CakeShape, string> = {
   circle: `${MODELS_BASE}/candle/DecoCandle.glb`,
   square: `${MODELS_BASE}/cube/DecoCandle1.glb`,
   heart: `${MODELS_BASE}/heart/DecoCandle3.glb`,
+};
+
+const CANDLE_ONE_FILES: Record<CakeShape, string> = {
+  circle: `${MODELS_BASE}/candle/DecoCandleONE.glb`,
+  square: `${MODELS_BASE}/candle/DecoCandleONE.glb`,
+  heart: `${MODELS_BASE}/candle/DecoCandleONE.glb`,
 };
 
 export interface ModelYBounds {
@@ -231,6 +250,9 @@ const MODEL_Y_BOUNDS: Record<string, ModelYBounds> = {
   '/models/circle/GlazeChoco2.glb': { minY: 0.1743, maxY: 0.9385 },
   '/models/circle/GlazeCream.glb': { minY: 0.6127, maxY: 0.9407 },
   '/models/circle/GlazeCream2.glb': { minY: 0.1743, maxY: 0.9385 },
+  '/models/circle/cakeDecorBlueberryONE.glb': { minY: -0.0019, maxY: 0.0299 },
+  '/models/circle/cakeDecorGlazeONE.glb': { minY: -0.069, maxY: 0.069 },
+  '/models/circle/cakeDecorPinkChocolateONE.glb': { minY: -0.2841, maxY: 0.2881 },
   '/models/circle/cakeDecorBlueberry.glb': { minY: -0.0831, maxY: 0.167 },
   '/models/circle/cakeDecorCream.glb': { minY: -0.007, maxY: 0.1354 },
   '/models/circle/cakeDecorGlaze.glb': { minY: -0.056, maxY: 0.7453 },
@@ -249,6 +271,9 @@ const MODEL_Y_BOUNDS: Record<string, ModelYBounds> = {
   '/models/cube/CakeFillGlazeChoco.glb': { minY: 0.2767, maxY: 0.4763 },
   '/models/cube/CakeFillGlazeCream.glb': { minY: 0.2767, maxY: 0.4763 },
   '/models/cube/CakeFillGlazeCream2.glb': { minY: 0.2767, maxY: 0.4763 },
+  '/models/cube/cakeDecorBlueberryONE.glb': { minY: -0.0019, maxY: 0.0299 },
+  '/models/cube/cakeDecorGlazeONE.glb': { minY: -0.069, maxY: 0.069 },
+  '/models/cube/cakeDecorPinkChocolateONE.glb': { minY: -0.2841, maxY: 0.2881 },
   '/models/cube/CakeFillMeringue.glb': { minY: 0.2857, maxY: 0.4839 },
   '/models/cube/CakeLayer.glb': { minY: 0.0056, maxY: 0.3269 },
   '/models/cube/CakeLayerCherry.glb': { minY: 0.0056, maxY: 0.3269 },
@@ -288,8 +313,12 @@ const MODEL_Y_BOUNDS: Record<string, ModelYBounds> = {
   '/models/heart/GlazeChoco2.glb': { minY: 0.3897, maxY: 0.9447 },
   '/models/heart/GlazeCream.glb': { minY: 0.5656, maxY: 0.9447 },
   '/models/heart/GlazeCream2.glb': { minY: 0.3897, maxY: 0.9447 },
+  '/models/heart/cakeDecorBlueberryONE.glb': { minY: -0.0019, maxY: 0.0299 },
+  '/models/heart/cakeDecorGlazeONE.glb': { minY: -0.069, maxY: 0.069 },
+  '/models/heart/cakeDecorPinkChocolateONE.glb': { minY: -0.2841, maxY: 0.2881 },
   '/models/heart/GlazePink.glb': { minY: 0.5656, maxY: 0.9447 },
   '/models/heart/GlazePink2.glb': { minY: 0.3897, maxY: 0.9447 },
+  '/models/candle/DecoCandleONE.glb': { minY: -0.1921, maxY: 0.1814 },
 };
 
 // ---------------------------------------------------------------------------
@@ -416,6 +445,7 @@ export function getGlazeModelPath(
  */
 export function getDecoModelPath(shape: CakeShape, decorVariant: string): string | null {
   if (decorVariant === 'candle') return CANDLE_FILES[shape];
+  if (decorVariant === 'candle-one') return CANDLE_ONE_FILES[shape];
 
   const folder = SHAPE_FOLDER[shape];
   const decoMap = DECO_FILES[shape];
@@ -470,6 +500,7 @@ export function getDeclaredModelPaths(): string[] {
     for (const file of Object.values(FILL_FILES[shape])) paths.add(p(folder, file));
     for (const file of Object.values(GLAZE_FILES[shape])) paths.add(p(folder, file));
     for (const file of Object.values(DECO_FILES[shape])) paths.add(p(folder, file));
+    paths.add(CANDLE_ONE_FILES[shape]);
     paths.add(CANDLE_FILES[shape]);
   }
 
@@ -557,6 +588,13 @@ const DECO_META: Record<DecoVariant, {
     placementSlot: 'surfaceDecor',
     allowedSurfaces: TOP_AND_SIDE_DECORATION_SURFACES,
   },
+  'blueberry-one': {
+    label: 'Свеча по одному',
+    description: 'Отдельная праздничная свеча',
+    uiCategory: 'candle',
+    placementSlot: 'candle',
+    allowedSurfaces: TOP_AND_SIDE_DECORATION_SURFACES,
+  },
   chocolate: {
     label: 'Шоколадный декор',
     description: 'Готовый шоколадный набор',
@@ -578,6 +616,14 @@ const DECO_META: Record<DecoVariant, {
     placementSlot: 'surfaceDecor',
     allowedSurfaces: TOP_AND_SIDE_DECORATION_SURFACES,
   },
+  'chocolate-pink-one': {
+    label: 'Розовый шоколад по одному',
+    description: 'Один элемент розового шоколада',
+    uiCategory: 'creamGlaze',
+    placementSlot: 'surfaceDecor',
+    allowedSurfaces: TOP_ONLY_DECORATION_SURFACES,
+    replacementGroup: 'creamGlaze',
+  },
   meringue: {
     label: 'Меренга',
     description: 'Готовый набор из меренги',
@@ -593,6 +639,13 @@ const DECO_META: Record<DecoVariant, {
     placementSlot: 'surfaceDecor',
     allowedSurfaces: TOP_ONLY_DECORATION_SURFACES,
     replacementGroup: 'creamGlaze',
+  },
+  'glaze-one': {
+    label: 'Ягода по одному',
+    description: 'Один ягодный элемент декора',
+    uiCategory: 'berries',
+    placementSlot: 'surfaceDecor',
+    allowedSurfaces: TOP_AND_SIDE_DECORATION_SURFACES,
   },
   'glaze-cream2': {
     label: 'Кремовая глазурь 2',
@@ -629,6 +682,13 @@ const DECO_META: Record<DecoVariant, {
   candle: {
     label: 'Свеча',
     description: 'Праздничная свеча',
+    uiCategory: 'candle',
+    placementSlot: 'candle',
+    allowedSurfaces: TOP_AND_SIDE_DECORATION_SURFACES,
+  },
+  'candle-one': {
+    label: 'Свеча по одному',
+    description: 'Отдельная праздничная свеча',
     uiCategory: 'candle',
     placementSlot: 'candle',
     allowedSurfaces: TOP_AND_SIDE_DECORATION_SURFACES,
@@ -913,6 +973,7 @@ export function getAllDecoPaths(shape: CakeShape): string[] {
     if (file) paths.push(p(folder, file));
   }
 
+  paths.push(CANDLE_ONE_FILES[shape]);
   paths.push(getCandleModelPath(shape));
 
   return paths;

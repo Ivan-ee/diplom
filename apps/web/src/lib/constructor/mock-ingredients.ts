@@ -317,6 +317,38 @@ export function getMockIngredients(): ConstructorCatalog {
         visualKey: 'candle',
         available: true,
       },
+      {
+        id: 'decor-blueberry-one',
+        name: 'Свеча по одному',
+        category: 'candle',
+        pricePerUnit: 12000,
+        visualKey: 'blueberry-one',
+        available: true,
+      },
+      {
+        id: 'decor-glaze-one',
+        name: 'Ягода по одному',
+        category: 'Ягоды',
+        pricePerUnit: 12000,
+        visualKey: 'glaze-one',
+        available: true,
+      },
+      {
+        id: 'decor-chocolate-pink-one',
+        name: 'Розовый шоколад по одному',
+        category: 'Топперы',
+        pricePerUnit: 12000,
+        visualKey: 'chocolate-pink-one',
+        available: true,
+      },
+      {
+        id: 'decor-candle-one',
+        name: 'Свеча по одному',
+        category: 'candle',
+        pricePerUnit: 12000,
+        visualKey: 'candle-one',
+        available: true,
+      },
     ],
 
     shapes: [

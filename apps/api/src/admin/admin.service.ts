@@ -904,6 +904,7 @@ export class AdminService {
 
   private async updateDecoration(id: string, dto: UpdateIngredientDto) {
     const values: Record<string, unknown> = {};
+    if (dto.name !== undefined) values['name'] = dto.name;
     if (dto.pricePerUnit !== undefined) values['pricePerUnit'] = dto.pricePerUnit;
     if (dto.visualKey !== undefined) values['visualKey'] = dto.visualKey;
     if (dto.category !== undefined) values['category'] = dto.category;

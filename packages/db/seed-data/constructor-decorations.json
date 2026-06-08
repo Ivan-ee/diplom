@@ -198,5 +198,45 @@
     "thumbnailUrl": null,
     "sortOrder": 20,
     "isAvailable": true
+  },
+  {
+    "name": "Свеча по одному",
+    "category": "candle",
+    "pricePerUnit": 12000,
+    "visualKey": "blueberry-one",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 21,
+    "isAvailable": true
+  },
+  {
+    "name": "Ягода по одному",
+    "category": "berries",
+    "pricePerUnit": 12000,
+    "visualKey": "glaze-one",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 22,
+    "isAvailable": true
+  },
+  {
+    "name": "Розовый шоколад по одному",
+    "category": "toppers",
+    "pricePerUnit": 12000,
+    "visualKey": "chocolate-pink-one",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 23,
+    "isAvailable": true
+  },
+  {
+    "name": "Свеча по одному",
+    "category": "candle",
+    "pricePerUnit": 12000,
+    "visualKey": "candle-one",
+    "modelUrl": null,
+    "thumbnailUrl": null,
+    "sortOrder": 24,
+    "isAvailable": true
   }
 ]

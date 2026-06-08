@@ -5,6 +5,7 @@ import { Clone, Html, Outlines, useGLTF } from '@react-three/drei';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { CakeShape } from '@/lib/constructor/model-registry';
+import { getSelectionOutlineThickness } from './decoration-outline';
 import {
   getCandleModelPath,
   getDecorationAllowedSurfaces,
@@ -49,13 +50,6 @@ const calculateFixedHudPosition = (
   _camera: THREE.Camera,
   size: { width: number; height: number },
 ) => [size.width / 2, size.height / 2];
-
-function getSelectionOutlineThickness(maxModelSize: number): number {
-  if (maxModelSize <= 0.65) return 0.08;
-  if (maxModelSize <= 1.25) return 0.055;
-  if (maxModelSize <= 1.65) return 0.038;
-  return 0.026;
-}
 
 function normalizeDegrees(value: number): number {
   const next = value % 360;

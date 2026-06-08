@@ -40,6 +40,7 @@ const COATING_SOURCE_FOLDERS: Record<string, string> = {
 const NON_COATING_GLAZE_ROLE_PATHS = new Set([
   '/models/circle/CakeBigLayerGlaze.glb',
   '/models/circle/cakeDecorGlaze.glb',
+  '/models/circle/cakeDecorGlazeONE.glb',
   '/models/cube/CakeBigLayerGlaze.glb',
   '/models/cube/CakeFillGlaze.glb',
   '/models/cube/CakeFillGlazeChoco.glb',
@@ -48,11 +49,13 @@ const NON_COATING_GLAZE_ROLE_PATHS = new Set([
   '/models/cube/DecoGlazeChoco.glb',
   '/models/cube/DecoGlazeCream.glb',
   '/models/cube/DecoGlazePink.glb',
+  '/models/cube/cakeDecorGlazeONE.glb',
   '/models/heart/CakeBigLayerGlaze.glb',
   '/models/heart/DecoGlazeChoco.glb',
   '/models/heart/DecoGlazeCream.glb',
   '/models/heart/DecoGlazeCream2.glb',
   '/models/heart/DecoGlazePink.glb',
+  '/models/heart/cakeDecorGlazeONE.glb',
 ]);
 
 function runtimeModelPaths(): string[] {
@@ -183,6 +186,18 @@ describe('constructor model registry', () => {
     expect(getFillModelPath('heart', 'meringue')).toBe('/models/heart/CakeFillMeringue.glb');
     expect(getDecoModelPath('square', 'top-glaze-cream2')).toBe('/models/cube/CakeFillGlazeCream2.glb');
     expect(getDecoModelPath('heart', 'top-meringue-pink')).toBe('/models/heart/CakeFillMeringuePink.glb');
+    expect(getDecoModelPath('circle', 'blueberry-one')).toBe('/models/circle/cakeDecorBlueberryONE.glb');
+    expect(getDecoModelPath('square', 'blueberry-one')).toBe('/models/cube/cakeDecorBlueberryONE.glb');
+    expect(getDecoModelPath('heart', 'blueberry-one')).toBe('/models/heart/cakeDecorBlueberryONE.glb');
+    expect(getDecoModelPath('circle', 'glaze-one')).toBe('/models/circle/cakeDecorGlazeONE.glb');
+    expect(getDecoModelPath('square', 'glaze-one')).toBe('/models/cube/cakeDecorGlazeONE.glb');
+    expect(getDecoModelPath('heart', 'glaze-one')).toBe('/models/heart/cakeDecorGlazeONE.glb');
+    expect(getDecoModelPath('circle', 'chocolate-pink-one')).toBe('/models/circle/cakeDecorPinkChocolateONE.glb');
+    expect(getDecoModelPath('square', 'chocolate-pink-one')).toBe('/models/cube/cakeDecorPinkChocolateONE.glb');
+    expect(getDecoModelPath('heart', 'chocolate-pink-one')).toBe('/models/heart/cakeDecorPinkChocolateONE.glb');
+    expect(getDecoModelPath('circle', 'candle-one')).toBe('/models/candle/DecoCandleONE.glb');
+    expect(getDecoModelPath('square', 'candle-one')).toBe('/models/candle/DecoCandleONE.glb');
+    expect(getDecoModelPath('heart', 'candle-one')).toBe('/models/candle/DecoCandleONE.glb');
   });
 
   it('declares every Step 5 decoration GLB from Cakes and runtime models', () => {
@@ -207,6 +222,23 @@ describe('constructor model registry', () => {
       slot: 'surfaceDecor',
       maxPerCake: 40,
     });
+    expect(getDecorationPlacementRule('blueberry-one')).toMatchObject({
+      slot: 'candle',
+      maxPerCake: 40,
+    });
+    expect(getDecorationPlacementRule('glaze-one')).toMatchObject({
+      slot: 'surfaceDecor',
+      maxPerCake: 40,
+    });
+    expect(getDecorationPlacementRule('chocolate-pink-one')).toMatchObject({
+      slot: 'surfaceDecor',
+      maxPerCake: 40,
+      replacementGroup: 'creamGlaze',
+    });
+    expect(getDecorationPlacementRule('candle-one')).toMatchObject({
+      slot: 'candle',
+      maxPerCake: 40,
+    });
     expect(getDecorationPlacementRule('glaze-choco')).toMatchObject({
       slot: 'surfaceDecor',
       maxPerCake: 40,
@@ -223,13 +255,23 @@ describe('constructor model registry', () => {
     });
     expect(getDecorationReplacementGroup('meringue')).toBe('topDecor');
     expect(getDecorationReplacementGroup('candle')).toBeNull();
+    expect(getDecorationReplacementGroup('candle-one')).toBeNull();
+    expect(getDecorationReplacementGroup('chocolate-pink-one')).toBe('creamGlaze');
     expect(getDecorationAllowedSurfaces('glaze-choco')).toEqual(['top']);
     expect(getDecorationAllowedSurfaces('top-cream')).toEqual(['top']);
+    expect(getDecorationAllowedSurfaces('glaze-one')).toEqual(['top', 'side']);
+    expect(getDecorationAllowedSurfaces('blueberry-one')).toEqual(['top', 'side']);
+    expect(getDecorationAllowedSurfaces('chocolate-pink-one')).toEqual(['top']);
+    expect(getDecorationAllowedSurfaces('candle-one')).toEqual(['top', 'side']);
     expect(getDecorationAllowedSurfaces('candle')).toEqual(['top', 'side']);
     expect(getDecorationAllowedSurfacesLabel('glaze-choco')).toBe('1 на торт · сверху');
     expect(getDecorationAllowedSurfacesLabel('blueberry')).toBe('Сверху и сбоку');
     expect(getDecorationUiCategory('blueberry')).toBe('berries');
     expect(getDecorationUiCategory('glaze-choco')).toBe('creamGlaze');
+    expect(getDecorationUiCategory('glaze-one')).toBe('berries');
+    expect(getDecorationUiCategory('blueberry-one')).toBe('candle');
+    expect(getDecorationUiCategory('chocolate-pink-one')).toBe('creamGlaze');
+    expect(getDecorationUiCategory('candle-one')).toBe('candle');
     expect(getDecorationUiCategory('meringue')).toBe('topDecor');
     expect(getDecorationUiCategory('top-cream')).toBe('topDecor');
     expect(getDecorationUiCategoryLabel('creamGlaze')).toBe('Крем / глазурь');
@@ -455,6 +497,10 @@ describe('constructor model registry', () => {
         'top-glaze-cream2',
         'top-meringue-pink',
         'candle',
+        'blueberry-one',
+        'glaze-one',
+        'chocolate-pink-one',
+        'candle-one',
       ]);
     }
   });
