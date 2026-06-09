@@ -142,7 +142,6 @@ export interface TierSurcharge {
 }
 
 export interface ConstructorConfig {
-  maxDecorations: number;
   maxInscriptionLength: number;
   minWeightPerTier: number;
   maxWeightPerTier: number;
@@ -877,7 +876,6 @@ function normalizeConfig(config: Partial<ConstructorConfig> & {
   maxInscription?: number;
 }): ConstructorConfig {
   return {
-    maxDecorations: config.maxDecorations ?? 40,
     maxInscriptionLength: config.maxInscriptionLength ?? config.maxInscription ?? 50,
     minWeightPerTier: config.minWeightPerTier ?? (config.minWeight ? config.minWeight * 1000 : 500),
     maxWeightPerTier: config.maxWeightPerTier ?? (config.maxWeight ? config.maxWeight * 1000 : 5000),
@@ -1206,8 +1204,6 @@ export const useConstructorStore = create<ConstructorState>()(
               (instance) => getDecorationReplacementGroup(instance.visualKey) !== replacementGroup,
             )
           : decorationInstances;
-        const max = ingredients?.config?.maxDecorations ?? 40;
-        if (baseInstances.length >= max) return;
         if (!isDecoVisualKeyAvailable(shape as RegistryCakeShape, visualKey)) return;
 
         const selectedDecoration = createDecorationSelection(visualKey, ingredients?.decorations ?? [], decorationId);
@@ -1259,10 +1255,8 @@ export const useConstructorStore = create<ConstructorState>()(
       },
 
       duplicateDecorationInstance: (instanceId) => {
-        const { ingredients, shape, tierCount } = get();
+        const { shape, tierCount } = get();
         const decorationInstances = normalizeDecorationInstances(asArray(get().decorationInstances), tierCount);
-        const max = ingredients?.config?.maxDecorations ?? 40;
-        if (decorationInstances.length >= max) return;
 
         const source = decorationInstances.find((instance) => instance.instanceId === instanceId);
         if (!source || !isDecoVisualKeyAvailable(shape as RegistryCakeShape, source.visualKey)) return;

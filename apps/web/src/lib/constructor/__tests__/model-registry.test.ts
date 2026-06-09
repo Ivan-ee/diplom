@@ -220,38 +220,30 @@ describe('constructor model registry', () => {
   it('classifies decoration placement slots and UI categories from the registry', () => {
     expect(getDecorationPlacementRule('blueberry')).toMatchObject({
       slot: 'surfaceDecor',
-      maxPerCake: 40,
     });
     expect(getDecorationPlacementRule('blueberry-one')).toMatchObject({
       slot: 'candle',
-      maxPerCake: 40,
     });
     expect(getDecorationPlacementRule('glaze-one')).toMatchObject({
       slot: 'surfaceDecor',
-      maxPerCake: 40,
     });
     expect(getDecorationPlacementRule('chocolate-pink-one')).toMatchObject({
       slot: 'surfaceDecor',
-      maxPerCake: 40,
       replacementGroup: 'creamGlaze',
     });
     expect(getDecorationPlacementRule('candle-one')).toMatchObject({
       slot: 'candle',
-      maxPerCake: 40,
     });
     expect(getDecorationPlacementRule('glaze-choco')).toMatchObject({
       slot: 'surfaceDecor',
-      maxPerCake: 40,
       replacementGroup: 'creamGlaze',
     });
     expect(getDecorationPlacementRule('top-glaze-cream2')).toMatchObject({
       slot: 'surfaceDecor',
-      maxPerCake: 40,
       replacementGroup: 'topDecor',
     });
     expect(getDecorationPlacementRule('candle')).toMatchObject({
       slot: 'candle',
-      maxPerCake: 40,
     });
     expect(getDecorationReplacementGroup('meringue')).toBe('topDecor');
     expect(getDecorationReplacementGroup('candle')).toBeNull();

@@ -31,7 +31,6 @@ const CONSTRUCTOR_CONFIG = {
   minWeightPerTier: 500,
   maxWeightPerTier: 5000,
   weightStep: 500,
-  maxDecorations: 40,
   maxInscriptionLength: 50,
 };
 const MAX_TOTAL_WEIGHT_TENTHS = 100;
@@ -200,12 +199,6 @@ export class ConstructorService {
       (sum, d) => sum + d.quantity,
       0,
     );
-    if (totalDecorationCount > CONSTRUCTOR_CONFIG.maxDecorations) {
-      throw new BadRequestException(
-        `Total decorations count cannot exceed ${CONSTRUCTOR_CONFIG.maxDecorations}`,
-      );
-    }
-
     const totalWeightTenths = tiers.reduce((sum, t) => sum + t.weight, 0);
     if (totalWeightTenths > MAX_TOTAL_WEIGHT_TENTHS) {
       throw new BadRequestException(

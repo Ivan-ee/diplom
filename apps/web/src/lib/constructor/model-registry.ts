@@ -64,7 +64,6 @@ export type DecorationUiCategory =
 
 export interface DecorationPlacementRule {
   slot: DecorationPlacementSlot;
-  maxPerCake: number;
   replacementGroup?: DecorationReplacementGroup;
 }
 
@@ -776,7 +775,6 @@ export function getDecorationPlacementRule(visualKey: string): DecorationPlaceme
   const meta = DECO_META[visualKey as DecoVariant];
   return {
     slot: meta?.placementSlot ?? 'surfaceDecor',
-    maxPerCake: 40,
     replacementGroup: meta?.replacementGroup,
   };
 }

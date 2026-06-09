@@ -365,7 +365,6 @@ export function getMockIngredients(): ConstructorCatalog {
     ],
 
     config: {
-      maxDecorations: 40,
       maxInscriptionLength: 50,
       minWeightPerTier: 500,
       maxWeightPerTier: 5000,

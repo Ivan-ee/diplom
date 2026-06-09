@@ -75,29 +75,15 @@ export function StepDecor() {
     options: decoOptions.filter((option) => getDecorationUiCategory(option.visualKey) === category),
   })).filter((group) => group.options.length > 0);
   const maxLength = getConfig()?.maxInscriptionLength ?? 50;
-  const maxDecorations = getConfig()?.maxDecorations ?? 40;
-  const isMaxReached = safeDecorationInstances.length >= maxDecorations;
 
   useEffect(() => () => pendingDragRef.current?.cleanup(), []);
 
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm uppercase tracking-wide">
-            Украшения
-          </h3>
-          <span
-            className={cn(
-              'text-xs font-medium px-2 py-0.5 rounded-full transition-colors',
-              isMaxReached
-                ? 'bg-[var(--color-caramel)]/10 text-[var(--color-caramel)]'
-                : 'text-[var(--color-graphite-light)]'
-            )}
-          >
-            {safeDecorationInstances.length}/{maxDecorations}
-          </span>
-        </div>
+        <h3 className="font-heading font-semibold text-[var(--color-graphite)] text-sm uppercase tracking-wide mb-3">
+          Украшения
+        </h3>
 
         <div className="flex flex-col gap-3">
           {groupedDecoOptions.map((group) => (
@@ -112,14 +98,7 @@ export function StepDecor() {
                   const count = safeDecorationInstances.filter(
                     (instance) => instance.visualKey === option.visualKey,
                   ).length;
-                  const replacementGroup = getDecorationReplacementGroup(option.visualKey);
-                  const isReplacingSingleton = Boolean(
-                    replacementGroup &&
-                      safeDecorationInstances.some(
-                        (instance) => getDecorationReplacementGroup(instance.visualKey) === replacementGroup,
-                      ),
-                  );
-                  const isOptionDisabled = isMaxReached && !isReplacingSingleton;
+                  const isOptionDisabled = false;
                   const handleClick = () => {
                     if (suppressClickRef.current) {
                       suppressClickRef.current = false;
@@ -268,7 +247,7 @@ export function StepDecor() {
             {safeDecorationInstances.map((instance, index) => {
               const decoration = ingredients?.decorations.find((item) => item.id === instance.decorationId);
               const isSelected = selectedDecorationInstanceId === instance.instanceId;
-              const canDuplicate = !getDecorationReplacementGroup(instance.visualKey) && !isMaxReached;
+              const canDuplicate = !getDecorationReplacementGroup(instance.visualKey);
               return (
                 <div
                   key={instance.instanceId}
