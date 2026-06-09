@@ -6,7 +6,7 @@ import { extname } from 'path';
 import { PresignDto } from './dto/presign.dto';
 
 const PRESIGN_EXPIRY_SECONDS = 15 * 60; // 15 minutes
-const PUBLIC_READ_BUCKETS = ['screenshots', 'products'] as const;
+const PUBLIC_READ_BUCKETS = ['screenshots', 'products', 'models'] as const;
 
 @Injectable()
 export class UploadService implements OnModuleInit {

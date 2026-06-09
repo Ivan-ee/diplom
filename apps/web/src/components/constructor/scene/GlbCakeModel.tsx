@@ -94,23 +94,29 @@ function CakeModelGroup({
         />
       )}
 
-      {layout.decorations.map((decoration) => (
-        <GlbDecoration
-          key={decoration.instanceId}
-          instanceId={decoration.instanceId}
-          shape={config.shape}
-          decorVariant={decoration.variantId}
-          position={{ x: decoration.x, y: decoration.y, z: decoration.z }}
-          placement={decoration.placement}
-          orientation={
-            decorationInstances.find((instance) => instance.instanceId === decoration.instanceId)?.rotation ?? {
-              x: 0,
-              y: 0,
-              z: 0,
+      {layout.decorations.map((decoration) => {
+        const instance = decorationInstances.find(
+          (inst) => inst.instanceId === decoration.instanceId,
+        );
+        return (
+          <GlbDecoration
+            key={decoration.instanceId}
+            instanceId={decoration.instanceId}
+            shape={config.shape}
+            decorVariant={decoration.variantId}
+            modelUrl={instance?.modelUrl}
+            position={{ x: decoration.x, y: decoration.y, z: decoration.z }}
+            placement={decoration.placement}
+            orientation={
+              instance?.rotation ?? {
+                x: 0,
+                y: 0,
+                z: 0,
+              }
             }
-          }
-        />
-      ))}
+          />
+        );
+      })}
     </>
   );
 }

@@ -54,6 +54,12 @@ export class CreateIngredientDto {
   @IsIn(['berries', 'chocolate', 'toppers', 'flowers', 'figures', 'candle'])
   category?: 'berries' | 'chocolate' | 'toppers' | 'flowers' | 'figures' | 'candle';
 
+  @ApiPropertyOptional({ description: 'MinIO URL to the 3D model (.glb) file' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  modelUrl?: string;
+
   @ApiPropertyOptional({ description: 'Sort order' })
   @IsOptional()
   @IsInt()

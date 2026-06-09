@@ -90,6 +90,7 @@ export interface IngredientDecoration {
   category: string;
   pricePerUnit: number;
   visualKey: string;
+  modelUrl?: string;
   available: boolean;
 }
 
@@ -123,6 +124,7 @@ export interface DecorationInstance {
   instanceId: string;
   decorationId: string;
   visualKey: string;
+  modelUrl?: string;
   position: DecorationPosition;
   rotation?: DecorationRotation;
   placement?: DecorationPlacement;
@@ -1210,6 +1212,9 @@ export const useConstructorStore = create<ConstructorState>()(
 
         const selectedDecoration = createDecorationSelection(visualKey, ingredients?.decorations ?? [], decorationId);
         if (!selectedDecoration) return;
+        const decorationData = (ingredients?.decorations ?? []).find(
+          (d) => d.id === selectedDecoration.decorationId,
+        );
         const decorationBaseY = getDecorationBaseYForState(get());
         const instanceId = createDecorationInstanceId();
         const shouldClampPosition = normalizedPlacement.surface === 'top';
@@ -1231,6 +1236,7 @@ export const useConstructorStore = create<ConstructorState>()(
             instanceId,
             decorationId: selectedDecoration.decorationId,
             visualKey,
+            modelUrl: decorationData?.modelUrl,
             position: nextPosition,
             rotation: { ...DEFAULT_DECORATION_ROTATION },
             placement: normalizedPlacement,

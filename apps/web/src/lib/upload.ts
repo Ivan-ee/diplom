@@ -10,7 +10,7 @@ interface PresignData {
 
 interface UploadOptions {
   file: File;
-  bucket: 'products' | 'screenshots';
+  bucket: 'products' | 'screenshots' | 'models';
 }
 
 interface UploadResult {
@@ -45,6 +45,19 @@ export async function uploadFileToMinio({ file, bucket }: UploadOptions): Promis
 
 export async function uploadScreenshotToMinio(file: File): Promise<UploadResult> {
   const presignRes = await fetchClient<PresignData>('/upload/screenshots/presign', {
+    method: 'POST',
+    body: JSON.stringify({ filename: file.name }),
+  });
+
+  const { uploadUrl, fileUrl, objectName } = presignRes.data;
+
+  await putFileToPresignedUrl(uploadUrl, file);
+
+  return { fileUrl, objectName };
+}
+
+export async function uploadModelToMinio(file: File): Promise<UploadResult> {
+  const presignRes = await fetchClient<PresignData>('/upload/models/presign', {
     method: 'POST',
     body: JSON.stringify({ filename: file.name }),
   });

@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { RefreshCw, Check, X, Plus, Trash2 } from 'lucide-react';
+import { RefreshCw, Check, X, Plus, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchClient } from '@/lib/api';
 import { formatPrice, cn } from '@/lib/utils';
+import { uploadModelToMinio } from '@/lib/upload';
 import type {
   IngredientBase,
   IngredientFilling,
@@ -386,6 +387,66 @@ function DeleteIngredientButton({ ingredientId, type, onDeleted }: DeleteIngredi
   );
 }
 
+// ---------- Model file input ----------
+
+interface ModelFileInputProps {
+  file: File | null;
+  onChange: (file: File | null) => void;
+  disabled?: boolean;
+}
+
+function ModelFileInput({ file, onChange, disabled }: ModelFileInputProps) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+    if (!selected.name.endsWith('.glb')) {
+      toast.error('Выберите файл .glb');
+      return;
+    }
+    onChange(selected);
+  };
+
+  const handleRemove = () => onChange(null);
+
+  if (file) {
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-[var(--color-champagne)] bg-white px-4 py-3">
+        <span className="flex-1 truncate text-sm text-[var(--color-graphite)]">
+          {file.name} <span className="text-neutral-400">({(file.size / 1024).toFixed(0)} КБ)</span>
+        </span>
+        <button
+          type="button"
+          onClick={handleRemove}
+          disabled={disabled}
+          className="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+          aria-label="Удалить файл"
+        >
+          <X size={14} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <label
+      className={cn(
+        'flex cursor-pointer items-center gap-2 rounded-xl border-2 border-dashed border-[var(--color-champagne)] bg-white px-4 py-3 text-sm text-neutral-400 hover:border-[var(--color-caramel)] hover:text-[var(--color-caramel)] transition-colors',
+        disabled && 'pointer-events-none opacity-50'
+      )}
+    >
+      <Upload size={16} />
+      <span>Выберите .glb файл</span>
+      <input
+        type="file"
+        accept=".glb"
+        onChange={handleFileChange}
+        disabled={disabled}
+        className="hidden"
+      />
+    </label>
+  );
+}
+
 // ---------- Add ingredient modal ----------
 
 const TYPE_LABELS: Record<IngredientApiType, string> = {
@@ -412,6 +473,7 @@ function AddIngredientModal({ type, onClose, onCreated }: AddIngredientModalProp
   const [visualKey, setVisualKey] = useState(type === 'base' ? 'default' : 'cream');
   const [category, setCategory] = useState<(typeof DECOR_CATEGORIES)[number]>('berries');
   const [sortOrder, setSortOrder] = useState('0');
+  const [modelFile, setModelFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
   const hasDescription = type === 'base' || type === 'filling';
@@ -425,36 +487,46 @@ function AddIngredientModal({ type, onClose, onCreated }: AddIngredientModalProp
       return;
     }
 
-    const body: Record<string, unknown> = {
-      type,
-      name: name.trim(),
-      visualKey: visualKey.trim() || (type === 'base' ? 'default' : 'cream'),
-      sortOrder: parseInt(sortOrder, 10) || 0,
-    };
-
-    if (hasDescription && description.trim()) {
-      body.description = description.trim();
-    }
-    if (hasPerKg) {
-      const parsed = parseFloat(pricePerKg);
-      if (isNaN(parsed) || parsed <= 0) {
-        toast.error('Укажите корректную цену за кг');
-        return;
-      }
-      body.pricePerKg = Math.round(parsed * 100);
-    }
-    if (hasPerUnit) {
-      const parsed = parseFloat(pricePerUnit);
-      if (isNaN(parsed) || parsed <= 0) {
-        toast.error('Укажите корректную цену за штуку');
-        return;
-      }
-      body.pricePerUnit = Math.round(parsed * 100);
-      body.category = category;
-    }
-
     setSaving(true);
     try {
+      let modelUrl: string | undefined;
+
+      if (modelFile) {
+        const result = await uploadModelToMinio(modelFile);
+        modelUrl = result.fileUrl;
+      }
+
+      const body: Record<string, unknown> = {
+        type,
+        name: name.trim(),
+        visualKey: visualKey.trim() || (type === 'base' ? 'default' : 'cream'),
+        sortOrder: parseInt(sortOrder, 10) || 0,
+      };
+
+      if (modelUrl) body.modelUrl = modelUrl;
+      if (hasDescription && description.trim()) {
+        body.description = description.trim();
+      }
+      if (hasPerKg) {
+        const parsed = parseFloat(pricePerKg);
+        if (isNaN(parsed) || parsed <= 0) {
+          toast.error('Укажите корректную цену за кг');
+          setSaving(false);
+          return;
+        }
+        body.pricePerKg = Math.round(parsed * 100);
+      }
+      if (hasPerUnit) {
+        const parsed = parseFloat(pricePerUnit);
+        if (isNaN(parsed) || parsed <= 0) {
+          toast.error('Укажите корректную цену за штуку');
+          setSaving(false);
+          return;
+        }
+        body.pricePerUnit = Math.round(parsed * 100);
+        body.category = category;
+      }
+
       await fetchClient('/admin/constructor/ingredients', {
         method: 'POST',
         body: JSON.stringify(body),
@@ -579,6 +651,18 @@ function AddIngredientModal({ type, onClose, onCreated }: AddIngredientModalProp
             />
           </div>
 
+          {/* 3D Model upload */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              3D модель (.glb)
+            </label>
+            <ModelFileInput
+              file={modelFile}
+              onChange={setModelFile}
+              disabled={saving}
+            />
+          </div>
+
           {type === 'decoration' && (
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
@@ -641,6 +725,256 @@ function AddIngredientModal({ type, onClose, onCreated }: AddIngredientModalProp
   );
 }
 
+// ---------- Edit ingredient modal ----------
+
+interface EditIngredientModalProps {
+  ingredient: AnyIngredient;
+  type: IngredientApiType;
+  onClose: () => void;
+  onUpdated: () => void;
+}
+
+function EditIngredientModal({ ingredient, type, onClose, onUpdated }: EditIngredientModalProps) {
+  const [name, setName] = useState(ingredient.name);
+  const [description, setDescription] = useState(
+    'description' in ingredient && typeof ingredient.description === 'string' ? ingredient.description : ''
+  );
+  const [pricePerKg, setPricePerKg] = useState(
+    'pricePerKg' in ingredient ? String(Math.round((ingredient as { pricePerKg: number }).pricePerKg / 100)) : ''
+  );
+  const [pricePerUnit, setPricePerUnit] = useState(
+    'pricePerUnit' in ingredient ? String(Math.round((ingredient as { pricePerUnit: number }).pricePerUnit / 100)) : ''
+  );
+  const [visualKey, setVisualKey] = useState(
+    'visualKey' in ingredient ? ingredient.visualKey : 'cream'
+  );
+  const [category, setCategory] = useState<(typeof DECOR_CATEGORIES)[number]>(
+    'category' in ingredient ? (ingredient as IngredientDecoration).category as (typeof DECOR_CATEGORIES)[number] : 'berries'
+  );
+  const [modelFile, setModelFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const hasDescription = type === 'base' || type === 'filling';
+  const hasPerKg = type === 'base' || type === 'filling' || type === 'coating';
+  const hasPerUnit = type === 'decoration';
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toast.error('Укажите название');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      let modelUrl: string | undefined;
+
+      if (modelFile) {
+        const result = await uploadModelToMinio(modelFile);
+        modelUrl = result.fileUrl;
+      }
+
+      const body: Record<string, unknown> = {
+        type,
+        name: name.trim(),
+        visualKey: visualKey.trim() || (type === 'base' ? 'default' : 'cream'),
+      };
+
+      if (modelUrl) body.modelUrl = modelUrl;
+      if (hasDescription) body.description = description.trim();
+      if (hasPerKg) {
+        const parsed = parseFloat(pricePerKg);
+        if (isNaN(parsed) || parsed <= 0) {
+          toast.error('Укажите корректную цену за кг');
+          setSaving(false);
+          return;
+        }
+        body.pricePerKg = Math.round(parsed * 100);
+      }
+      if (hasPerUnit) {
+        const parsed = parseFloat(pricePerUnit);
+        if (isNaN(parsed) || parsed <= 0) {
+          toast.error('Укажите корректную цену за штуку');
+          setSaving(false);
+          return;
+        }
+        body.pricePerUnit = Math.round(parsed * 100);
+        body.category = category;
+      }
+
+      await fetchClient(`/admin/constructor/ingredients/${ingredient.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
+      toast.success('Ингредиент обновлён');
+      onUpdated();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Ошибка обновления');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-bold font-heading text-neutral-900">
+            Редактировать {TYPE_LABELS[type]}
+          </h2>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 transition-colors"
+            aria-label="Закрыть"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              Название <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={fieldClass}
+              disabled={saving}
+              autoFocus
+            />
+          </div>
+
+          {hasDescription && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+                Описание
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className={cn(fieldClass, 'resize-none')}
+                disabled={saving}
+              />
+            </div>
+          )}
+
+          {hasPerKg && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+                Цена за кг (₽) <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={pricePerKg}
+                onChange={(e) => setPricePerKg(e.target.value)}
+                className={fieldClass}
+                disabled={saving}
+              />
+            </div>
+          )}
+
+          {hasPerUnit && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+                Цена за штуку (₽) <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={pricePerUnit}
+                onChange={(e) => setPricePerUnit(e.target.value)}
+                className={fieldClass}
+                disabled={saving}
+              />
+            </div>
+          )}
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              Visual key <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={visualKey}
+              onChange={(e) => setVisualKey(e.target.value)}
+              className={fieldClass}
+              disabled={saving}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              3D модель (.glb)
+            </label>
+            <ModelFileInput
+              file={modelFile}
+              onChange={setModelFile}
+              disabled={saving}
+            />
+            {'modelUrl' in ingredient && (ingredient as IngredientDecoration).modelUrl && (
+              <p className="text-xs text-neutral-400 truncate">
+                Текущая: {(ingredient as unknown as { modelUrl: string }).modelUrl}
+              </p>
+            )}
+          </div>
+
+          {type === 'decoration' && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+                Категория декора
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as (typeof DECOR_CATEGORIES)[number])}
+                className={fieldClass}
+                disabled={saving}
+              >
+                {DECOR_CATEGORIES.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 mt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex items-center gap-2 rounded-xl bg-[var(--color-caramel)] px-4 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-caramel-hover)] transition-colors disabled:opacity-50"
+            >
+              {saving && <RefreshCw size={13} className="animate-spin" />}
+              Сохранить
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ---------- Generic ingredient table ----------
 
 interface IngredientTableProps<T extends AnyIngredient> {
@@ -657,6 +991,7 @@ interface IngredientTableProps<T extends AnyIngredient> {
   onPriceSaved: (id: string, price: number) => void;
   onPatchSaved: (id: string, patch: Partial<AnyIngredient>) => void;
   onDeleted: (id: string) => void;
+  onEdit: (row: T) => void;
 }
 
 function IngredientTable<T extends AnyIngredient>({
@@ -670,6 +1005,7 @@ function IngredientTable<T extends AnyIngredient>({
   onPriceSaved,
   onPatchSaved,
   onDeleted,
+  onEdit,
 }: IngredientTableProps<T>) {
   // +1 for actions column
   const colCount = 5 + extraColumns.length;
@@ -777,11 +1113,20 @@ function IngredientTable<T extends AnyIngredient>({
 
                   {/* Actions */}
                   <td className="px-4 py-3">
-                    <DeleteIngredientButton
-                      ingredientId={row.id}
-                      type={type}
-                      onDeleted={onDeleted}
-                    />
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => onEdit(row)}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-blue-50 hover:text-blue-500 transition-colors"
+                        aria-label="Редактировать"
+                      >
+                        <Plus size={14} className="rotate-45" />
+                      </button>
+                      <DeleteIngredientButton
+                        ingredientId={row.id}
+                        type={type}
+                        onDeleted={onDeleted}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))
@@ -809,6 +1154,7 @@ type IngredientSection = keyof Pick<ConstructorCatalog, 'bases' | 'fillings' | '
 export default function AdminConstructorPage() {
   const [activeTab, setActiveTab] = useState<Tab>('bases');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingIngredient, setEditingIngredient] = useState<AnyIngredient | null>(null);
   const [ingredients, setConstructorCatalog] = useState<ConstructorCatalog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -921,6 +1267,7 @@ export default function AdminConstructorPage() {
           onPriceSaved={handlePrice('bases', 'pricePerKg')}
           onPatchSaved={handlePatch('bases')}
           onDeleted={handleDeleted('bases')}
+          onEdit={(row) => setEditingIngredient(row)}
         />
       )}
 
@@ -935,6 +1282,7 @@ export default function AdminConstructorPage() {
           onPriceSaved={handlePrice('fillings', 'pricePerKg')}
           onPatchSaved={handlePatch('fillings')}
           onDeleted={handleDeleted('fillings')}
+          onEdit={(row) => setEditingIngredient(row)}
         />
       )}
 
@@ -959,6 +1307,7 @@ export default function AdminConstructorPage() {
           onPriceSaved={handlePrice('coatings', 'pricePerKg')}
           onPatchSaved={handlePatch('coatings')}
           onDeleted={handleDeleted('coatings')}
+          onEdit={(row) => setEditingIngredient(row)}
         />
       )}
 
@@ -985,6 +1334,7 @@ export default function AdminConstructorPage() {
           onPriceSaved={handlePrice('decorations', 'pricePerUnit')}
           onPatchSaved={handlePatch('decorations')}
           onDeleted={handleDeleted('decorations')}
+          onEdit={(row) => setEditingIngredient(row)}
         />
       )}
 
@@ -994,6 +1344,16 @@ export default function AdminConstructorPage() {
           type={TAB_TO_API_TYPE[activeTab]}
           onClose={() => setShowAddModal(false)}
           onCreated={load}
+        />
+      )}
+
+      {/* Edit ingredient modal */}
+      {editingIngredient && (
+        <EditIngredientModal
+          ingredient={editingIngredient}
+          type={TAB_TO_API_TYPE[activeTab]}
+          onClose={() => setEditingIngredient(null)}
+          onUpdated={load}
         />
       )}
     </div>

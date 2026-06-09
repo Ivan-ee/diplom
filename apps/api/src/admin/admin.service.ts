@@ -907,6 +907,7 @@ export class AdminService {
     if (dto.name !== undefined) values['name'] = dto.name;
     if (dto.pricePerUnit !== undefined) values['pricePerUnit'] = dto.pricePerUnit;
     if (dto.visualKey !== undefined) values['visualKey'] = dto.visualKey;
+    if (dto.modelUrl !== undefined) values['modelUrl'] = dto.modelUrl;
     if (dto.category !== undefined) values['category'] = dto.category;
     if (dto.isAvailable !== undefined) values['isAvailable'] = dto.isAvailable;
     return this.updateIngredientTable(
@@ -999,6 +1000,7 @@ export class AdminService {
             pricePerUnit: dto.pricePerUnit ?? 0,
             category: dto.category ?? 'berries',
             visualKey: dto.visualKey ?? 'cream',
+            modelUrl: dto.modelUrl ?? null,
             sortOrder: dto.sortOrder ?? 0,
             isAvailable: dto.isAvailable ?? true,
           })

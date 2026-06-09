@@ -31,6 +31,22 @@ export class UploadController {
     return this.uploadService.presignUrl(dto);
   }
 
+  @Post('models/presign')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiCookieAuth('bakery_token')
+  @ApiOperation({
+    summary: 'Get a presigned PUT URL for uploading a 3D model (.glb) to MinIO',
+  })
+  @ApiResponse({ status: 200, description: 'Presigned PUT URL and object key' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  presignModel(@Body() dto: PresignDto) {
+    return this.uploadService.presignUrl({
+      filename: dto.filename,
+      bucket: 'models',
+    });
+  }
+
   @Post('screenshots/presign')
   @Throttle({ default: { ttl: 60000, limit: 20 } })
   @ApiOperation({

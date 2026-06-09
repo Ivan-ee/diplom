@@ -443,7 +443,12 @@ export function getGlazeModelPath(
  * @param shape        - cake shape
  * @param decorVariant - 'blueberry' | 'chocolate' | 'meringue' | 'glaze-cream' | etc.
  */
-export function getDecoModelPath(shape: CakeShape, decorVariant: string): string | null {
+export function getDecoModelPath(
+  shape: CakeShape,
+  decorVariant: string,
+  modelUrl?: string,
+): string | null {
+  if (modelUrl) return modelUrl;
   if (decorVariant === 'candle') return CANDLE_FILES[shape];
   if (decorVariant === 'candle-one') return CANDLE_ONE_FILES[shape];
 

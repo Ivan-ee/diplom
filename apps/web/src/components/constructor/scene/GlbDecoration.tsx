@@ -29,6 +29,7 @@ interface GlbDecorationProps {
   instanceId: string;
   shape: CakeShape;
   decorVariant: string;
+  modelUrl?: string;
   position: DecorationPosition;
   placement?: DecorationPlacement;
   orientation: DecorationRotation;
@@ -467,11 +468,12 @@ export function GlbDecoration({
   instanceId,
   shape,
   decorVariant,
+  modelUrl,
   position,
   placement,
   orientation,
 }: GlbDecorationProps) {
-  const url = getDecoModelPath(shape, decorVariant);
+  const url = getDecoModelPath(shape, decorVariant, modelUrl);
   if (!url) return null;
 
   return (
